@@ -13,22 +13,23 @@
         </svg>
       </button>
     </div>
-    <div class="w-full lg:flex lg:items-center lg:w-auto transition-all duration-300 ease-in-out lg:transition-none absolute left-0 right-0 top-full lg:relative lg:top-auto bg-gray-800 lg:bg-transparent z-50"
-         [ngClass]="{'hidden': !isMenuOpen, 'block': isMenuOpen, 'lg:block': true}">
-      <ul class="lg:flex items-center justify-between text-base text-white pt-4 lg:pt-0">
-        <li class="relative">
+    <div class="w-full lg:flex lg:items-center lg:w-auto lg:relative absolute left-0 right-0 top-full bg-gray-800 lg:bg-transparent z-50 transition-all duration-300 ease-in-out"
+         [ngClass]="{'max-h-0 opacity-0 overflow-hidden': !isMenuOpen, 'max-h-96 opacity-100': isMenuOpen, 'lg:max-h-full lg:opacity-100': true}">
+      <ul class="lg:flex items-center justify-between text-base text-white pt-4 lg:pt-0 transition-opacity duration-200 ease-in-out"
+          [ngClass]="{'opacity-0': !isMenuOpen, 'opacity-100 delay-100': isMenuOpen, 'lg:opacity-100': true}">
+        <li class="relative group">
           <a class="lg:p-4 py-3 px-4 block transition-all duration-300 hover:text-yellow-500 text-center" routerLink="/pools" routerLinkActive="text-yellow-500" [routerLinkActiveOptions]="{exact: true}">
             Pools
             <span class="absolute bottom-0 left-1/4 w-1/2 h-0.5 bg-yellow-500 transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100" [ngClass]="{'scale-x-100': isActive('/pools')}"></span>
           </a>
         </li>
-        <li class="relative">
+        <li class="relative group">
           <a class="lg:p-4 py-3 px-4 block transition-all duration-300 hover:text-yellow-500 text-center" routerLink="/strategies" routerLinkActive="text-yellow-500">
             Strategies
             <span class="absolute bottom-0 left-1/4 w-1/2 h-0.5 bg-yellow-500 transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100" [ngClass]="{'scale-x-100': isActive('/strategies')}"></span>
           </a>
         </li>
-        <li class="relative">
+        <li class="relative group">
           <a class="lg:p-4 py-3 px-4 block transition-all duration-300 hover:text-yellow-500 text-center" routerLink="/portfolio" routerLinkActive="text-yellow-500">
             Portfolio
             <span class="absolute bottom-0 left-1/4 w-1/2 h-0.5 bg-yellow-500 transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100" [ngClass]="{'scale-x-100': isActive('/portfolio')}"></span>

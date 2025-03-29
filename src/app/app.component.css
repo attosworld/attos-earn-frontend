@@ -1,3 +1,8 @@
+.animate-title {
+  animation: titleAnimation 3s ease-in-out infinite;
+  display: inline-block;
+}
+
 @keyframes titleAnimation {
   0% {
     color: white;
@@ -12,12 +17,36 @@
     text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
   }
 }
-
-.animate-title {
-  animation: titleAnimation 3s ease-in-out infinite;
-  display: inline-block;
+@keyframes slideDown {
+  from { max-height: 0; }
+  to { max-height: 24rem; } /* This corresponds to max-h-96 in Tailwind */
 }
 
-.animate-title:hover {
-  animation-play-state: paused;
+@keyframes slideUp {
+  from { max-height: 24rem; }
+  to { max-height: 0; }
+}
+
+.animate-slide-down {
+  animation: slideDown 0.3s ease-in-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-in-out forwards;
+}
+
+.max-h-0 {
+  max-height: 0;
+  transition: max-height 0.3s ease-out;
+}
+
+.max-h-screen {
+  max-height: 300px; /* Adjust this value based on your menu's maximum height */
+  transition: max-height 0.3s ease-in;
+}
+
+@media (min-width: 1024px) {
+  .lg\:max-h-full {
+    max-height: none !important;
+  }
 }
