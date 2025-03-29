@@ -2,10 +2,9 @@ import { Injectable } from '@angular/core';
 import {
   RadixDappToolkit,
   RadixNetwork,
-  Logger,
   DataRequestBuilder,
 } from '@radixdlt/radix-dapp-toolkit';
-import { BehaviorSubject, forkJoin, from, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, of, switchMap, tap } from 'rxjs';
 import { GatewayEzMode } from '@calamari-radix/gateway-ez-mode';
 
 @Injectable({
@@ -23,7 +22,7 @@ export class RadixConnectService {
       dAppDefinitionAddress:
         'account_rdx12y7md4spfq5qy7e3mfjpa52937uvkxf0nmydsu5wydkkxw3qx6nghn',
       networkId: RadixNetwork.Mainnet,
-      applicationName: 'Radix Web3 dApp',
+      applicationName: 'Attos Earn',
       applicationVersion: '1.0.0',
       // logger: Logger(1),
     });
@@ -41,9 +40,15 @@ export class RadixConnectService {
   getWalletData() {
     return this.rdt?.walletApi.walletData$.pipe(
       tap(data => {
-        this.accounts$.next(data.accounts.map(account => account.address));
+        if (data.accounts.length) {
+          this.accounts$.next(data.accounts.map(account => account.address));
+        }
       }),
       switchMap(data => {
+        if (!data.accounts.length) {
+          return of(undefined);
+        }
+
         const address = data.accounts[0].address;
         return forkJoin({
           account: address,

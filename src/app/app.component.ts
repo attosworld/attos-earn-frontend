@@ -3,6 +3,8 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   inject,
   OnInit,
+  OnDestroy,
+  HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -23,13 +25,23 @@ import { RadixConnectService } from './radix-connect.service';
 })
 export class AppComponent implements OnInit {
   isMenuOpen = false;
+  isMobile = false;
 
   radixConnect = inject(RadixConnectService);
-
   router = inject(Router);
 
   ngOnInit() {
     this.radixConnect.init();
+    this.checkScreenSize();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.checkScreenSize();
+  }
+
+  checkScreenSize() {
+    this.isMobile = window.innerWidth < 768; // Adjust this breakpoint as needed
   }
 
   toggleMenu() {
