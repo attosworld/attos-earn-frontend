@@ -1,0 +1,78 @@
+<div class="bg-gray-900 text-white p-4">
+  <!-- Search bar -->
+  <div class="mb-4">
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearch($event)"
+      placeholder="Search pools..."
+      class="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white"
+    >
+  </div>
+
+  <!-- Sub-menu tabs -->
+  <div class="flex mb-4 border-b border-gray-700">
+    <ng-container *ngIf="selectedTab$ | async as selectedTab">
+      <button
+        class="py-2 px-4 mr-2 focus:outline-none"
+        [class.text-yellow-500]="selectedTab === 'all'"
+        [class.border-b-2]="selectedTab === 'all'"
+        [class.border-yellow-500]="selectedTab === 'all'"
+        (click)="selectTab('all')"
+      >
+        All Pools
+      </button>
+      <button
+        class="py-2 px-4 mr-2 focus:outline-none"
+        [class.text-yellow-500]="selectedTab === 'double'"
+        [class.border-b-2]="selectedTab === 'double'"
+        [class.border-yellow-500]="selectedTab === 'double'"
+        (click)="selectTab('double')"
+      >
+        Double Sided
+      </button>
+      <button
+        class="py-2 px-4 focus:outline-none"
+        [class.text-yellow-500]="selectedTab === 'single'"
+        [class.border-b-2]="selectedTab === 'single'"
+        [class.border-yellow-500]="selectedTab === 'single'"
+        (click)="selectTab('single')"
+      >
+        Single Sided
+      </button>
+    </ng-container>
+  </div>
+
+  <div class="hidden lg:grid lg:grid-cols-6 gap-4 font-bold mb-2 text-sm">
+    <div>Pool</div>
+    <div class="cursor-pointer" (click)="sortPools('tvl')">
+      TVL
+      <ng-container *ngIf="(sort$ | async)?.column === 'tvl'">
+        {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+      </ng-container>
+    </div>
+    <div class="cursor-pointer" (click)="sortPools('bonus_7d')">
+      Bonus
+      <ng-container *ngIf="(sort$ | async)?.column === 'bonus_7d'">
+        {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+      </ng-container>
+    </div>
+    <div>Bonus Type</div>
+    <div class="cursor-pointer" (click)="sortPools('volume_7d')">
+      7d Volume
+      <ng-container *ngIf="(sort$ | async)?.column === 'volume_7d'">
+        {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+      </ng-container>
+    </div>
+    <div></div>
+  </div>
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+    <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-yellow-500"></div>
+  </div>
+
+  <ng-container *ngIf="sortedPools$ | async as pools">
+    <ng-container *ngIf="!isLoading">
+      <app-pool-item *ngFor="let pool of pools" [pool]="pool"></app-pool-item>
+    </ng-container>
+  </ng-container>
+</div>

@@ -1,0 +1,9 @@
+.relative {
+  width: 40px;
+  height: 40px;
+}
+
+img {
+  object-fit: contain;
+  padding: 2px;
+}

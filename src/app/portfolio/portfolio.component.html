@@ -1,0 +1,98 @@
+<div class="bg-gray-900 text-white p-4">
+  <h1 class="text-2xl font-bold mb-4">Your Pools Portfolio</h1>
+
+  <!-- Search bar -->
+  <div class="mb-4">
+    <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearch($event)"
+      placeholder="Search pools..."
+      class="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white"
+    >
+  </div>
+
+  <!-- Portfolio table -->
+  <div class="overflow-x-auto">
+    <table class="w-full">
+      <thead class="hidden md:table-header-group">
+        <tr class="text-sm font-medium text-gray-400 border-b border-gray-700">
+          <th class="py-2 px-4 text-left">Pool</th>
+          <th class="py-2 px-4 text-right cursor-pointer" (click)="sortPortfolioItems('invested')">
+            Invested
+            <ng-container *ngIf="(sort$ | async)?.column === 'invested'">
+              {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+            </ng-container>
+          </th>
+          <th class="py-2 px-4 text-right cursor-pointer" (click)="sortPortfolioItems('currentValue')">
+            Current Value
+            <ng-container *ngIf="(sort$ | async)?.column === 'currentValue'">
+              {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+            </ng-container>
+          </th>
+          <th class="py-2 px-4 text-right cursor-pointer" (click)="sortPortfolioItems('pnl')">
+            PnL
+            <ng-container *ngIf="(sort$ | async)?.column === 'pnl'">
+              {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+            </ng-container>
+          </th>
+          <th class="py-2 px-4 text-right cursor-pointer" (click)="sortPortfolioItems('pnlPercentage')">
+            PnL %
+            <ng-container *ngIf="(sort$ | async)?.column === 'pnlPercentage'">
+              {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+            </ng-container>
+          </th>
+          <th class="py-2 px-4 text-right cursor-pointer" (click)="sortPortfolioItems('provider')">
+            Provider
+            <ng-container *ngIf="(sort$ | async)?.column === 'provider'">
+              {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+            </ng-container>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngIf="sortedPortfolioItems$ | async as items">
+          <tr *ngFor="let item of items" class="border-b border-gray-700 block md:table-row mb-4 md:mb-0">
+            <td class="py-2 px-4 block md:table-cell">
+              <div class="flex items-center">
+                <app-pool-icon-pair
+                  [leftIcon]="item.leftIcon"
+                  [rightIcon]="item.rightIcon"
+                  [leftAlt]="item.leftAlt"
+                  [rightAlt]="item.rightAlt"
+                  class="mr-2"
+                ></app-pool-icon-pair>
+                <span>{{ item.poolName }}</span>
+              </div>
+            </td>
+            <td class="py-2 px-4 block md:table-cell md:text-right">
+              <span class="inline-block md:hidden font-medium mr-2">Invested:</span>
+              {{ item.invested | currency }}
+            </td>
+            <td class="py-2 px-4 block md:table-cell md:text-right">
+              <span class="inline-block md:hidden font-medium mr-2">Current Value:</span>
+              {{ item.currentValue | currency }}
+            </td>
+            <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': item.pnl > 0, 'text-red-500': item.pnl < 0}">
+              <span class="inline-block md:hidden font-medium mr-2">PnL:</span>
+              {{ item.pnl | currency }}
+            </td>
+            <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': item.pnlPercentage > 0, 'text-red-500': item.pnlPercentage < 0}">
+              <span class="inline-block md:hidden font-medium mr-2">PnL %:</span>
+              {{ item.pnlPercentage | number:'1.2-2' }}%
+            </td>
+            <td class="py-2 px-4 block md:table-cell md:text-right">
+              <span class="inline-block md:hidden font-medium mr-2">Provider:</span>
+              {{ item.provider }}
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+    <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-yellow-500"></div>
+  </div>
+</div>
