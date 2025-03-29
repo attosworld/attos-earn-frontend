@@ -29,7 +29,11 @@
             "styles": [
               "src/styles.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "@calamari-radix/gateway-ez-mode",
+              "@radixdlt/radix-dapp-toolkit"
+            ]
           },
           "configurations": {
             "production": {
