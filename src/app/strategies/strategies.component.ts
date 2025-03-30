@@ -80,6 +80,24 @@ export class StrategiesComponent {
         type: 'APY',
       },
     },
+    {
+      id: 3,
+      name: 'Liquidity Mining',
+      description:
+        'Earn rewards by providing liquidity to decentralized exchanges.',
+      steps: [
+        { icon: 'plus-circle', label: 'Add Liquidity' },
+        { icon: 'clock', label: 'Wait' },
+        { icon: 'gift', label: 'Collect Rewards' },
+        { icon: 'chart-line', label: 'Compound' },
+      ],
+      requiredAssets: ['ETH', 'DAI'],
+      rewardTokens: ['LPT', 'ETH'], // Add reward tokens
+      totalRewards: {
+        value: 15.2,
+        type: 'APY',
+      },
+    },
   ];
 
   executeStrategy(strategyId: number) {

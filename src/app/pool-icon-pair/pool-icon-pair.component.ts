@@ -9,8 +9,8 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./pool-icon-pair.component.css'],
 })
 export class PoolIconPairComponent {
-  @Input() leftIcon = '';
-  @Input() rightIcon = '';
-  @Input() leftAlt = '';
-  @Input() rightAlt = '';
+  @Input() leftIcon: string | undefined;
+  @Input() rightIcon: string | undefined;
+  @Input() leftAlt: string | undefined;
+  @Input() rightAlt: string | undefined;
 }

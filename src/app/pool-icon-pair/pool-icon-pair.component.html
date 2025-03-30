@@ -1,4 +1,4 @@
 <div class="flex items-center">
-  <img [src]="leftIcon" [alt]="leftAlt" class="w-6 h-6 rounded-full">
-  <img [src]="rightIcon" [alt]="rightAlt" class="w-6 h-6 rounded-full -ml-2">
+  <img *ngIf="leftIcon && leftAlt"  [src]="leftIcon" [alt]="leftAlt" class="w-6 h-6 rounded-full">
+  <img *ngIf="rightIcon && rightAlt" [src]="rightIcon" [alt]="rightAlt" class="w-6 h-6 rounded-full" [class.-ml-2]="leftIcon && rightIcon">
 </div>

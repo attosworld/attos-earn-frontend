@@ -135,7 +135,7 @@ export class PoolListComponent {
     const value = target.value;
     if (!value) return;
 
-    const [column, direction] = value.split('_');
+    const [column, direction] = value.split('-');
     this.sortSubject.next({
       column: column as SortColumn,
       direction: direction as SortDirection,

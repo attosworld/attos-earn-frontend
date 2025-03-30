@@ -60,3 +60,8 @@
 router-outlet + * {
   flex: 1;
 }
+
+
+radix-connect-button {
+  z-index: 99999999999999;
+}
