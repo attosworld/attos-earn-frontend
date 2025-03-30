@@ -1,12 +1,4 @@
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+cdk-virtual-scroll-viewport {
+  height: calc(100vh - 400px);
+  width: 100%;
 }

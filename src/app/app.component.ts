@@ -3,7 +3,6 @@ import {
   CUSTOM_ELEMENTS_SCHEMA,
   inject,
   OnInit,
-  OnDestroy,
   HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -26,6 +25,7 @@ import { RadixConnectService } from './radix-connect.service';
 export class AppComponent implements OnInit {
   isMenuOpen = false;
   isMobile = false;
+  currentYear = new Date().getFullYear();
 
   radixConnect = inject(RadixConnectService);
   router = inject(Router);

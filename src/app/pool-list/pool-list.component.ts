@@ -1,6 +1,10 @@
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import {
+  ScrollingModule,
+  CdkVirtualScrollViewport,
+} from '@angular/cdk/scrolling';
 import { PoolItemComponent } from '../pool-item/pool-item.component';
 import { PoolService, Pool } from '../pool.service';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
@@ -19,12 +23,13 @@ interface SortEvent {
 @Component({
   selector: 'app-pool-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, PoolItemComponent],
+  imports: [CommonModule, FormsModule, ScrollingModule, PoolItemComponent],
   providers: [PoolService],
   templateUrl: './pool-list.component.html',
   styleUrls: ['./pool-list.component.css'],
 })
 export class PoolListComponent {
+  @ViewChild(CdkVirtualScrollViewport) viewport!: CdkVirtualScrollViewport;
   private sortSubject = new BehaviorSubject<SortEvent>({
     column: null,
     direction: 'none',
@@ -43,6 +48,8 @@ export class PoolListComponent {
   search$ = this.searchSubject.asObservable().pipe(debounceTime(300));
 
   showBonusInfo = false;
+
+  itemSize = 60; // Estimated height of each pool item
 
   constructor(private poolService: PoolService) {
     this.pools$ = this.poolService.getPools().pipe(

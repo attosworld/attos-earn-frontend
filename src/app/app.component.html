@@ -42,3 +42,17 @@
 </nav>
 
 <router-outlet></router-outlet>
+
+<footer class="bg-gray-800 text-white py-8 mt-auto">
+  <div class="container mx-auto px-4">
+    <div class="flex flex-col md:flex-row justify-between items-center">
+      <div class="mb-4 md:mb-0">
+        <p>&copy; {{ currentYear }} Attos Earn. All rights reserved.</p>
+      </div>
+      <div class="flex space-x-4">
+        <a routerLink="/privacy-policy" class="hover:text-yellow-500 transition-colors duration-300">Privacy Policy</a>
+        <a routerLink="/terms-and-conditions" class="hover:text-yellow-500 transition-colors duration-300">Terms and Conditions</a>
+      </div>
+    </div>
+  </div>
+</footer>

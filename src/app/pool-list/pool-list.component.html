@@ -98,7 +98,9 @@
 
   <ng-container *ngIf="sortedPools$ | async as pools">
     <ng-container *ngIf="!isLoading">
-      <app-pool-item *ngFor="let pool of pools" [pool]="pool"></app-pool-item>
+      <cdk-virtual-scroll-viewport [itemSize]="itemSize" class="h-[calc(100vh-300px)] w-full">
+        <app-pool-item *cdkVirtualFor="let pool of pools" [pool]="pool"></app-pool-item>
+      </cdk-virtual-scroll-viewport>
     </ng-container>
   </ng-container>
 </div>
