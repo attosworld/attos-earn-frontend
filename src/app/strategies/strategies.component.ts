@@ -10,6 +10,7 @@ interface Strategy {
     label: string;
   }[];
   requiredAssets: string[];
+  rewardTokens: string[]; // Add this new property
   totalRewards: {
     value: number;
     type: 'APY' | 'APR';
@@ -37,6 +38,7 @@ export class StrategiesComponent {
         { icon: 'sync', label: 'Reinvest' },
       ],
       requiredAssets: ['USDT', 'ETH'],
+      rewardTokens: ['FARM', 'ETH'], // Add reward tokens
       totalRewards: {
         value: 12.5,
         type: 'APY',
@@ -54,6 +56,7 @@ export class StrategiesComponent {
         { icon: 'redo', label: 'Repeat' },
       ],
       requiredAssets: ['USDC', 'BTC'],
+      rewardTokens: ['USDC'], // Add reward tokens
       totalRewards: {
         value: 8.7,
         type: 'APR',
@@ -71,6 +74,7 @@ export class StrategiesComponent {
         { icon: 'chart-line', label: 'Compound' },
       ],
       requiredAssets: ['ETH', 'DAI'],
+      rewardTokens: ['LPT', 'ETH'], // Add reward tokens
       totalRewards: {
         value: 15.2,
         type: 'APY',

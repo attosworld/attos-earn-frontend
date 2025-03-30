@@ -22,7 +22,7 @@ interface SortEvent {
   imports: [CommonModule, FormsModule, PoolItemComponent],
   providers: [PoolService],
   templateUrl: './pool-list.component.html',
-  styleUrl: './pool-list.component.css',
+  styleUrls: ['./pool-list.component.css'],
 })
 export class PoolListComponent {
   private sortSubject = new BehaviorSubject<SortEvent>({
@@ -41,6 +41,8 @@ export class PoolListComponent {
   searchTerm = '';
   private searchSubject = new BehaviorSubject<string>('');
   search$ = this.searchSubject.asObservable().pipe(debounceTime(300));
+
+  showBonusInfo = false;
 
   constructor(private poolService: PoolService) {
     this.pools$ = this.poolService.getPools().pipe(
@@ -119,5 +121,17 @@ export class PoolListComponent {
     });
 
     return fuse.search(term).map(result => result.item);
+  }
+
+  sortPoolsMobile(event: Event) {
+    const target = event.target as HTMLSelectElement;
+    const value = target.value;
+    if (!value) return;
+
+    const [column, direction] = value.split('_');
+    this.sortSubject.next({
+      column: column as SortColumn,
+      direction: direction as SortDirection,
+    });
   }
 }

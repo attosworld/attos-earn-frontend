@@ -43,6 +43,7 @@
     </ng-container>
   </div>
 
+  <!-- Column headers for large screens -->
   <div class="hidden lg:grid lg:grid-cols-6 gap-4 font-bold mb-2 text-sm">
     <div>Pool</div>
     <div class="cursor-pointer" (click)="sortPools('tvl')">
@@ -51,11 +52,19 @@
         {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
       </ng-container>
     </div>
-    <div class="cursor-pointer" (click)="sortPools('bonus_7d')">
+    <div class="cursor-pointer relative group" (click)="sortPools('bonus_7d')">
       Bonus
       <ng-container *ngIf="(sort$ | async)?.column === 'bonus_7d'">
         {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
       </ng-container>
+      <span class="ml-1 text-gray-400 cursor-help inline-flex">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </span>
+      <div class="absolute z-10 w-64 p-2 mt-1 text-sm bg-gray-800 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        Each DEX has its own metric for measuring fees generated from a pool.
+      </div>
     </div>
     <div>Bonus Type</div>
     <div class="cursor-pointer" (click)="sortPools('volume_7d')">
@@ -66,6 +75,23 @@
     </div>
     <div></div>
   </div>
+
+  <!-- Sorting dropdown for smaller screens -->
+  <div class="lg:hidden mb-4">
+    <select
+      (change)="sortPoolsMobile($event)"
+      class="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white"
+    >
+      <option value="">Sort by...</option>
+      <option value="tvl_asc">TVL (Low to High)</option>
+      <option value="tvl_desc">TVL (High to Low)</option>
+      <option value="bonus_7d_asc">Bonus (Low to High)</option>
+      <option value="bonus_7d_desc">Bonus (High to Low)</option>
+      <option value="volume_7d_asc">7d Volume (Low to High)</option>
+      <option value="volume_7d_desc">7d Volume (High to Low)</option>
+    </select>
+  </div>
+
   <div *ngIf="isLoading" class="flex justify-center items-center h-64">
     <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-yellow-500"></div>
   </div>
