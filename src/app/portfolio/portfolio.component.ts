@@ -29,6 +29,13 @@ export class PortfolioComponent implements OnInit {
   searchTerm = '';
   private searchSubject = new BehaviorSubject<string>('');
   search$ = this.searchSubject.asObservable().pipe(debounceTime(300));
+  totalInvested = 0;
+  totalCurrentValue = 0;
+  totalPnl = 0;
+  totalPnlPercentage = 0;
+
+  // New property to store all portfolio items
+  allPortfolioItems: PortfolioItem[] = [];
 
   private sortSubject = new BehaviorSubject<{
     column: keyof PortfolioItem | null;
@@ -60,7 +67,10 @@ export class PortfolioComponent implements OnInit {
           )
         ).pipe(
           map(itemArrays => itemArrays.flat()),
-          tap(res => console.log(res)),
+          tap(items => {
+            this.allPortfolioItems = items;
+            this.calculateTotals(items);
+          }),
           finalize(() => (this.isLoading = false)),
           shareReplay(1)
         );
@@ -78,6 +88,17 @@ export class PortfolioComponent implements OnInit {
       }),
       shareReplay(1)
     );
+  }
+
+  // New method to calculate totals
+  private calculateTotals(items: PortfolioItem[]) {
+    this.totalInvested = items.reduce((sum, item) => sum + +item.invested, 0);
+    this.totalCurrentValue = items.reduce(
+      (sum, item) => sum + +item.currentValue,
+      0
+    );
+    this.totalPnl = this.totalCurrentValue - this.totalInvested;
+    this.totalPnlPercentage = (this.totalPnl / this.totalInvested) * 100;
   }
 
   sortPortfolioItems(column: keyof PortfolioItem) {
