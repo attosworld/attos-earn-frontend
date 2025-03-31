@@ -10,11 +10,15 @@ interface Strategy {
     label: string;
   }[];
   requiredAssets: string[];
-  rewardTokens: string[]; // Add this new property
+  rewardTokens: string[];
   totalRewards: {
     value: number;
     type: 'APY' | 'APR';
   };
+  rewardsBreakdown: {
+    token: string;
+    apy: number;
+  }[];
 }
 
 @Component({
@@ -25,6 +29,8 @@ interface Strategy {
   styleUrls: ['./strategies.component.css'],
 })
 export class StrategiesComponent {
+  isComingSoon = true; // Add this line
+
   strategies: Strategy[] = [
     {
       id: 1,
@@ -38,11 +44,15 @@ export class StrategiesComponent {
         { icon: 'sync', label: 'Reinvest' },
       ],
       requiredAssets: ['USDT', 'ETH'],
-      rewardTokens: ['FARM', 'ETH'], // Add reward tokens
+      rewardTokens: ['FARM', 'ETH'],
       totalRewards: {
         value: 12.5,
         type: 'APY',
       },
+      rewardsBreakdown: [
+        { token: 'FARM', apy: 8.5 },
+        { token: 'ETH', apy: 4.0 },
+      ],
     },
     {
       id: 2,
@@ -56,11 +66,12 @@ export class StrategiesComponent {
         { icon: 'redo', label: 'Repeat' },
       ],
       requiredAssets: ['USDC', 'BTC'],
-      rewardTokens: ['USDC'], // Add reward tokens
+      rewardTokens: ['USDC'],
       totalRewards: {
         value: 8.7,
         type: 'APR',
       },
+      rewardsBreakdown: [{ token: 'USDC', apy: 8.7 }],
     },
     {
       id: 3,
@@ -74,29 +85,34 @@ export class StrategiesComponent {
         { icon: 'chart-line', label: 'Compound' },
       ],
       requiredAssets: ['ETH', 'DAI'],
-      rewardTokens: ['LPT', 'ETH'], // Add reward tokens
+      rewardTokens: ['LPT', 'ETH'],
       totalRewards: {
         value: 15.2,
         type: 'APY',
       },
+      rewardsBreakdown: [
+        { token: 'LPT', apy: 10.5 },
+        { token: 'ETH', apy: 4.7 },
+      ],
     },
     {
-      id: 3,
-      name: 'Liquidity Mining',
+      id: 4,
+      name: 'Staking',
       description:
-        'Earn rewards by providing liquidity to decentralized exchanges.',
+        'Lock up your tokens to support network operations and earn passive income.',
       steps: [
-        { icon: 'plus-circle', label: 'Add Liquidity' },
+        { icon: 'wallet', label: 'Select Tokens' },
+        { icon: 'lock', label: 'Stake' },
         { icon: 'clock', label: 'Wait' },
-        { icon: 'gift', label: 'Collect Rewards' },
-        { icon: 'chart-line', label: 'Compound' },
+        { icon: 'coins', label: 'Claim Rewards' },
       ],
-      requiredAssets: ['ETH', 'DAI'],
-      rewardTokens: ['LPT', 'ETH'], // Add reward tokens
+      requiredAssets: ['XRD'],
+      rewardTokens: ['XRD'],
       totalRewards: {
-        value: 15.2,
+        value: 7.5,
         type: 'APY',
       },
+      rewardsBreakdown: [{ token: 'XRD', apy: 7.5 }],
     },
   ];
 

@@ -1,8 +1,39 @@
 <div class="container mx-auto px-4 py-8">
   <h1 class="text-3xl font-bold text-white mb-8">DeFi Strategies</h1>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div *ngFor="let strategy of strategies" class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-      <div class="p-6">
+
+  <!-- New sections for benefits and risks -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+    <!-- Benefits section -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-2xl font-semibold text-yellow-500 mb-4">Why Use DeFi Strategies?</h2>
+      <ul class="list-disc list-inside text-gray-300 space-y-2">
+        <li>Potential for higher yields compared to traditional finance</li>
+        <li>Access to a wide range of financial instruments and markets</li>
+        <li>Increased control and transparency over your investments</li>
+        <li>Opportunity to participate in innovative financial products</li>
+        <li>Ability to diversify your portfolio across multiple protocols</li>
+      </ul>
+    </div>
+
+    <!-- Risks section -->
+    <div class="bg-gray-800 rounded-lg p-6">
+      <h2 class="text-2xl font-semibold text-red-500 mb-4">Risks of Complex DeFi Strategies</h2>
+      <ul class="list-disc list-inside text-gray-300 space-y-2">
+        <li>Smart contract vulnerabilities and potential exploits</li>
+        <li>High volatility in cryptocurrency markets</li>
+        <li>Impermanent loss in liquidity provision</li>
+        <li>Regulatory uncertainties in the DeFi space</li>
+        <li>Complexity of strategies may lead to user errors</li>
+        <li>Potential for significant financial losses</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Existing strategies grid with coming soon overlay -->
+  <div class="relative">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [ngClass]="{'filter blur-sm': isComingSoon}">
+      <div *ngFor="let strategy of strategies" class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <div class="p-6">
         <div class="flex justify-between items-start mb-4">
           <h2 class="text-xl font-semibold text-yellow-500">{{ strategy.name }}</h2>
           <div class="text-right">
@@ -43,10 +74,26 @@
             </span>
           </div>
         </div>
+
+        <!-- New section for rewards APY breakdown -->
+        <div class="mb-4">
+          <h3 class="text-sm font-semibold text-white mb-2">Rewards APY Breakdown:</h3>
+          <div class="grid grid-cols-2 gap-2">
+            <div *ngFor="let reward of strategy.rewardsBreakdown" class="bg-gray-700 rounded p-2 flex justify-between items-center">
+              <span class="text-yellow-500">{{ reward.token }}</span>
+              <span class="text-green-400">{{ reward.apy | number:'1.2-2' }}%</span>
+            </div>
+          </div>
+        </div>
+
         <button (click)="executeStrategy(strategy.id)" class="w-full bg-yellow-500 text-gray-900 py-2 px-4 rounded hover:bg-yellow-600 transition duration-300">
           Execute Strategy
         </button>
       </div>
     </div>
   </div>
+  <div *ngIf="isComingSoon" class="absolute inset-0 flex items-center justify-center">
+    <h2 class="text-4xl font-bold text-yellow-500 bg-gray-900 bg-opacity-70 px-6 py-3 rounded-lg">Coming Soon!</h2>
+  </div>
+</div>
 </div>
