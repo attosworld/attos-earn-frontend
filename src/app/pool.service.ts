@@ -22,6 +22,7 @@ export interface Pool {
   right_name: string;
   name: string;
   pool_type: 'double' | 'single';
+  deposit_link: string;
 }
 
 @Injectable({

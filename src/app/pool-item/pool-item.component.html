@@ -29,6 +29,6 @@
     <div>{{ pool.volume_7d | currency }}</div>
   </div>
   <div class="col-span-2 sm:col-span-1 flex justify-left">
-    <button class="bg-yellow-500 text-black px-4 py-2 rounded text-sm">Deposit</button>
+    <a [href]="pool.deposit_link" target="_blank" rel="noreferrer" class="bg-yellow-500 text-black px-4 py-2 rounded text-sm">Deposit</a>
   </div>
 </div>
