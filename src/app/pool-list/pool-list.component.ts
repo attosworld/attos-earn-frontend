@@ -1,4 +1,12 @@
-import { Component, ViewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  ViewChild,
+  AfterViewInit,
+  inject,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -13,7 +21,7 @@ import Fuse from 'fuse.js';
 
 type SortColumn = 'tvl' | 'bonus_7d' | 'volume_7d' | null;
 type SortDirection = 'asc' | 'desc' | 'none';
-type PoolType = 'all' | 'double' | 'single';
+type PoolType = 'all' | 'double' | 'single' | 'boosted';
 
 interface SortEvent {
   column: SortColumn;
@@ -28,8 +36,13 @@ interface SortEvent {
   templateUrl: './pool-list.component.html',
   styleUrls: ['./pool-list.component.css'],
 })
-export class PoolListComponent {
+export class PoolListComponent implements AfterViewInit {
   @ViewChild(CdkVirtualScrollViewport) viewport!: CdkVirtualScrollViewport;
+
+  @ViewChild('dummyItem') dummyItem!: ElementRef;
+
+  cdRef = inject(ChangeDetectorRef);
+
   private sortSubject = new BehaviorSubject<SortEvent>({
     column: null,
     direction: 'none',
@@ -51,9 +64,14 @@ export class PoolListComponent {
 
   itemSize = 60; // Estimated height of each pool item
 
+  isMobile!: boolean;
+
   constructor(private poolService: PoolService) {
     this.pools$ = this.poolService.getPools().pipe(
-      finalize(() => (this.isLoading = false)),
+      finalize(() => {
+        this.isLoading = false;
+        setTimeout(() => this.updateItemSize(), 32);
+      }),
       shareReplay(1)
     );
 
@@ -109,10 +127,14 @@ export class PoolListComponent {
   }
 
   private filterPoolsByType(pools: Pool[], selectedTab: PoolType): Pool[] {
-    if (selectedTab === 'all') {
-      return pools;
+    switch (selectedTab) {
+      case 'all':
+        return pools;
+      case 'boosted':
+        return pools.filter(pool => pool.boosted);
+      default:
+        return pools.filter(pool => pool.pool_type === selectedTab);
     }
-    return pools.filter(pool => pool.pool_type === selectedTab);
   }
 
   onSearch(term: string) {
@@ -140,5 +162,29 @@ export class PoolListComponent {
       column: column as SortColumn,
       direction: direction as SortDirection,
     });
+  }
+
+  ngAfterViewInit() {
+    this.updateItemSize();
+    this.cdRef.detectChanges();
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.checkScreenSize();
+    this.updateItemSize();
+  }
+
+  checkScreenSize() {
+    this.isMobile = window.innerWidth < 768; // Adjust this breakpoint as needed
+  }
+
+  updateItemSize() {
+    if (this.dummyItem) {
+      this.itemSize = this.dummyItem.nativeElement.offsetHeight;
+      if (this.viewport) {
+        this.viewport.checkViewportSize();
+      }
+    }
   }
 }

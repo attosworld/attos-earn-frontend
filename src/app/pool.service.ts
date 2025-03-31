@@ -14,15 +14,17 @@ export interface Pool {
   volume_7d: number;
   volume_24h: number;
   bonus_name: string;
-  left_alt: string;
-  right_alt: string;
-  left_icon: string;
-  right_icon: string;
+  left_alt?: string;
+  left_icon?: string;
+  right_alt?: string;
+  right_icon?: string;
   left_name: string;
   right_name: string;
   name: string;
   pool_type: 'double' | 'single';
   deposit_link: string;
+  boosted: boolean;
+  incentivised_lp_docs: string;
 }
 
 @Injectable({
