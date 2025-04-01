@@ -20,7 +20,7 @@ export class RadixConnectService {
   init() {
     this.rdt = RadixDappToolkit({
       dAppDefinitionAddress:
-        'account_rdx12y7md4spfq5qy7e3mfjpa52937uvkxf0nmydsu5wydkkxw3qx6nghn',
+        'account_rdx12xpquh9jpf0tekllepvcenhpwdxc3k25qrlhljmylmrksahmcemaw3',
       networkId: RadixNetwork.Mainnet,
       applicationName: 'Attos Earn',
       applicationVersion: '1.0.0',
