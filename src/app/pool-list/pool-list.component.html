@@ -46,6 +46,43 @@
     >
   </div>
 
+  <!-- Advanced search -->
+<div class="mb-4 bg-gray-800 p-4 rounded-lg">
+  <h3 class="text-lg font-semibold mb-2">Advanced Search</h3>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div>
+      <label class="block text-sm font-medium mb-1">TVL</label>
+      <div class="flex items-center">
+        <select [(ngModel)]="tvlFilter.condition" class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
+          <option value="above">Above</option>
+          <option value="below">Below</option>
+        </select>
+        <input type="number" [(ngModel)]="tvlFilter.value" (ngModelChange)="applyFilters()" placeholder="Enter amount" class="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white h-10">
+      </div>
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Bonus</label>
+      <div class="flex items-center">
+        <select [(ngModel)]="bonusFilter.condition" class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
+          <option value="above">Above</option>
+          <option value="below">Below</option>
+        </select>
+        <input type="number" [(ngModel)]="bonusFilter.value" (ngModelChange)="applyFilters()" placeholder="Enter amount" class="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white h-10">
+      </div>
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">7d Volume</label>
+      <div class="flex items-center">
+        <select [(ngModel)]="volumeFilter.condition" class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
+          <option value="above">Above</option>
+          <option value="below">Below</option>
+        </select>
+        <input type="number" [(ngModel)]="volumeFilter.value" (ngModelChange)="applyFilters()" placeholder="Enter amount" class="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white h-10">
+      </div>
+    </div>
+  </div>
+</div>
+
   <!-- Sub-menu tabs -->
   <div class="flex mb-4 border-b border-gray-700 overflow-x-auto">
     <ng-container *ngIf="selectedTab$ | async as selectedTab">

@@ -28,6 +28,17 @@ interface SortEvent {
   direction: SortDirection;
 }
 
+interface Filter {
+  condition: 'above' | 'below';
+  value: number | null;
+}
+
+interface Filters {
+  tvl: Filter;
+  bonus: Filter;
+  volume: Filter;
+}
+
 @Component({
   selector: 'app-pool-list',
   standalone: true,
@@ -66,6 +77,17 @@ export class PoolListComponent implements AfterViewInit {
 
   isMobile!: boolean;
 
+  tvlFilter: Filter = { condition: 'above', value: null };
+  bonusFilter: Filter = { condition: 'above', value: null };
+  volumeFilter: Filter = { condition: 'above', value: null };
+
+  private filtersSubject = new BehaviorSubject<Filters>({
+    tvl: this.tvlFilter,
+    bonus: this.bonusFilter,
+    volume: this.volumeFilter,
+  });
+  filters$ = this.filtersSubject.asObservable();
+
   constructor(private poolService: PoolService) {
     this.pools$ = this.poolService.getPools().pipe(
       finalize(() => {
@@ -80,10 +102,12 @@ export class PoolListComponent implements AfterViewInit {
       this.sort$,
       this.search$,
       this.selectedTab$,
+      this.filters$,
     ]).pipe(
-      map(([pools, sort, searchTerm, selectedTab]) => {
+      map(([pools, sort, searchTerm, selectedTab, filters]) => {
         let filteredPools = this.filterPoolsByType(pools, selectedTab);
         filteredPools = this.searchPools(filteredPools, searchTerm);
+        filteredPools = this.applyAdvancedFilters(filteredPools, filters);
         return this.sortBasedOnEvent(filteredPools, sort);
       }),
       shareReplay(1)
@@ -186,5 +210,32 @@ export class PoolListComponent implements AfterViewInit {
         this.viewport.checkViewportSize();
       }
     }
+  }
+
+  private applyAdvancedFilters(pools: Pool[], filters: Filters): Pool[] {
+    return pools.filter(pool => {
+      const tvlMatch = this.applyNumericFilter(pool.tvl, filters.tvl);
+      const bonusMatch = this.applyNumericFilter(pool.bonus_7d, filters.bonus);
+      const volumeMatch = this.applyNumericFilter(
+        pool.volume_7d,
+        filters.volume
+      );
+      return tvlMatch && bonusMatch && volumeMatch;
+    });
+  }
+
+  private applyNumericFilter(value: number, filter: Filter): boolean {
+    if (filter.value === null) return true;
+    return filter.condition === 'above'
+      ? value >= filter.value
+      : value <= filter.value;
+  }
+
+  applyFilters(): void {
+    this.filtersSubject.next({
+      tvl: this.tvlFilter,
+      bonus: this.bonusFilter,
+      volume: this.volumeFilter,
+    });
   }
 }
