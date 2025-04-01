@@ -5,3 +5,14 @@ body {
   --radix-connect-button-width: 40px;
   --radix-connect-button-border-radius: 4px;
 }
+
+@font-face {
+  font-family: 'Upheaval TT';
+  src: url('/upheavtt.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.page-title {
+  font-family: 'Upheaval TT', sans-serif;
+}
