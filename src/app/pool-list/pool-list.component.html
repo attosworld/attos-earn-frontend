@@ -91,32 +91,47 @@
   <!-- Column headers for large screens -->
   <div class="hidden lg:grid lg:grid-cols-6 gap-4 font-bold mb-2 text-sm">
     <div>Pool</div>
-    <div class="cursor-pointer" (click)="sortPools('tvl')">
+    <div class="cursor-pointer flex items-center" (click)="sortPools('tvl')">
       TVL
-      <ng-container *ngIf="(sort$ | async)?.column === 'tvl'">
-        {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+      <ng-container *ngIf="(sort$ | async)?.column !== 'tvl'; else tvlSorted">
+        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+        </svg>
       </ng-container>
+      <ng-template #tvlSorted>
+        {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+      </ng-template>
     </div>
-    <div class="cursor-pointer relative group" (click)="sortPools('bonus_7d')">
+    <div class="cursor-pointer flex items-center relative group" (click)="sortPools('bonus_7d')">
       Bonus
-      <ng-container *ngIf="(sort$ | async)?.column === 'bonus_7d'">
-        {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+      <ng-container *ngIf="(sort$ | async)?.column !== 'bonus_7d'; else bonusSorted">
+        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+        </svg>
       </ng-container>
+      <ng-template #bonusSorted>
+        {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+      </ng-template>
       <span class="ml-1 text-gray-400 cursor-help inline-flex">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
         </svg>
       </span>
-      <div class="absolute z-10 w-64 p-2 mt-1 text-sm bg-gray-800 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+      <div class="absolute z-10 w-64 p-2 mt-30 text-sm bg-gray-800 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
         Each DEX has its own metric for measuring fees generated from a pool.
       </div>
     </div>
     <div>Bonus Type</div>
-    <div class="cursor-pointer" (click)="sortPools('volume_7d')">
+    <div class="cursor-pointer flex items-center" (click)="sortPools('volume_7d')">
       7d Volume
-      <ng-container *ngIf="(sort$ | async)?.column === 'volume_7d'">
-        {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+      <ng-container *ngIf="(sort$ | async)?.column !== 'volume_7d'; else volumeSorted">
+        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+        </svg>
       </ng-container>
+      <ng-template #volumeSorted>
+        {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+      </ng-template>
     </div>
     <div></div>
   </div>
