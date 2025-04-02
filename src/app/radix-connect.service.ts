@@ -44,6 +44,10 @@ export class RadixConnectService {
     this.rdt.walletApi.setRequestData(DataRequestBuilder.accounts().atLeast(1));
   }
 
+  getButtonStatus() {
+    return this.rdt?.buttonApi.status$;
+  }
+
   getSelectedAccount() {
     return this.getWalletData()?.pipe(
       switchMap(() => this.selectedAccount$.asObservable())

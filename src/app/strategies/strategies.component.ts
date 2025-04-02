@@ -5,9 +5,11 @@ import {
   BehaviorSubject,
   Observable,
   combineLatest,
+  finalize,
   map,
   of,
   switchMap,
+  tap,
 } from 'rxjs';
 import { RadixConnectService } from '../radix-connect.service';
 import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
@@ -32,9 +34,12 @@ export class StrategiesComponent {
 
   radixConnectService = inject(RadixConnectService);
 
+  txButtonStatus = this.radixConnectService.getButtonStatus();
+
   inputAmounts: Record<string, number> = {};
 
   requiredResources = new BehaviorSubject<string[]>([]);
+
   selectedAccount$ = this.radixConnectService.selectedAccount$;
 
   combinedData$ = combineLatest([
@@ -113,7 +118,19 @@ export class StrategiesComponent {
               ?.map(f => f.status)
               .mapErr(() => TransactionStatus.Rejected);
           }),
-          map(tx => tx?._unsafeUnwrap())
+          map(tx => {
+            if (tx?.isOk()) {
+              return tx.value;
+            } else {
+              return 'Rejected';
+            }
+          }),
+          tap(tx => {
+            if (tx === TransactionStatus.CommittedSuccess) {
+              this.transactionResult = of(undefined);
+              this.closeModal();
+            }
+          })
         );
     }
   }
