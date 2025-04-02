@@ -63,7 +63,7 @@ export class PortfolioComponent implements OnInit {
 
         return combineLatest(
           accounts.map(account =>
-            this.portfolioService.getPortfolioItems(account)
+            this.portfolioService.getPortfolioItems(account.address)
           )
         ).pipe(
           map(itemArrays => itemArrays.flat()),

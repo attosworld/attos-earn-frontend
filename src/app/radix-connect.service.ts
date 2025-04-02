@@ -3,6 +3,7 @@ import {
   RadixDappToolkit,
   RadixNetwork,
   DataRequestBuilder,
+  WalletDataStateAccount,
 } from '@radixdlt/radix-dapp-toolkit';
 import { BehaviorSubject, forkJoin, from, of, switchMap, tap } from 'rxjs';
 import { GatewayEzMode } from '@calamari-radix/gateway-ez-mode';
@@ -11,11 +12,23 @@ import { GatewayEzMode } from '@calamari-radix/gateway-ez-mode';
   providedIn: 'root',
 })
 export class RadixConnectService {
+  setSelectedAccount(account: WalletDataStateAccount) {
+    this.selectedAccount$.next(account);
+  }
+
   gatewayEz = new GatewayEzMode();
 
   rdt?: RadixDappToolkit;
 
-  accounts$ = new BehaviorSubject<string[] | undefined>([]);
+  accounts$ = new BehaviorSubject<WalletDataStateAccount[] | undefined>([]);
+
+  selectedAccount$ = new BehaviorSubject<WalletDataStateAccount | undefined>(
+    undefined
+  );
+
+  constructor() {
+    this.init();
+  }
 
   init() {
     this.rdt = RadixDappToolkit({
@@ -31,6 +44,12 @@ export class RadixConnectService {
     this.rdt.walletApi.setRequestData(DataRequestBuilder.accounts().atLeast(1));
   }
 
+  getSelectedAccount() {
+    return this.getWalletData()?.pipe(
+      switchMap(() => this.selectedAccount$.asObservable())
+    );
+  }
+
   getAccounts() {
     return this.getWalletData()?.pipe(
       switchMap(() => this.accounts$.asObservable())
@@ -41,15 +60,20 @@ export class RadixConnectService {
     return this.rdt?.walletApi.walletData$.pipe(
       tap(data => {
         if (data.accounts.length) {
-          this.accounts$.next(data.accounts.map(account => account.address));
+          this.accounts$.next(data.accounts);
+
+          if (this.selectedAccount$.getValue() === undefined) {
+            this.selectedAccount$.next(data.accounts[0]);
+          }
         }
       }),
       switchMap(data => {
-        if (!data.accounts.length) {
+        const account = this.selectedAccount$.getValue();
+        if (!data.accounts.length || !account) {
           return of(undefined);
         }
 
-        const address = data.accounts[0].address;
+        const address = account.address;
         return forkJoin({
           account: address,
           fungibles: from(
@@ -61,5 +85,11 @@ export class RadixConnectService {
         });
       })
     );
+  }
+
+  sendTransaction(transactionManifest: string) {
+    return this.rdt?.walletApi.sendTransaction({
+      transactionManifest,
+    });
   }
 }

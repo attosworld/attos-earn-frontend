@@ -1,47 +1,96 @@
 <nav class="bg-gray-800 p-4 relative">
-  <div class="container mx-auto flex flex-wrap items-center justify-between">
+  <div class="container mx-auto flex items-center justify-between">
     <a href="/" class="flex items-center text-white text-xl font-bold">
-      <img src="attos-earn-logo.png" alt="Attos Earn Logo" class="h-12 w-auto mr-2">
-      <span class="animate-title page-title text-2xl">Attos Earn</span>
+      <img src="attos-earn-logo.png" alt="Attos Earn Logo" class="h-8 w-auto mr-2">
+      <span class="animate-title page-title text-xl">Attos Earn</span>
     </a>
-    <div class="flex items-center">
-      <div *ngIf="isMobile" class="lg:hidden mr-4">
-        <radix-connect-button />
+    <div class="flex items-center space-x-2 sm:space-x-4">
+      <ul class="hidden lg:flex items-center space-x-4 text-sm text-white">
+        <li><a class="hover:text-yellow-500 transition-colors duration-200" routerLink="/pools" routerLinkActive="text-yellow-500">Pools</a></li>
+        <li><a class="hover:text-yellow-500 transition-colors duration-200" routerLink="/strategies" routerLinkActive="text-yellow-500">Strategies</a></li>
+        <li><a class="hover:text-yellow-500 transition-colors duration-200" routerLink="/portfolio" routerLinkActive="text-yellow-500">Portfolio</a></li>
+      </ul>
+      <div *ngIf="selectedAccount$ | async as selectedAccount" class="relative">
+        <button (click)="toggleAccountDropdown()" class="flex items-center bg-gray-700 rounded-full px-2 sm:px-3 py-1 text-xs sm:text-sm text-white">
+          <span class="w-2 h-2 bg-green-500 rounded-full mr-1 sm:mr-2"></span>
+          <span class="font-mono hidden xs:inline">{{ shortenAddress(selectedAccount.address) }}</span>
+          <span class="font-mono xs:hidden">{{ ultraShortenAddress(selectedAccount.address) }}</span>
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        <div *ngIf="isAccountDropdownOpen" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg z-20">
+          <div class="py-1">
+            <ng-container *ngIf="accounts$ | async as accounts">
+              <a *ngFor="let account of accounts"
+                 (click)="selectAccount(account)"
+                 class="block px-4 py-2 text-sm text-white hover:bg-gray-700 cursor-pointer">
+                {{ shortenAddress(account.address) }}
+              </a>
+            </ng-container>
+          </div>
+        </div>
       </div>
+      <radix-connect-button />
       <button class="text-white lg:hidden" (click)="toggleMenu()">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
         </svg>
       </button>
     </div>
-    <div class="w-full lg:flex lg:items-center lg:w-auto lg:relative absolute left-0 right-0 top-full bg-gray-800 lg:bg-transparent z-50 transition-all duration-300 ease-in-out lg:overflow-visible lg:max-h-full lg:opacity-100"
-         [ngClass]="{'max-h-0 opacity-0 overflow-hidden': !isMenuOpen, 'max-h-96 opacity-100': isMenuOpen}">
-      <ul class="lg:flex items-center justify-between text-base text-white pt-4 lg:pt-0 transition-opacity duration-200 ease-in-out"
-          [ngClass]="{'opacity-0': !isMenuOpen, 'opacity-100 delay-100': isMenuOpen, 'lg:opacity-100': true}">
-        <li class="relative group">
-          <a class="lg:p-4 py-3 px-4 block transition-all duration-300 hover:text-yellow-500 text-center" routerLink="/pools" routerLinkActive="text-yellow-500" [routerLinkActiveOptions]="{exact: true}">
-            Pools
-            <span class="absolute bottom-0 left-1/4 w-1/2 h-0.5 bg-yellow-500 transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100" [ngClass]="{'scale-x-100': isActive('/pools')}"></span>
-          </a>
-        </li>
-        <li class="relative group">
-          <a class="lg:p-4 py-3 px-4 block transition-all duration-300 hover:text-yellow-500 text-center" routerLink="/strategies" routerLinkActive="text-yellow-500">
-            Strategies
-            <span class="absolute bottom-0 left-1/4 w-1/2 h-0.5 bg-yellow-500 transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100" [ngClass]="{'scale-x-100': isActive('/strategies')}"></span>
-          </a>
-        </li>
-        <li class="relative group">
-          <a class="lg:p-4 py-3 px-4 block transition-all duration-300 hover:text-yellow-500 text-center" routerLink="/portfolio" routerLinkActive="text-yellow-500">
-            Portfolio
-            <span class="absolute bottom-0 left-1/4 w-1/2 h-0.5 bg-yellow-500 transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100" [ngClass]="{'scale-x-100': isActive('/portfolio')}"></span>
-          </a>
-        </li>
-        <li class="pl-2 hidden lg:block" *ngIf="!isMobile"><radix-connect-button /></li>
-      </ul>
-    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div class="lg:hidden" [ngClass]="{'hidden': !isMenuOpen}">
+    <ul class="pt-2 pb-3 space-y-1">
+      <li><a class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700" routerLink="/pools" routerLinkActive="bg-gray-700">Pools</a></li>
+      <li><a class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700" routerLink="/strategies" routerLinkActive="bg-gray-700">Strategies</a></li>
+      <li><a class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700" routerLink="/portfolio" routerLinkActive="bg-gray-700">Portfolio</a></li>
+    </ul>
   </div>
 </nav>
 
+<!-- Astrolescent Banner -->
+<!-- Astrolescent Banner -->
+<div class="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white py-3 px-4 relative overflow-hidden">
+  <div class="absolute inset-0 bg-pattern opacity-10"></div>
+  <div class="container mx-auto flex flex-col sm:flex-row items-center justify-between relative z-10">
+    <div class="flex items-center mb-3 sm:mb-0">
+      <div class="mr-3 animate-bounce">
+        <svg class="w-8 h-8 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm sm:text-base font-medium">
+          <span class="font-bold text-yellow-300">Supercharge</span> your Radix liquidity with
+          <span class="font-bold text-yellow-300">Astrolescent's</span> cross-chain bridge!
+        </p>
+        <a href="https://www.youtube.com/shorts/S7G80W-OT5U" target="_blank" rel="noopener noreferrer"
+           class="text-xs text-yellow-200 hover:text-yellow-300 underline mt-1 inline-block">
+          Need help? Watch a quick guide
+        </a>
+      </div>
+    </div>
+    <div class="flex flex-col items-center sm:items-end">
+      <a href="https://astrl.trade/bridge" target="_blank" rel="noopener noreferrer"
+         class="group bg-white text-indigo-600 hover:bg-yellow-300 hover:text-indigo-700 transition-all duration-300 text-sm font-bold py-2 px-6 rounded-full shadow-md hover:shadow-lg transform hover:scale-105">
+        Bridge Now
+        <svg class="w-4 h-4 ml-2 inline-block transition-transform duration-300 transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .bg-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+</style>
+
+<!-- Rest of your template -->
 <router-outlet></router-outlet>
 
 <footer class="bg-gray-800 text-white py-8 mt-auto">

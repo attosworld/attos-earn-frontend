@@ -1,25 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-interface Strategy {
-  id: number;
-  name: string;
-  description: string;
-  steps: {
-    icon: string;
-    label: string;
-  }[];
-  requiredAssets: string[];
-  rewardTokens: string[];
-  totalRewards: {
-    value: number;
-    type: 'APY' | 'APR';
-  };
-  rewardsBreakdown: {
-    token: string;
-    apy: number;
-  }[];
-}
+import { StrategiesService, Strategy } from '../strategies.service';
+import {
+  BehaviorSubject,
+  Observable,
+  combineLatest,
+  map,
+  of,
+  switchMap,
+} from 'rxjs';
+import { RadixConnectService } from '../radix-connect.service';
+import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
 
 @Component({
   selector: 'app-strategies',
@@ -29,95 +20,106 @@ interface Strategy {
   styleUrls: ['./strategies.component.css'],
 })
 export class StrategiesComponent {
-  isComingSoon = true; // Add this line
+  isComingSoon = false;
 
-  strategies: Strategy[] = [
-    {
-      id: 1,
-      name: 'Yield Farming',
-      description:
-        'Maximize returns by providing liquidity to multiple pools and earning rewards.',
-      steps: [
-        { icon: 'coins', label: 'Deposit' },
-        { icon: 'lock', label: 'Stake' },
-        { icon: 'seedling', label: 'Harvest' },
-        { icon: 'sync', label: 'Reinvest' },
-      ],
-      requiredAssets: ['USDT', 'ETH'],
-      rewardTokens: ['FARM', 'ETH'],
-      totalRewards: {
-        value: 12.5,
-        type: 'APY',
-      },
-      rewardsBreakdown: [
-        { token: 'FARM', apy: 8.5 },
-        { token: 'ETH', apy: 4.0 },
-      ],
-    },
-    {
-      id: 2,
-      name: 'Arbitrage Trading',
-      description:
-        'Profit from price differences across various decentralized exchanges.',
-      steps: [
-        { icon: 'shopping-cart', label: 'Buy Low' },
-        { icon: 'exchange-alt', label: 'Transfer' },
-        { icon: 'hand-holding-usd', label: 'Sell High' },
-        { icon: 'redo', label: 'Repeat' },
-      ],
-      requiredAssets: ['USDC', 'BTC'],
-      rewardTokens: ['USDC'],
-      totalRewards: {
-        value: 8.7,
-        type: 'APR',
-      },
-      rewardsBreakdown: [{ token: 'USDC', apy: 8.7 }],
-    },
-    {
-      id: 3,
-      name: 'Liquidity Mining',
-      description:
-        'Earn rewards by providing liquidity to decentralized exchanges.',
-      steps: [
-        { icon: 'plus-circle', label: 'Add Liquidity' },
-        { icon: 'clock', label: 'Wait' },
-        { icon: 'gift', label: 'Collect Rewards' },
-        { icon: 'chart-line', label: 'Compound' },
-      ],
-      requiredAssets: ['ETH', 'DAI'],
-      rewardTokens: ['LPT', 'ETH'],
-      totalRewards: {
-        value: 15.2,
-        type: 'APY',
-      },
-      rewardsBreakdown: [
-        { token: 'LPT', apy: 10.5 },
-        { token: 'ETH', apy: 4.7 },
-      ],
-    },
-    {
-      id: 4,
-      name: 'Staking',
-      description:
-        'Lock up your tokens to support network operations and earn passive income.',
-      steps: [
-        { icon: 'wallet', label: 'Select Tokens' },
-        { icon: 'lock', label: 'Stake' },
-        { icon: 'clock', label: 'Wait' },
-        { icon: 'coins', label: 'Claim Rewards' },
-      ],
-      requiredAssets: ['XRD'],
-      rewardTokens: ['XRD'],
-      totalRewards: {
-        value: 7.5,
-        type: 'APY',
-      },
-      rewardsBreakdown: [{ token: 'XRD', apy: 7.5 }],
-    },
-  ];
+  showModal = false;
 
-  executeStrategy(strategyId: number) {
-    console.log(`Executing strategy with ID: ${strategyId}`);
-    // Implement the logic to execute the strategy
+  selectedStrategy: Strategy | null = null;
+
+  strategiesService = inject(StrategiesService);
+
+  strategies$: Observable<Strategy[]> = this.strategiesService.getStrategies();
+
+  radixConnectService = inject(RadixConnectService);
+
+  inputAmounts: Record<string, number> = {};
+
+  requiredResources = new BehaviorSubject<string[]>([]);
+  selectedAccount$ = this.radixConnectService.selectedAccount$;
+
+  combinedData$ = combineLatest([
+    this.strategies$,
+    this.requiredResources,
+    this.selectedAccount$,
+  ]).pipe(
+    switchMap(
+      ([strategies, requiredResources, selectedAccount]) =>
+        this.radixConnectService.getWalletData()?.pipe(
+          map(walletData => {
+            const balances =
+              walletData?.fungibles
+                .filter(fungible =>
+                  requiredResources.includes(
+                    fungible.resourceInfo.resourceAddress
+                  )
+                )
+                .reduce(
+                  (acc, fungible) => {
+                    acc[fungible.resourceInfo.resourceAddress] =
+                      +fungible.balance;
+                    return acc;
+                  },
+                  {} as Record<string, number>
+                ) || {};
+
+            return {
+              strategies,
+              requiredResources,
+              selectedAccount: selectedAccount?.address,
+              balances,
+            };
+          })
+        ) || of(null)
+    )
+  );
+
+  transactionResult: Observable<TransactionStatus | undefined> = of(undefined);
+
+  setRequiredResources(requiredResources: string[]) {
+    this.requiredResources.next(requiredResources);
+  }
+
+  openExecuteModal(strategy: Strategy) {
+    this.showModal = true;
+    this.selectedStrategy = strategy;
+    this.setRequiredResources(
+      strategy.requiredAssets.map(asset => asset.resource_address)
+    );
+  }
+
+  closeModal() {
+    this.showModal = false;
+    this.selectedStrategy = null;
+  }
+
+  setMaxBalance(resourceAddress: string, amount: number) {
+    this.inputAmounts[resourceAddress] = amount;
+  }
+
+  executeStrategy(accountAddress?: string) {
+    if (this.selectedStrategy && accountAddress) {
+      this.transactionResult = this.strategiesService
+        .executeStrategy(
+          this.selectedStrategy.id,
+          accountAddress,
+          this.inputAmounts[
+            this.selectedStrategy.requiredAssets[0].resource_address
+          ]
+        )
+        .pipe(
+          switchMap(async response => {
+            return this.radixConnectService
+              .sendTransaction(response.manifest)
+              ?.map(f => f.status)
+              .mapErr(() => TransactionStatus.Rejected);
+          }),
+          map(tx => tx?._unsafeUnwrap())
+        );
+    }
+  }
+
+  updateBalance(resourceAddress: string, event: Event) {
+    this.inputAmounts[resourceAddress] = +(event.target as HTMLInputElement)
+      .value;
   }
 }
