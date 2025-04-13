@@ -11,9 +11,13 @@ export interface PortfolioItem {
   rightAlt: string;
   invested: number;
   currentValue: number;
+  investedXrd: number;
+  currentValueXrd: number;
   pnl: number;
   pnlPercentage: number;
   provider: string;
+  closeManifest: string;
+  strategy?: boolean;
 }
 
 @Injectable({

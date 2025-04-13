@@ -61,7 +61,7 @@
       </div>
     </div>
     <div>
-      <label class="block text-sm font-medium mb-1">Bonus</label>
+      <label class="block text-sm font-medium mb-1">Bonus 7d</label>
       <div class="flex items-center">
         <select [(ngModel)]="bonusFilter.condition" class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
           <option value="above">Above</option>
@@ -140,7 +140,7 @@
       </ng-template>
     </div>
     <div class="cursor-pointer flex items-center relative group" (click)="sortPools('bonus_7d')">
-      Bonus
+      Bonus 7d
       <ng-container *ngIf="(sort$ | async)?.column !== 'bonus_7d'; else bonusSorted">
         <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
@@ -200,8 +200,78 @@
       </div>
 
       <cdk-virtual-scroll-viewport [itemSize]="itemSize" class="h-[calc(100vh-300px)] w-full">
-        <app-pool-item *cdkVirtualFor="let pool of pools" [pool]="pool"></app-pool-item>
+        <app-pool-item *cdkVirtualFor="let pool of pools" [pool]="pool" (depositClicked)="openDepositModal(pool)"></app-pool-item>
       </cdk-virtual-scroll-viewport>
     </ng-container>
   </ng-container>
+
+  <!-- Global Deposit Modal -->
+  <!-- Deposit Modal -->
+  <div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-gray-800 p-6 rounded-lg w-full max-w-md">
+      <h2 class="text-2xl font-bold text-yellow-500 mb-4">Deposit: {{ selectedPool?.name }}</h2>
+
+      <ng-container *ngIf="addLiquidityPreview | async"></ng-container>
+
+      <app-token-input
+        *ngIf="(selectedPool?.sub_type === 'single' && selectedPool?.left_alt) || selectedPool?.sub_type !== 'single'"
+        [tokenSymbol]="selectedPool?.left_alt || ''"
+        [tokenAddress]="selectedPool?.left_token || ''"
+        [amount]="xAmount"
+        [maxAmount]="maxAmounts[selectedPool?.left_token || '']"
+        [error]="inputErrors[selectedPool?.left_token || '']"
+        (amountChange)="updateXAmount($event, selectedPool?.xRatio)"
+        (setMax)="setMaxBalance($event)"
+        ></app-token-input>
+
+      <app-token-input
+        *ngIf="(selectedPool?.sub_type === 'single' && selectedPool?.right_alt) || selectedPool?.sub_type !== 'single'"
+        [tokenSymbol]="selectedPool?.right_alt || ''"
+        [tokenAddress]="selectedPool?.right_token || ''"
+        [amount]="yAmount"
+        [maxAmount]="maxAmounts[selectedPool?.right_token || '']"
+        [error]="inputErrors[selectedPool?.right_token || '']"
+        (amountChange)="updateYAmount($event, selectedPool?.yRatio)"
+        (setMax)="setMaxBalance($event)"
+        ></app-token-input>
+
+      <ng-container *ngIf="selectedPool?.sub_type === 'precision'">
+        <app-precision-pool
+          [currentPrice]="selectedPool?.current_price"
+          [symbol]="selectedPool?.left_alt"
+          (minValueChange)="updateMinValue($event)"
+          (maxValueChange)="updateMaxValue($event)"
+        ></app-precision-pool>
+      </ng-container>
+
+      <div class="flex justify-end mt-6">
+        <button
+          (click)="closeModal()"
+          class="bg-gray-600 text-white px-4 py-2 rounded mr-2 hover:bg-gray-500 transition duration-300"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="deposit()"
+          class="bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24"
+          [disabled]="hasInputErrors()"
+          [class.opacity-50]="hasInputErrors()"
+        >
+              @if (txButtonStatus | async; as tx) {
+              @if (tx === 'pending') {
+              <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              } @else {
+              <span>Deposit</span>
+              }
+              } @else {
+              <span>Deposit</span>
+              }
+        </button>
+            <ng-container *ngIf="transactionResult | async"></ng-container>
+      </div>
+    </div>
+  </div>
 </div>

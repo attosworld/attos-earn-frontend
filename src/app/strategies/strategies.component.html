@@ -29,142 +29,254 @@
     </div>
   </div>
 
+  <!-- Advanced Filters -->
+  <!-- Advanced Filters -->
+  <div class="mb-8 bg-gray-800 p-6 rounded-lg">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-semibold text-white">Advanced Filters</h3>
+      <button
+        (click)="clearFilters()"
+        class="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-600 transition duration-300"
+      >
+        Clear Filters
+      </button>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Required Assets Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">Required Assets</label>
+        <select
+          [(ngModel)]="requiredAssetsFilter"
+          (ngModelChange)="applyFilters()"
+          class="w-full bg-gray-700 border border-gray-600 rounded text-white p-2"
+          multiple
+        >
+          <option *ngFor="let asset of allRequiredAssets$ | async" [value]="asset">{{ asset }}</option>
+        </select>
+      </div>
+
+      <!-- Reward Tokens Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-300 mb-2">Reward Tokens</label>
+        <select
+          [(ngModel)]="rewardTokensFilter"
+          (ngModelChange)="applyFilters()"
+          class="w-full bg-gray-700 border border-gray-600 rounded text-white p-2"
+          multiple
+        >
+          <option *ngFor="let token of allRewardTokens$ | async" [value]="token">{{ token }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
   <!-- Existing strategies grid with coming soon overlay -->
   <div class="relative">
     <ng-container *ngIf="combinedData$ | async as data">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [ngClass]="{'filter blur-sm': isComingSoon}">
-      <div *ngFor="let strategy of data.strategies" class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-        <div class="p-6">
-          <div class="flex justify-between items-start mb-4">
-            <h2 class="text-xl font-semibold text-yellow-500">{{ strategy.name }}</h2>
-            <div class="text-right">
-              <span class="text-sm text-gray-400">Total Rewards</span>
-              <p class="text-lg font-bold text-green-400">
-                {{ strategy.totalRewards.value | number:'1.2-2' }}% {{ strategy.totalRewards.type }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Dapps Utilized Section -->
-          <div class="mb-4">
-            <h3 class="text-sm font-semibold text-white mb-2">Dapps Utilized:</h3>
-            <div class="flex flex-wrap gap-2">
-              <div *ngFor="let dapp of strategy.dappsUtilized" class="flex items-center bg-gray-700 px-2 py-1 rounded-full">
-                <img [src]="dapp.icon" [alt]="dapp.label" class="w-4 h-4 mr-1">
-                <span class="text-blue-400 text-xs">{{ dapp.label }}</span>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [ngClass]="{'filter blur-sm': isComingSoon}">
+        <div *ngFor="let strategy of data.strategies" class="bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
+          <div class="p-6 flex-grow">
+            <div class="flex justify-between items-start mb-4">
+              <h2 class="text-xl font-semibold text-yellow-500">{{ strategy.name }}</h2>
+              <div class="text-right">
+                <span class="text-sm text-gray-400">Total Rewards</span>
+                <p class="text-lg font-bold text-green-400">
+                  {{ strategy.totalRewards.value | number:'1.2-2' }}% {{ strategy.totalRewards.type }}
+                </p>
               </div>
             </div>
-          </div>
-          <div class="flex flex-wrap items-center justify-start gap-2 mb-4">
-            <ng-container *ngFor="let step of strategy.steps; let last = last">
-              <div class="flex flex-col items-center w-20">
-                <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center mb-2 overflow-hidden">
-                  <img [src]="step.icon" [alt]="step.label" class="w-full h-full object-cover">
-                </div>
-                <span class="text-xs text-gray-400 text-center">{{ step.label }}</span>
-              </div>
-              <svg *ngIf="!last" class="w-8 h-8 text-gray-600 self-center mb-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </ng-container>
-          </div>
-          <p class="text-gray-400 mb-4">{{ strategy.description }}</p>
-          <div class="mb-4">
-            <h3 class="text-sm font-semibold text-white mb-2">Required Assets:</h3>
-            <div class="flex flex-wrap gap-2">
-              <span *ngFor="let asset of strategy.requiredAssets" class="bg-gray-700 text-yellow-500 px-2 py-1 rounded-full text-xs">
-                {{ asset.symbol }}
-              </span>
-            </div>
-          </div>
 
-          <!-- Conditionally render the reward tokens section -->
-          <ng-container *ngIf="strategy.rewardTokens && strategy.rewardTokens.length > 0">
+            <!-- Dapps Utilized Section -->
             <div class="mb-4">
-              <h3 class="text-sm font-semibold text-white mb-2">Reward Tokens:</h3>
+              <h3 class="text-sm font-semibold text-white mb-2">Dapps Utilized:</h3>
               <div class="flex flex-wrap gap-2">
-                <span *ngFor="let token of strategy.rewardTokens" class="bg-gray-700 text-green-500 px-2 py-1 rounded-full text-xs">
-                  {{ token }}
+                <div *ngFor="let dapp of strategy.dappsUtilized" class="flex items-center bg-gray-700 px-2 py-1 rounded-full">
+                  <img [src]="dapp.icon" [alt]="dapp.label" class="w-4 h-4 mr-1">
+                  <span class="text-blue-400 text-xs">{{ dapp.label }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center justify-start gap-2 mb-4">
+              <ng-container *ngFor="let step of strategy.steps; let last = last">
+                <div class="flex flex-col items-center w-20">
+                  <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center mb-2 overflow-hidden">
+                    <img [src]="step.icon" [alt]="step.label" class="w-full h-full object-cover">
+                  </div>
+                  <span class="text-xs text-gray-400 text-center">{{ step.label }}</span>
+                </div>
+                <svg *ngIf="!last" class="w-8 h-8 text-gray-600 self-center mb-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </ng-container>
+            </div>
+            <p class="text-gray-400 mb-4">{{ strategy.description }}</p>
+            <div class="mb-4">
+              <h3 class="text-sm font-semibold text-white mb-2">Required Assets:</h3>
+              <div class="flex flex-wrap gap-2">
+                <span *ngFor="let asset of strategy.requiredAssets" class="bg-gray-700 text-yellow-500 px-2 py-1 rounded-full text-xs">
+                  {{ asset.symbol }}
                 </span>
               </div>
             </div>
-          </ng-container>
 
-          <!-- Conditionally render the rewards APY breakdown section -->
-          <ng-container *ngIf="strategy.rewardsBreakdown && strategy.rewardsBreakdown.length > 0">
-            <div class="mb-4">
-              <h3 class="text-sm font-semibold text-white mb-2">Rewards APY Breakdown:</h3>
-              <div class="grid grid-cols-2 gap-2">
-                <div *ngFor="let reward of strategy.rewardsBreakdown" class="bg-gray-700 rounded p-2 flex justify-between items-center">
-                  <span class="text-yellow-500">{{ reward.token }}</span>
-                  <span class="text-green-400">{{ reward.apy | number:'1.2-2' }}%</span>
+            <!-- Conditionally render the reward tokens section -->
+            <ng-container *ngIf="strategy.rewardTokens && strategy.rewardTokens.length > 0">
+              <div class="mb-4">
+                <h3 class="text-sm font-semibold text-white mb-2">Reward Tokens:</h3>
+                <div class="flex flex-wrap gap-2">
+                  <span *ngFor="let token of strategy.rewardTokens" class="bg-gray-700 text-green-500 px-2 py-1 rounded-full text-xs">
+                    {{ token }}
+                  </span>
                 </div>
               </div>
-            </div>
-          </ng-container>
+            </ng-container>
 
-          <button (click)="openExecuteModal(strategy)" class="w-full bg-yellow-500 text-gray-900 py-2 px-4 rounded hover:bg-yellow-600 transition duration-300">
-            Execute Strategy
-          </button>
-        </div>
-      </div>
-    </div>
-    <div *ngIf="isComingSoon" class="absolute inset-0 flex items-center justify-center">
-      <h2 class="text-4xl font-bold text-yellow-500 bg-gray-900 bg-opacity-70 px-6 py-3 rounded-lg">Coming Soon!</h2>
-    </div>
+            <!-- Conditionally render the rewards APY breakdown section -->
+            <ng-container *ngIf="strategy.rewardsBreakdown && strategy.rewardsBreakdown.length > 0">
+              <div class="mb-4">
+                <h3 class="text-sm font-semibold text-white mb-2">Rewards APY Breakdown:</h3>
+                <div class="grid grid-cols-2 gap-2">
+                  <div *ngFor="let reward of strategy.rewardsBreakdown" class="bg-gray-700 rounded p-2 flex justify-between items-center flex-wrap">
+                    <span class="text-yellow-500">{{ reward.token }}</span>
+                    <span class="text-green-400">{{ reward.apy | number:'1.2-2' }}%</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
 
-    <!-- Execute Strategy Modal -->
-    <div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-gray-800 p-6 rounded-lg w-full max-w-md">
-        <h2 class="text-2xl font-bold text-yellow-500 mb-4">Execute Strategy: {{ selectedStrategy?.name }}</h2>
-        <div *ngFor="let asset of selectedStrategy?.requiredAssets" class="mb-4">
-          <label [for]="asset.symbol" class="block text-sm font-medium text-gray-300 mb-1">{{ asset.symbol }}</label>
-          <div class="flex items-center" *ngIf="data.balances">
-            <input
-              [id]="asset.resource_address"
-              type="number"
-              class="flex-grow bg-gray-700 text-white px-3 py-2 rounded-l"
-              [placeholder]="'Max: ' + data.balances[asset.resource_address]"
-              [value]="inputAmounts[asset.resource_address] || ''"
-              (input)="updateBalance(asset.resource_address, $event)"
-              >
-              <button
-                (click)="setMaxBalance(asset.resource_address, data.balances[asset.resource_address])"
-                class="bg-gray-600 text-white px-3 py-2 rounded-r hover:bg-gray-500 transition duration-300"
-                >
-                Max
-              </button>
+          </div>
+
+          <!-- Execute Strategy Button -->
+          <div class="p-6 pt-0">
+            <button (click)="openExecuteModal(strategy)" class="w-full bg-yellow-500 text-gray-900 py-2 px-4 rounded hover:bg-yellow-600 transition duration-300">
+              Execute Strategy
+            </button>
           </div>
         </div>
-        <div class="flex justify-end mt-6">
-          <button
-            (click)="closeModal()"
-            class="bg-gray-600 text-white px-4 py-2 rounded mr-2 hover:bg-gray-500 transition duration-300"
-            >
-            Cancel
-          </button>
-          <button
-            (click)="executeStrategy(data.selectedAccount)"
-            class="bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24"
-            [disabled]="(txButtonStatus | async) === 'pending'"
-          >
-            @if (txButtonStatus | async; as tx) {
+      </div>
+      <div *ngIf="isComingSoon" class="absolute inset-0 flex items-center justify-center">
+        <h2 class="text-4xl font-bold text-yellow-500 bg-gray-900 bg-opacity-70 px-6 py-3 rounded-lg">Coming Soon!</h2>
+      </div>
+
+      <!-- Execute Strategy Modal -->
+      <div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-gray-800 p-6 rounded-lg w-full max-w-md">
+          <h2 class="text-2xl font-bold text-yellow-500 mb-4">Execute Strategy: {{ selectedStrategy?.name }}</h2>
+          <div *ngFor="let asset of selectedStrategy?.requiredAssets" class="mb-4">
+            <label [for]="asset.symbol" class="block text-sm font-medium text-gray-300 mb-1">{{ asset.symbol }}</label>
+            <div class="flex items-center" *ngIf="data.balances">
+              <input
+                [id]="asset.resource_address"
+                type="number"
+                class="flex-grow bg-gray-700 text-white px-3 py-2 rounded-l"
+                [class.border-red-500]="inputErrors[asset.resource_address]"
+                [placeholder]="'Max: ' + data.balances[asset.resource_address]"
+                [value]="inputAmounts[asset.resource_address] || ''"
+                (input)="updateBalance(asset.resource_address, $event)"
+                >
+                <button
+                  (click)="setMaxBalance(asset.resource_address, data.balances[asset.resource_address])"
+                  class="bg-gray-600 text-white px-3 py-2 rounded-r hover:bg-gray-500 transition duration-300"
+                  >
+                  Max
+                </button>
+            </div>
+            <p *ngIf="inputErrors[asset.resource_address]" class="text-red-500 text-xs mt-1">
+              {{ inputErrors[asset.resource_address] }}
+            </p>
+          </div>
+
+          <!-- LTV Slider -->
+          <div *ngFor="let field of selectedStrategy?.fieldsRequired" class="mb-4">
+            <ng-container *ngIf="field.fieldName === 'ltv' && field.type === 'slider'">
+              <label [for]="field.fieldName + '-slider'" class="block text-sm font-medium text-gray-300 mb-1">
+                {{ field.fieldName.toUpperCase() }} (Max {{ selectedStrategy?.ltvLimit }}%)
+              </label>
+              <input
+                [id]="field.fieldName + '-slider'"
+                type="range"
+                min="0"
+                [max]="selectedStrategy?.ltvLimit"
+                step="1"
+                [value]="ltvValue"
+                (input)="updateLtv($event)"
+                class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                >
+                <div class="text-right text-gray-300 mt-1">{{ ltvValue }}%</div>
+            </ng-container>
+          </div>
+
+          <!-- Inside your modal or wherever you're displaying strategy details -->
+          <div *ngIf="selectedStrategy">
+            <!-- Existing strategy information -->
+
+            <!-- Add this section for precision pools -->
+            <ng-container *ngIf="selectedStrategy.poolInfo.sub_type === 'precision'">
+              <h3 class="text-xl font-semibold text-yellow-500 mb-4">Set Liquidity Amounts</h3>
+
+              <app-token-input
+                [tokenSymbol]="selectedStrategy.poolInfo.left_alt!"
+                [tokenAddress]="selectedStrategy.poolInfo.left_token"
+                [amount]="xAmount"
+                [maxAmount]="maxAmounts[selectedStrategy.poolInfo.left_token]!.toString()"
+                [error]="inputErrors[selectedStrategy.poolInfo.left_token]"
+                (amountChange)="updateXAmount($event)"
+                (setMax)="setMaxBalance($event, data.balances[$event])"
+              ></app-token-input>
+
+              <app-token-input
+                [tokenSymbol]="selectedStrategy.poolInfo.right_alt!"
+                [tokenAddress]="selectedStrategy.poolInfo.right_token"
+                [amount]="yAmount"
+                [maxAmount]="maxAmounts[selectedStrategy.poolInfo.right_token]!.toString()"
+                [error]="inputErrors[selectedStrategy.poolInfo.right_token]"
+                (amountChange)="updateYAmount($event)"
+                (setMax)="setMaxBalance($event, data.balances[$event])"
+              ></app-token-input>
+            </ng-container>
+
+            <!-- Existing price range slider -->
+            <app-precision-pool
+              *ngIf="selectedStrategy.poolInfo.sub_type === 'precision'"
+              [currentPrice]="selectedStrategy.poolInfo.current_price"
+              [symbol]="selectedStrategy.poolInfo.left_alt"
+              (minValueChange)="updateMinValue($event)"
+              (maxValueChange)="updateMaxValue($event)"
+            ></app-precision-pool>
+
+            <!-- Rest of your modal content -->
+          </div>
+
+          <div class="flex justify-end mt-6">
+            <button
+              (click)="closeModal()"
+              class="bg-gray-600 text-white px-4 py-2 rounded mr-2 hover:bg-gray-500 transition duration-300"
+              >
+              Cancel
+            </button>
+            <button
+              (click)="executeStrategy(data.selectedAccount)"
+              class="bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24"
+              [disabled]="(txButtonStatus | async) === 'pending' || hasInputErrors()"
+              [class.opacity-50]="(txButtonStatus | async) === 'pending' || hasInputErrors()"
+              >
+              @if (txButtonStatus | async; as tx) {
               @if (tx === 'pending') {
-                <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+              <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
               } @else {
-                <span>Execute</span>
-              }
-            } @else {
               <span>Execute</span>
-            }
-          </button>
-          <ng-container *ngIf="transactionResult | async"></ng-container>
+              }
+              } @else {
+              <span>Execute</span>
+              }
+            </button>
+            <ng-container *ngIf="transactionResult | async"></ng-container>
+          </div>
         </div>
       </div>
-    </div>
     </ng-container>
   </div>
 </div>

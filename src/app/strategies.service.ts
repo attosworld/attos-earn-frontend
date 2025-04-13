@@ -3,9 +3,12 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../environments/environment';
+import { Pool } from './pool.service';
 
 export interface Strategy {
-  id: number;
+  id: string;
+  component?: string | null;
+  buyToken?: string | null;
   name: string;
   description: string;
   steps: { icon: string; label: string }[];
@@ -14,6 +17,14 @@ export interface Strategy {
   totalRewards: { value: number; type: string };
   rewardsBreakdown: { token: string; apy: number }[];
   dappsUtilized: { icon: string; label: string }[];
+  fieldsRequired: { fieldName: string; type: string }[];
+  ltvLimit: string;
+  ltvLiquidation: string;
+  optimalLtv: string;
+  poolType: 'double' | 'single' | 'precision' | 'flex' | 'basic';
+  currentPrice?: string;
+  buyingSymbol?: string;
+  poolInfo: Pool;
 }
 
 export interface ExecuteStrategyResponse {
@@ -38,14 +49,31 @@ export class StrategiesService {
   }
 
   executeStrategy(
-    id: number,
+    id: string,
     account: string,
-    xrdAmount: number
+    xrdAmount: number,
+    ltv: string | undefined,
+    buyToken: string | null,
+    component: string | null,
+    minPercentage: number | null,
+    maxPercentage: number | null
   ): Observable<ExecuteStrategyResponse> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('id', id.toString())
       .set('account', account)
-      .set('xrd_amount', xrdAmount.toString());
+      .set('token_amount', xrdAmount.toString())
+      .set('ltv', ltv ?? '');
+
+    if (buyToken) {
+      params = params.set('buy_token', buyToken);
+    }
+    if (component) {
+      params = params.set('component', component);
+    }
+    if (minPercentage && maxPercentage) {
+      params = params.set('min_percentage', minPercentage.toString());
+      params = params.set('max_percentage', maxPercentage.toString());
+    }
 
     return this.http
       .get<ExecuteStrategyResponse>(`${this.apiUrl}/strategies/execute`, {

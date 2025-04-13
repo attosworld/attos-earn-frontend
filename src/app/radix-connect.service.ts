@@ -5,8 +5,15 @@ import {
   DataRequestBuilder,
   WalletDataStateAccount,
 } from '@radixdlt/radix-dapp-toolkit';
-import { BehaviorSubject, forkJoin, from, of, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, forkJoin, from, map, of, switchMap, tap } from 'rxjs';
 import { GatewayEzMode } from '@calamari-radix/gateway-ez-mode';
+import { FungibleResourceBalance } from '@calamari-radix/gateway-ez-mode/dist/types';
+
+export interface Balances {
+  account: string;
+  fungibles: FungibleResourceBalance[];
+  nonFungibles: FungibleResourceBalance[];
+}
 
 @Injectable({
   providedIn: 'root',
@@ -25,6 +32,8 @@ export class RadixConnectService {
   selectedAccount$ = new BehaviorSubject<WalletDataStateAccount | undefined>(
     undefined
   );
+
+  accountBalanceCache$ = new BehaviorSubject<Record<string, Balances>>({});
 
   constructor() {
     this.init();
@@ -61,6 +70,10 @@ export class RadixConnectService {
   }
 
   getWalletData() {
+    if (!this.rdt) {
+      return of(undefined);
+    }
+
     return this.rdt?.walletApi.walletData$.pipe(
       tap(data => {
         if (data.accounts.length) {
@@ -78,8 +91,16 @@ export class RadixConnectService {
         }
 
         const address = account.address;
+
+        if (this.accountBalanceCache$.getValue()[address]) {
+          console.log('Using cached balances');
+          return this.accountBalanceCache$
+            .asObservable()
+            .pipe(map(balances => balances[address]));
+        }
+
         return forkJoin({
-          account: address,
+          account: of(address),
           fungibles: from(
             this.gatewayEz.state.getComponentFungibleBalances(address)
           ),
@@ -87,6 +108,14 @@ export class RadixConnectService {
             this.gatewayEz.state.getComponentNonFungibleBalances(address)
           ),
         });
+      }),
+      tap(data => {
+        if (data && !this.accountBalanceCache$.getValue()[data.account]) {
+          this.accountBalanceCache$.next({
+            ...this.accountBalanceCache$.getValue(),
+            [data.account]: data as Balances,
+          });
+        }
       })
     );
   }

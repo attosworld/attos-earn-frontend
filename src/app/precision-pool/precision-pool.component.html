@@ -1,0 +1,121 @@
+<div class="mt-6">
+  <h3 class="text-xl font-semibold text-yellow-500 mb-4">Set Price Range</h3>
+
+  <!-- Price Range Options -->
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <button
+      (click)="setPriceRange('wide')"
+      [class.bg-yellow-600]="selectedPriceRange === 'wide'"
+      class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 transition duration-300 flex items-center justify-between">
+      <span class="text-sm">Wide</span>
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+        <rect x="4" y="10" width="2" height="10"/>
+        <rect x="8" y="8" width="2" height="12"/>
+        <rect x="12" y="6" width="2" height="14"/>
+        <rect x="16" y="4" width="2" height="16"/>
+        <rect x="20" y="2" width="2" height="18"/>
+      </svg>
+    </button>
+    <button
+      (click)="setPriceRange('concentrated')"
+      [class.bg-yellow-600]="selectedPriceRange === 'concentrated'"
+      class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 transition duration-300 flex items-center justify-between">
+      <span class="text-sm">Concentrated</span>
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+        <rect x="8" y="8" width="2" height="12"/>
+        <rect x="12" y="4" width="2" height="16"/>
+        <rect x="16" y="8" width="2" height="12"/>
+      </svg>
+    </button>
+    <button
+      (click)="setPriceRange('bold')"
+      [class.bg-yellow-600]="selectedPriceRange === 'bold'"
+      class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 transition duration-300 flex items-center justify-between">
+      <span class="text-sm">Bold</span>
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+        <rect x="4" y="10" width="2" height="10"/>
+        <rect x="8" y="12" width="2" height="8"/>
+        <rect x="12" y="2" width="2" height="18"/>
+        <rect x="16" y="12" width="2" height="8"/>
+        <rect x="20" y="10" width="2" height="10"/>
+      </svg>
+    </button>
+    <button
+      (click)="setPriceRange('manual')"
+      [class.bg-yellow-600]="selectedPriceRange === 'manual'"
+      class="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600 transition duration-300 flex items-center justify-between">
+      <span class="text-sm">Manual</span>
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+        <rect x="4" y="10" width="2" height="10"/>
+        <rect x="8" y="14" width="2" height="6"/>
+        <rect x="12" y="6" width="2" height="14"/>
+        <rect x="16" y="14" width="2" height="6"/>
+        <rect x="20" y="10" width="2" height="10"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Price Range Slider -->
+  <!-- Price Range Slider -->
+  <div class="mb-4 relative h-12 price-range-slider">
+    <div class="absolute w-full h-2 bg-gray-700 rounded-lg top-5">
+      <div
+        class="absolute h-2 bg-yellow-500 rounded-lg price-range-selected"
+        [style.left]="((minValue - sliderMin) / (sliderMax - sliderMin)) * 100 + '%'"
+        [style.width]="((maxValue - minValue) / (sliderMax - sliderMin)) * 100 + '%'"
+        ></div>
+    </div>
+    <input
+      type="range"
+      [min]="sliderMin"
+      [max]="sliderMax"
+      [(ngModel)]="minValue"
+      (input)="updatePriceRange()"
+      [disabled]="selectedPriceRange !== 'manual'"
+      class="price-range-input price-range-input-min absolute w-full top-0 h-6 bg-transparent appearance-none pointer-events-auto z-10"
+      >
+      <input
+        type="range"
+        [min]="sliderMin"
+        [max]="sliderMax"
+        [(ngModel)]="maxValue"
+        (input)="updatePriceRange()"
+        [disabled]="selectedPriceRange !== 'manual'"
+        class="price-range-input price-range-input-max price-range-input-second absolute w-full bottom-0 h-6 bg-transparent appearance-none pointer-events-auto z-20"
+        >
+  </div>
+
+  <!-- Price Information -->
+  <div class="grid grid-cols-3 gap-4 mb-4">
+    <div class="bg-gray-700 p-3 rounded">
+      <p class="text-xs text-gray-400">Low price</p>
+      <p class="text-lg font-semibold text-white">{{ lowPrice | numberFormat }}</p>
+      <p class="text-xs text-gray-400">XRD per {{ symbol }}</p>
+    </div>
+    <div class="bg-gray-700 p-3 rounded">
+      <p class="text-xs text-gray-400">Current price</p>
+      <p class="text-lg font-semibold text-white">{{ currentPrice | numberFormat }}</p>
+      <p class="text-xs text-gray-400">XRD per {{ symbol }}</p>
+    </div>
+    <div class="bg-gray-700 p-3 rounded">
+      <p class="text-xs text-gray-400">High price</p>
+      <p class="text-lg font-semibold text-white">{{ highPrice | numberFormat }}</p>
+      <p class="text-xs text-gray-400">XRD per {{ symbol }}</p>
+    </div>
+  </div>
+
+
+  <!-- Min and Max Percentage -->
+  <div class="flex justify-between">
+    <div class="bg-gray-700 px-3 py-2 rounded">
+      <span class="text-sm text-gray-400">Min %:</span>
+      <span class="text-sm text-white">{{ minValue }}%</span>
+    </div>
+    <div class="bg-gray-700 px-3 py-2 rounded">
+      <span class="text-sm text-gray-400">Max %:</span>
+      <span class="text-sm text-white">{{ maxValue }}%</span>
+    </div>
+  </div>
+
+</div>
+
