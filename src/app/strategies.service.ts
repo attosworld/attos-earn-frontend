@@ -24,7 +24,8 @@ export interface Strategy {
   poolType: 'double' | 'single' | 'precision' | 'flex' | 'basic';
   currentPrice?: string;
   buyingSymbol?: string;
-  poolInfo: Pool;
+  poolInfo?: Pool;
+  lendingPriceUsd: number;
 }
 
 export interface ExecuteStrategyResponse {
@@ -56,13 +57,17 @@ export class StrategiesService {
     buyToken: string | null,
     component: string | null,
     minPercentage: number | null,
-    maxPercentage: number | null
+    maxPercentage: number | null,
+    xAmount: string | null,
+    yAmount: string | null
   ): Observable<ExecuteStrategyResponse> {
     let params = new HttpParams()
       .set('id', id.toString())
       .set('account', account)
       .set('token_amount', xrdAmount.toString())
-      .set('ltv', ltv ?? '');
+      .set('ltv', ltv ?? '')
+      .set('x_token_amount', xAmount ?? '')
+      .set('y_token_amount', yAmount ?? '');
 
     if (buyToken) {
       params = params.set('buy_token', buyToken);

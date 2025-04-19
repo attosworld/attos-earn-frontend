@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, map } from 'rxjs';
+import { Observable, catchError, map, of } from 'rxjs';
 import Decimal from 'decimal.js';
 
 export interface TokenAmount {
@@ -15,13 +15,56 @@ export interface AddLiquidityPreview {
   liquidity_amount: string;
 }
 
+export interface Swap {
+  input_address: string;
+  input_amount: TokenAmount;
+  input_take: string;
+  output_address: string;
+  output_amount: TokenAmount;
+  input_fee_lp: TokenAmount;
+  input_fee_settlement: TokenAmount;
+  price_impact: string;
+  pool_address: string;
+  protocol: string;
+}
+
+export interface SwapPreview {
+  input_address: string;
+  input_amount: TokenAmount;
+  output_address: string;
+  output_amount: TokenAmount;
+  input_fee_lp: TokenAmount;
+  input_fee_settlement: TokenAmount;
+  price_impact: string;
+  swaps: Swap[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class OciswapService {
   private apiUrl = 'https://api.ociswap.com/preview/add-liquidity';
+  private swapPreviewUrl = 'https://api.ociswap.com/preview/swap';
 
   constructor(private http: HttpClient) {}
+
+  getOciswapSwapPreview(
+    inputAddress: string,
+    inputAmount: string,
+    outputAddress: string,
+    outputAmount: string
+  ): Observable<SwapPreview | null> {
+    let params = new HttpParams();
+    if (inputAddress) params = params.set('input_address', inputAddress);
+    if (inputAmount) params = params.set('input_amount', inputAmount);
+    if (outputAddress) params = params.set('output_address', outputAddress);
+    if (outputAmount) params = params.set('output_amount', outputAmount);
+
+    return this.http.get<SwapPreview>(this.swapPreviewUrl, {
+      params,
+      headers: { accept: 'application/json' },
+    });
+  }
 
   getOciswapAddLiquidityPreview(
     poolAddress: string,

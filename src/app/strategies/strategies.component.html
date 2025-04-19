@@ -30,7 +30,6 @@
   </div>
 
   <!-- Advanced Filters -->
-  <!-- Advanced Filters -->
   <div class="mb-8 bg-gray-800 p-6 rounded-lg">
     <div class="flex justify-between items-center mb-4">
       <h3 class="text-lg font-semibold text-white">Advanced Filters</h3>
@@ -73,6 +72,8 @@
   <!-- Existing strategies grid with coming soon overlay -->
   <div class="relative">
     <ng-container *ngIf="combinedData$ | async as data">
+      <ng-container *ngIf="addLiquidityPreview | async"></ng-container>
+      <ng-container *ngIf="swapPreview | async"></ng-container>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [ngClass]="{'filter blur-sm': isComingSoon}">
         <div *ngFor="let strategy of data.strategies" class="bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
           <div class="p-6 flex-grow">
@@ -204,6 +205,9 @@
                 >
                 <div class="text-right text-gray-300 mt-1">{{ ltvValue }}%</div>
             </ng-container>
+            <div>
+              {{ amountBorrowableWithLtv }}
+              </div>
           </div>
 
           <!-- Inside your modal or wherever you're displaying strategy details -->
@@ -211,35 +215,33 @@
             <!-- Existing strategy information -->
 
             <!-- Add this section for precision pools -->
-            <ng-container *ngIf="selectedStrategy.poolInfo.sub_type === 'precision'">
+            <ng-container *ngIf="selectedStrategy.poolInfo?.sub_type === 'precision'">
               <h3 class="text-xl font-semibold text-yellow-500 mb-4">Set Liquidity Amounts</h3>
 
               <app-token-input
-                [tokenSymbol]="selectedStrategy.poolInfo.left_alt!"
-                [tokenAddress]="selectedStrategy.poolInfo.left_token"
+                [tokenSymbol]="selectedStrategy.poolInfo?.left_alt!"
+                [tokenAddress]="selectedStrategy.poolInfo?.left_token!"
                 [amount]="xAmount"
-                [maxAmount]="maxAmounts[selectedStrategy.poolInfo.left_token]!.toString()"
-                [error]="inputErrors[selectedStrategy.poolInfo.left_token]"
-                (amountChange)="updateXAmount($event)"
+                [error]="inputErrors[selectedStrategy.poolInfo!.left_token]"
+                (amountChange)="updateXAmount($event, selectedStrategy.poolInfo?.xRatio)"
                 (setMax)="setMaxBalance($event, data.balances[$event])"
               ></app-token-input>
 
               <app-token-input
-                [tokenSymbol]="selectedStrategy.poolInfo.right_alt!"
-                [tokenAddress]="selectedStrategy.poolInfo.right_token"
+                [tokenSymbol]="selectedStrategy.poolInfo!.right_alt!"
+                [tokenAddress]="selectedStrategy.poolInfo!.right_token"
                 [amount]="yAmount"
-                [maxAmount]="maxAmounts[selectedStrategy.poolInfo.right_token]!.toString()"
-                [error]="inputErrors[selectedStrategy.poolInfo.right_token]"
-                (amountChange)="updateYAmount($event)"
+                [error]="inputErrors[selectedStrategy.poolInfo!.right_token]"
+                (amountChange)="updateYAmount($event, selectedStrategy.poolInfo?.yRatio)"
                 (setMax)="setMaxBalance($event, data.balances[$event])"
               ></app-token-input>
             </ng-container>
 
             <!-- Existing price range slider -->
             <app-precision-pool
-              *ngIf="selectedStrategy.poolInfo.sub_type === 'precision'"
-              [currentPrice]="selectedStrategy.poolInfo.current_price"
-              [symbol]="selectedStrategy.poolInfo.left_alt"
+              *ngIf="selectedStrategy.poolInfo?.sub_type === 'precision'"
+              [currentPrice]="selectedStrategy.poolInfo!.current_price"
+              [symbol]="selectedStrategy.poolInfo!.left_alt"
               (minValueChange)="updateMinValue($event)"
               (maxValueChange)="updateMaxValue($event)"
             ></app-precision-pool>

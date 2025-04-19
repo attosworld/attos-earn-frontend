@@ -11,7 +11,7 @@ export class TokenInputComponent {
   @Input() tokenSymbol = '';
   @Input() tokenAddress = '';
   @Input() amount = '';
-  @Input() maxAmount = '0';
+  @Input() maxAmount?: string;
   @Input() error = '';
 
   @Output() amountChange = new EventEmitter<string>();

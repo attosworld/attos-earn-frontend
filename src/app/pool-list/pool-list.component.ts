@@ -524,7 +524,7 @@ export class PoolListComponent implements AfterViewInit {
     if (this.selectedPool?.sub_type !== 'single') {
       this.yAmount =
         this.selectedPool?.type === 'defiplaza'
-          ? new Decimal(this.xAmount).mul(ratio || 0).toString()
+          ? new Decimal(this.xAmount).mul(ratio || 0).toFixed(18)
           : new Decimal(this.xAmount)
               .mul(this.selectedPool?.current_price || 0)
               .toString();
@@ -539,7 +539,7 @@ export class PoolListComponent implements AfterViewInit {
     if (this.selectedPool?.sub_type !== 'single') {
       this.xAmount =
         this.selectedPool?.type === 'defiplaza'
-          ? new Decimal(this.yAmount).div(ratio || 0).toString()
+          ? new Decimal(this.yAmount).mul(ratio || 0).toFixed(18)
           : new Decimal(this.yAmount)
               .div(
                 new Decimal(this.selectedPool?.current_price || 0).plus(

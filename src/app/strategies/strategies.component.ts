@@ -11,12 +11,18 @@ import {
   switchMap,
   tap,
   shareReplay,
-  startWith,
+  catchError,
 } from 'rxjs';
 import { RadixConnectService } from '../radix-connect.service';
 import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
 import { PrecisionPoolComponent } from '../precision-pool/precision-pool.component';
 import { TokenInputComponent } from '../token-input/token-input.component';
+import {
+  AddLiquidityPreview,
+  OciswapService,
+  SwapPreview,
+} from '../ociswap.service';
+import Decimal from 'decimal.js';
 
 interface Filters {
   requiredAssets: string[];
@@ -57,9 +63,12 @@ export class StrategiesComponent {
   minPercentage = 0;
   maxPercentage = 100;
   selectedPriceRange: 'wide' | 'concentrated' | 'bold' | 'manual' = 'wide';
+  addLiquidityPreview: Observable<AddLiquidityPreview | null> = of(null);
+  swapPreview: Observable<SwapPreview | null> = of(null);
 
   private strategiesService = inject(StrategiesService);
   private radixConnectService = inject(RadixConnectService);
+  ociswapService = inject(OciswapService);
 
   requiredAssetsFilter: string[] = [];
   rewardTokensFilter: string[] = [];
@@ -103,6 +112,10 @@ export class StrategiesComponent {
   requiredResources = new BehaviorSubject<string[]>([]);
 
   selectedAccount$ = this.radixConnectService.selectedAccount$;
+
+  amountBorrowableWithoutLtv = '0';
+
+  amountBorrowableWithLtv = '0';
 
   hasInputErrors(): boolean {
     return (
@@ -152,6 +165,10 @@ export class StrategiesComponent {
 
   updateLtv(event: Event) {
     this.ltvValue = (event.target as HTMLInputElement).value;
+
+    this.amountBorrowableWithLtv = new Decimal(this.amountBorrowableWithoutLtv)
+      .mul((+this.ltvValue || 0) / 100)
+      .toFixed(18);
   }
 
   closeModal() {
@@ -179,7 +196,9 @@ export class StrategiesComponent {
           this.selectedStrategy.buyToken || null,
           this.selectedStrategy.component || null,
           this.selectedStrategy.poolType === 'precision' ? this.minValue : null,
-          this.selectedStrategy.poolType === 'precision' ? this.maxValue : null
+          this.selectedStrategy.poolType === 'precision' ? this.maxValue : null,
+          this.xAmount,
+          this.yAmount
         )
         .pipe(
           switchMap(async response => {
@@ -209,8 +228,6 @@ export class StrategiesComponent {
     const inputValue = +(event.target as HTMLInputElement).value;
     const maxBalance = this.maxAmounts[resourceAddress] || 0;
 
-    console.log(inputValue, maxBalance);
-
     if (inputValue > maxBalance) {
       this.inputErrors[resourceAddress] = 'Amount exceeds available balance';
       this.inputAmounts[resourceAddress] = maxBalance;
@@ -218,6 +235,14 @@ export class StrategiesComponent {
       delete this.inputErrors[resourceAddress];
       this.inputAmounts[resourceAddress] = inputValue;
     }
+
+    this.amountBorrowableWithoutLtv = new Decimal(inputValue)
+      .div(this.selectedStrategy?.lendingPriceUsd || 0)
+      .toFixed(18);
+
+    this.amountBorrowableWithLtv = new Decimal(this.amountBorrowableWithoutLtv)
+      .mul((+this.ltvValue || 0) / 100)
+      .toFixed(18);
   }
 
   updatePriceRange() {
@@ -282,11 +307,13 @@ export class StrategiesComponent {
   updateMinValue(value: number) {
     this.minValue = value;
     this.updatePriceRange();
+    this.updateAmount();
   }
 
   updateMaxValue(value: number) {
     this.maxValue = value;
     this.updatePriceRange();
+    this.updateAmount();
   }
 
   private applySrategiesFilters(
@@ -323,13 +350,103 @@ export class StrategiesComponent {
     this.applyFilters();
   }
 
-  updateXAmount(amount: string) {
+  updateXAmount(amount: string, ratio: string | null | undefined) {
     this.xAmount = amount;
-    // Add any additional logic for updating Y amount if needed
+
+    if (this.selectedStrategy?.poolInfo?.sub_type !== 'single') {
+      this.yAmount =
+        this.selectedStrategy?.poolInfo?.type === 'defiplaza'
+          ? new Decimal(this.xAmount).mul(ratio || 0).toFixed(18)
+          : new Decimal(this.xAmount)
+              .mul(this.selectedStrategy?.poolInfo?.current_price || 0)
+              .toString();
+    }
+    this.validateInput(this.selectedStrategy?.poolInfo?.left_token || '');
+    this.validateInput(this.selectedStrategy?.poolInfo?.right_token || '');
   }
 
-  updateYAmount(amount: string) {
+  updateYAmount(amount: string, ratio: string | null | undefined) {
     this.yAmount = amount;
-    // Add any additional logic for updating X amount if needed
+
+    if (this.selectedStrategy?.poolInfo?.sub_type !== 'single') {
+      this.xAmount =
+        this.selectedStrategy?.poolInfo?.type === 'defiplaza'
+          ? new Decimal(this.yAmount).mul(ratio || 0).toFixed(18)
+          : new Decimal(this.yAmount)
+              .div(
+                new Decimal(
+                  this.selectedStrategy?.poolInfo?.current_price || 0
+                ).plus(
+                  new Decimal(
+                    this.selectedStrategy?.poolInfo?.current_price || 0
+                  ).times(0.5)
+                )
+              )
+              .toString();
+    }
+    this.validateInput(this.selectedStrategy?.poolInfo?.left_token || '');
+    this.validateInput(this.selectedStrategy?.poolInfo?.right_token || '');
+  }
+
+  private updateAmount() {
+    if (
+      this.selectedStrategy &&
+      this.selectedStrategy.currentPrice &&
+      this.selectedStrategy?.component
+    ) {
+      const { lowerTick, upperTick } = this.ociswapService.calculateTickBounds(
+        this.selectedStrategy.currentPrice,
+        this.minValue,
+        this.maxValue,
+        60
+      );
+      this.addLiquidityPreview = this.ociswapService
+        .getOciswapAddLiquidityPreview(
+          this.selectedStrategy.component,
+          this.xAmount,
+          '',
+          lowerTick.toString(),
+          upperTick.toString()
+        )
+        .pipe(
+          tap(data => {
+            if (data) {
+              this.xAmount = data.x_amount.token;
+              this.yAmount = data.y_amount.token;
+
+              this.swapPreview = this.ociswapService.getOciswapSwapPreview(
+                this.selectedStrategy?.poolInfo?.left_token || '',
+                '',
+                this.selectedStrategy?.poolInfo?.right_token || '',
+                this.yAmount
+              );
+            }
+          }),
+          catchError(() => {
+            this.inputErrors[this.selectedStrategy?.buyToken || ''] =
+              'An error occurred while fetching add liquidity preview.';
+            return of(null);
+          })
+        );
+    }
+  }
+
+  validateInput(resourceAddress: string) {
+    if (!this.selectedStrategy) return;
+
+    console.log(resourceAddress);
+
+    // const value =
+    //   resourceAddress === this.selectedStrategy.poolInfo?.left_token
+    //     ? this.xAmount
+    //     : this.yAmount;
+    // const maxAmount = this.maxAmounts[resourceAddress];
+
+    //     if (parseFloat(value) > parseFloat(maxAmount)) {
+    //       this.inputErrors[resourceAddress] =
+    //         `Amount exceeds balance of ${maxAmount}`;
+    //     } else {
+    //       delete this.inputErrors[resourceAddress];
+    //     }
   }
 }
