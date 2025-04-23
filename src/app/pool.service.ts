@@ -44,4 +44,13 @@ export class PoolService {
   getPools(): Observable<Pool[]> {
     return this.http.get<Pool[]>(this.apiUrl);
   }
+
+  getPoolVolumePerDay(
+    component: string,
+    provider: string
+  ): Observable<{ volume_per_day: number[] }> {
+    return this.http.get<{ volume_per_day: number[] }>(
+      `${this.apiUrl}/volume/${component}?provider=${provider}`
+    );
+  }
 }

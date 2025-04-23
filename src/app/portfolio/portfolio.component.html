@@ -23,30 +23,47 @@
   </div>
 
 <!-- FAQ Section -->
-<div class="mb-8 bg-gray-800 rounded-lg p-6 shadow-lg">
-  <h2 class="text-xl font-semibold mb-4 text-yellow-500">Frequently Asked Questions</h2>
-  <div class="space-y-4">
-    <div *ngFor="let faq of faqs; let i = index" class="bg-gray-700 rounded-lg overflow-hidden">
-      <button
-        (click)="toggleFaq(i)"
-        class="w-full text-left p-4 flex justify-between items-center text-white hover:bg-gray-600 transition-colors duration-200"
-      >
-        <span class="text-lg font-medium">{{ faq.question }}</span>
-        <svg
-          [ngClass]="{'rotate-180': faq.isOpen}"
-          class="w-5 h-5 transition-transform duration-200"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      <div
-        *ngIf="faq.isOpen"
-        class="p-4 bg-gray-800 text-gray-300"
-      >
-        <p>{{ faq.answer }}</p>
+<div class="mb-8">
+  <button
+    (click)="toggleFaqSection()"
+    class="w-full bg-gray-800 text-yellow-500 p-4 rounded-lg shadow-lg flex justify-between items-center hover:bg-gray-700 transition-colors duration-200"
+  >
+    <h2 class="text-xl font-semibold">Frequently Asked Questions</h2>
+    <svg
+      [ngClass]="{'rotate-180': isFaqSectionOpen}"
+      class="w-5 h-5 transition-transform duration-200"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+
+  <div *ngIf="isFaqSectionOpen" class="mt-4 bg-gray-800 rounded-lg p-6 shadow-lg">
+    <div class="space-y-4">
+      <div *ngFor="let faq of faqs; let i = index" class="bg-gray-700 rounded-lg overflow-hidden">
+        <button
+          (click)="toggleFaq(i)"
+          class="w-full text-left p-4 flex justify-between items-center text-white hover:bg-gray-600 transition-colors duration-200"
+          >
+          <span class="text-lg font-medium">{{ faq.question }}</span>
+          <svg
+            [ngClass]="{'rotate-180': faq.isOpen}"
+            class="w-5 h-5 transition-transform duration-200"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div
+          *ngIf="faq.isOpen"
+          class="p-4 bg-gray-800 text-gray-300"
+          >
+          <p>{{ faq.answer }}</p>
+        </div>
       </div>
     </div>
   </div>

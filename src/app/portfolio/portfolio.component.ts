@@ -35,6 +35,8 @@ export class PortfolioComponent implements OnInit {
   totalPnl = 0;
   totalPnlPercentage = 0;
   closingItems: Record<string, boolean> = {};
+  // Add this property to your class
+  isFaqSectionOpen = false;
 
   // New property to store all portfolio items
   allPortfolioItems: PortfolioItem[] = [];
@@ -188,6 +190,11 @@ export class PortfolioComponent implements OnInit {
 
   toggleFaq(index: number) {
     this.faqs[index].isOpen = !this.faqs[index].isOpen;
+  }
+
+  // Add this method to your class
+  toggleFaqSection() {
+    this.isFaqSectionOpen = !this.isFaqSectionOpen;
   }
 
   private searchPortfolioItems(

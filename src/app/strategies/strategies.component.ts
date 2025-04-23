@@ -12,6 +12,7 @@ import {
   tap,
   shareReplay,
   catchError,
+  debounceTime,
 } from 'rxjs';
 import { RadixConnectService } from '../radix-connect.service';
 import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
@@ -23,10 +24,18 @@ import {
   SwapPreview,
 } from '../ociswap.service';
 import Decimal from 'decimal.js';
+import Fuse from 'fuse.js';
+import { PoolDetailsComponent } from '../pool-details/pool-details.component';
 
-interface Filters {
+interface StrategyFilters {
   requiredAssets: string[];
   rewardTokens: string[];
+  apy: ApyFilter;
+}
+
+interface ApyFilter {
+  condition: 'above' | 'below';
+  value: number | null;
 }
 
 @Component({
@@ -37,6 +46,7 @@ interface Filters {
     FormsModule,
     PrecisionPoolComponent,
     TokenInputComponent,
+    PoolDetailsComponent,
   ],
   templateUrl: './strategies.component.html',
   styleUrls: ['./strategies.component.css'],
@@ -56,6 +66,10 @@ export class StrategiesComponent {
   xAmount = '';
   yAmount = '';
 
+  searchTerm = '';
+  private searchSubject = new BehaviorSubject<string>('');
+  search$ = this.searchSubject.asObservable().pipe(debounceTime(300));
+
   sliderMin = -90;
   sliderMax = 900;
   minValue = -90;
@@ -65,6 +79,7 @@ export class StrategiesComponent {
   selectedPriceRange: 'wide' | 'concentrated' | 'bold' | 'manual' = 'wide';
   addLiquidityPreview: Observable<AddLiquidityPreview | null> = of(null);
   swapPreview: Observable<SwapPreview | null> = of(null);
+  copied = false;
 
   private strategiesService = inject(StrategiesService);
   private radixConnectService = inject(RadixConnectService);
@@ -72,10 +87,12 @@ export class StrategiesComponent {
 
   requiredAssetsFilter: string[] = [];
   rewardTokensFilter: string[] = [];
+  apyFilter: ApyFilter = { condition: 'above', value: null };
 
-  private filtersSubject = new BehaviorSubject<Filters>({
-    requiredAssets: [],
-    rewardTokens: [],
+  private filtersSubject = new BehaviorSubject<StrategyFilters>({
+    requiredAssets: this.requiredAssetsFilter,
+    rewardTokens: this.rewardTokensFilter,
+    apy: this.apyFilter,
   });
   filters$ = this.filtersSubject.asObservable();
 
@@ -95,9 +112,16 @@ export class StrategiesComponent {
     ])
   );
 
-  filteredStrategies$ = combineLatest([this.strategies$, this.filters$]).pipe(
-    map(([strategies, filters]) =>
-      this.applySrategiesFilters(strategies, filters)
+  filteredStrategies$ = combineLatest([
+    this.strategies$,
+    this.filters$,
+    this.search$,
+  ]).pipe(
+    map(([strategies, filters, searchTerm]) =>
+      this.searchStrategies(
+        this.applyAllFilters(strategies, filters),
+        searchTerm
+      )
     )
   );
 
@@ -201,6 +225,12 @@ export class StrategiesComponent {
           this.yAmount
         )
         .pipe(
+          map(response => {
+            if (response.manifest) {
+              return response;
+            }
+            throw TransactionStatus.Unknown;
+          }),
           switchMap(async response => {
             return this.radixConnectService
               .sendTransaction(response.manifest)
@@ -213,6 +243,9 @@ export class StrategiesComponent {
             } else {
               return 'Rejected';
             }
+          }),
+          catchError(error => {
+            return of(error);
           }),
           tap(tx => {
             if (tx === TransactionStatus.CommittedSuccess) {
@@ -316,9 +349,21 @@ export class StrategiesComponent {
     this.updateAmount();
   }
 
-  private applySrategiesFilters(
+  private applyAllFilters(
     strategies: Strategy[],
-    filters: Filters
+    filters: StrategyFilters
+  ): Strategy[] {
+    let filteredStrategies = this.filterByRequiredAssetsAndRewardTokens(
+      strategies,
+      filters
+    );
+    filteredStrategies = this.filterByApy(filteredStrategies, filters.apy);
+    return filteredStrategies;
+  }
+
+  private filterByRequiredAssetsAndRewardTokens(
+    strategies: Strategy[],
+    filters: StrategyFilters
   ): Strategy[] {
     return strategies.filter(strategy => {
       const requiredAssetsMatch =
@@ -337,17 +382,29 @@ export class StrategiesComponent {
     });
   }
 
-  applyFilters() {
-    this.filtersSubject.next({
-      requiredAssets: this.requiredAssetsFilter,
-      rewardTokens: this.rewardTokensFilter,
+  private filterByApy(strategies: Strategy[], filter: ApyFilter): Strategy[] {
+    if (filter.value === null) return strategies;
+    return strategies.filter(strategy => {
+      const totalApy = strategy.totalRewards.value;
+      return filter.condition === 'above'
+        ? totalApy >= (filter.value ?? 0)
+        : totalApy <= (filter.value ?? 0);
     });
   }
 
-  clearFilters() {
+  updateFilters() {
+    this.filtersSubject.next({
+      requiredAssets: this.requiredAssetsFilter,
+      rewardTokens: this.rewardTokensFilter,
+      apy: this.apyFilter,
+    });
+  }
+
+  resetFilters() {
     this.requiredAssetsFilter = [];
     this.rewardTokensFilter = [];
-    this.applyFilters();
+    this.apyFilter = { condition: 'above', value: null };
+    this.updateFilters();
   }
 
   updateXAmount(amount: string, ratio: string | null | undefined) {
@@ -435,18 +492,41 @@ export class StrategiesComponent {
     if (!this.selectedStrategy) return;
 
     console.log(resourceAddress);
+  }
 
-    // const value =
-    //   resourceAddress === this.selectedStrategy.poolInfo?.left_token
-    //     ? this.xAmount
-    //     : this.yAmount;
-    // const maxAmount = this.maxAmounts[resourceAddress];
+  onSearch(term: string) {
+    this.searchSubject.next(term);
+  }
 
-    //     if (parseFloat(value) > parseFloat(maxAmount)) {
-    //       this.inputErrors[resourceAddress] =
-    //         `Amount exceeds balance of ${maxAmount}`;
-    //     } else {
-    //       delete this.inputErrors[resourceAddress];
-    //     }
+  private searchStrategies(strategies: Strategy[], term: string): Strategy[] {
+    if (!term) return strategies;
+
+    const fuse = new Fuse(strategies, {
+      keys: [
+        'name',
+        'description',
+        'requiredAssets.symbol',
+        'rewardTokens',
+        'poolInfo.name',
+        'poolInfo.left_name',
+        'poolInfo.right_name',
+        'poolInfo.type',
+        'poolInfo.sub_type',
+      ],
+      threshold: 0.3,
+      ignoreLocation: true,
+    });
+
+    return fuse.search(term).map(result => result.item);
+  }
+
+  async copyComponentAddress(address: string | undefined) {
+    if (address) {
+      await navigator.clipboard.writeText(address);
+      this.copied = true;
+      setTimeout(() => {
+        this.copied = false;
+      }, 2000); // Reset after 2 seconds
+    }
   }
 }

@@ -6,6 +6,7 @@ import {
   AfterViewInit,
   inject,
   ChangeDetectorRef,
+  OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -33,6 +34,7 @@ import { AddLiquidityPreview, OciswapService } from '../ociswap.service';
 import { RadixManifestService } from '../radix-manifest.service';
 import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
 import { TokenInputComponent } from '../token-input/token-input.component';
+import { PoolDetailsComponent } from '../pool-details/pool-details.component';
 
 type SortColumn = 'tvl' | 'bonus_7d' | 'volume_7d' | null;
 type SortDirection = 'asc' | 'desc' | 'none';
@@ -64,17 +66,45 @@ interface Filters {
     PoolItemComponent,
     PrecisionPoolComponent,
     TokenInputComponent,
+    PoolDetailsComponent,
   ],
   providers: [PoolService],
   templateUrl: './pool-list.component.html',
   styleUrls: ['./pool-list.component.css'],
 })
-export class PoolListComponent implements AfterViewInit {
+export class PoolListComponent implements AfterViewInit, OnInit {
   @ViewChild(CdkVirtualScrollViewport) viewport!: CdkVirtualScrollViewport;
 
   @ViewChild('dummyItem') dummyItem!: ElementRef;
 
+  sevenDayVolume$: Observable<number[]> | undefined;
+
   cdRef = inject(ChangeDetectorRef);
+  sevenDayVolume: number[] = [3000, 5000, 2000, 8000, 6500, 4500, 7000];
+  maxVolume = 0;
+  lastSevenDays: Date[] = [];
+
+  ngOnInit() {
+    this.generateLastSevenDays();
+  }
+
+  // Update these methods to work with the Observable
+  calculateMaxVolume(volumes: number[]) {
+    this.maxVolume = Math.max(...volumes);
+    this.maxVolume = Math.ceil(this.maxVolume / 1000) * 1000;
+  }
+
+  generateLastSevenDays() {
+    const today = new Date();
+    this.lastSevenDays = Array(7)
+      .fill(null)
+      .map((_, i) => {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        return date;
+      })
+      .reverse();
+  }
 
   private sortSubject = new BehaviorSubject<SortEvent>({
     column: null,
@@ -333,6 +363,15 @@ export class PoolListComponent implements AfterViewInit {
     this.yAmount = '';
     this.inputErrors = {};
     this.updateMaxAmounts();
+
+    // Fetch the seven-day volume data
+    this.sevenDayVolume$ = this.poolService
+      .getPoolVolumePerDay(pool.component, pool.type)
+      .pipe(map(volumeData => volumeData.volume_per_day));
+
+    // Reset maxVolume and lastSevenDays
+    this.maxVolume = 0;
+    this.lastSevenDays = [];
   }
 
   closeModal() {
@@ -432,7 +471,12 @@ export class PoolListComponent implements AfterViewInit {
   }
 
   deposit() {
-    if (this.hasInputErrors()) {
+    if (
+      this.hasInputErrors() ||
+      !this.xAmount ||
+      !this.yAmount ||
+      !this.selectedPool
+    ) {
       return;
     }
 

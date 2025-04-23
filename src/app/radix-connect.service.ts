@@ -5,7 +5,16 @@ import {
   DataRequestBuilder,
   WalletDataStateAccount,
 } from '@radixdlt/radix-dapp-toolkit';
-import { BehaviorSubject, forkJoin, from, map, of, switchMap, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  forkJoin,
+  from,
+  map,
+  Observable,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { GatewayEzMode } from '@calamari-radix/gateway-ez-mode';
 import { FungibleResourceBalance } from '@calamari-radix/gateway-ez-mode/dist/types';
 
@@ -13,6 +22,26 @@ export interface Balances {
   account: string;
   fungibles: FungibleResourceBalance[];
   nonFungibles: FungibleResourceBalance[];
+}
+
+export interface TokenMetadata {
+  name: string;
+  symbol: string;
+  social_urls?: string[];
+  description?: string;
+  info_url?: string;
+}
+
+export interface ResourceRoleAndInfo {
+  metadata: TokenMetadata;
+  divisibility: number;
+  mintable: boolean;
+  burnable: boolean;
+  withdrawable: boolean;
+  depositable: boolean;
+  totalMinted: string;
+  totalSupply: string;
+  totalBurned: string;
 }
 
 @Injectable({
@@ -124,5 +153,97 @@ export class RadixConnectService {
     return this.rdt?.walletApi.sendTransaction({
       transactionManifest,
     });
+  }
+
+  getTokenDetails(tokenAddresses: string[]): Observable<ResourceRoleAndInfo[]> {
+    return from(
+      this.gatewayEz.gateway.state.getEntityDetailsVaultAggregated(
+        tokenAddresses
+      )
+    ).pipe(
+      map(tokens => {
+        return tokens.map(t => {
+          const metadata = t.metadata.items.reduce<TokenMetadata>(
+            (acc, item) => {
+              if ('value' in item && 'value' in item.value.typed) {
+                const key = item.key as keyof TokenMetadata;
+                const value = item.value.typed.value;
+
+                if (typeof value === 'string') {
+                  acc[key as keyof { description: string; info_url: string }] =
+                    value;
+                }
+              }
+
+              if ('values' in item.value.typed) {
+                const key = item.key as keyof TokenMetadata;
+                acc[key as keyof { social_urls: string[] }] = (
+                  item.value.typed.values as string[]
+                ).sort();
+              }
+              return acc;
+            },
+            {} as TokenMetadata
+          );
+
+          const flags: {
+            mintable: boolean;
+            burnable: boolean;
+            withdrawable: boolean;
+            depositable: boolean;
+            totalMinted: string;
+            totalSupply: string;
+            totalBurned: string;
+            divisibility: number;
+          } = {} as {
+            mintable: boolean;
+            burnable: boolean;
+            withdrawable: boolean;
+            depositable: boolean;
+            totalMinted: string;
+            totalSupply: string;
+            totalBurned: string;
+            divisibility: number;
+          };
+
+          if (t.details?.type === 'FungibleResource') {
+            if (t.details.role_assignments) {
+              t.details.role_assignments.entries.forEach(entry => {
+                const roleName = entry.role_key.name;
+                const isAllowed =
+                  ('explicit_rule' in entry.assignment &&
+                    (entry.assignment.explicit_rule as { type: string })
+                      ?.type !== 'DenyAll') ||
+                  entry.assignment.resolution === 'Owner';
+
+                switch (roleName) {
+                  case 'minter':
+                    flags.mintable = isAllowed;
+                    break;
+                  case 'burner':
+                    flags.burnable = isAllowed;
+                    break;
+                  case 'withdrawer':
+                    flags.withdrawable = isAllowed;
+                    break;
+                  case 'depositor':
+                    flags.depositable = isAllowed;
+                    break;
+                }
+              });
+              flags.totalMinted = t.details.total_minted;
+              flags.totalSupply = t.details.total_supply;
+              flags.totalBurned = t.details.total_burned;
+              flags.divisibility = t.details.divisibility;
+            }
+          }
+
+          return {
+            ...flags,
+            metadata,
+          };
+        });
+      })
+    );
   }
 }
