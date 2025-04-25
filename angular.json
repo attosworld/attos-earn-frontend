@@ -61,6 +61,27 @@
                   "with": "src/environments/environment.development.ts"
                 }
               ]
+            },
+            "staging": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "987kB",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kb",
+                  "maximumError": "8kb"
+                }
+              ],
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.staging.ts"
+                }
+              ],
+              "outputHashing": "all"
             }
           },
           "defaultConfiguration": "production"
@@ -73,6 +94,9 @@
             },
             "development": {
               "buildTarget": "attos-earn:build:development"
+            },
+            "staging": {
+              "buildTarget": "attos-earn:build:staging"
             }
           },
           "defaultConfiguration": "development"
