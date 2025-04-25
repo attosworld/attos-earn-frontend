@@ -18,6 +18,10 @@ export interface PortfolioItem {
   provider: string;
   closeManifest: string;
   strategy?: boolean;
+  loanAmount?: string;
+  loanCurrency?: string;
+  borrowAmount?: string;
+  borrowCurrency?: string;
 }
 
 @Injectable({

@@ -56,6 +56,8 @@ export class StrategiesComponent {
 
   showModal = false;
 
+  isFaqSectionOpen = false;
+
   selectedStrategy: Strategy | null = null;
 
   ltvValue = '45';
@@ -80,6 +82,33 @@ export class StrategiesComponent {
   addLiquidityPreview: Observable<AddLiquidityPreview | null> = of(null);
   swapPreview: Observable<SwapPreview | null> = of(null);
   copied = false;
+
+  faqs = [
+    {
+      question: 'What is a DeFi strategy?',
+      answer:
+        'A DeFi strategy is a composition of actions where Attos Earn constructs various DApps into a single transaction. These strategies combine multiple decentralized finance protocols and actions to potentially maximize returns or achieve specific financial goals. By bundling these actions, Attos Earn simplifies complex DeFi interactions for users.',
+      isOpen: false,
+    },
+    {
+      question: 'What are the risks associated with DeFi strategies?',
+      answer:
+        "There are several risks to consider with DeFi strategies: 1) Token volatility: Some tokens are more volatile than others, which can affect strategy performance. 2) Variable fees: Fees are always variable depending on market conditions, which can impact returns. 3) Smart contract risks: As with all DeFi applications, there's always a risk associated with smart contract vulnerabilities. 4) Market risks: DeFi markets can be highly unpredictable and subject to rapid changes.",
+      isOpen: false,
+    },
+    {
+      question: 'Does Attos Earn implement any custom smart contracts?',
+      answer:
+        "No, Attos Earn utilizes existing DApps in the ecosystem. We don't implement custom smart contracts. You can find the respective audits for the DApps we use from their respective platforms. This approach leverages the security and reliability of established protocols in the DeFi space.",
+      isOpen: false,
+    },
+    {
+      question: 'Why are there remainder amounts from a strategy?',
+      answer:
+        'Remainder amounts often occur due to the complexity of calculating borrowable amounts and splitting them into an amount to swap to the second token in a pool. This process involves multiple variables and market conditions. While Attos Earn tries to minimize remainders, they are usually unavoidable due to the precise nature of these calculations and the dynamic state of the DeFi markets.',
+      isOpen: false,
+    },
+  ];
 
   private strategiesService = inject(StrategiesService);
   private radixConnectService = inject(RadixConnectService);
@@ -528,5 +557,13 @@ export class StrategiesComponent {
         this.copied = false;
       }, 2000); // Reset after 2 seconds
     }
+  }
+
+  toggleFaqSection() {
+    this.isFaqSectionOpen = !this.isFaqSectionOpen;
+  }
+
+  toggleFaq(index: number) {
+    this.faqs[index].isOpen = !this.faqs[index].isOpen;
   }
 }

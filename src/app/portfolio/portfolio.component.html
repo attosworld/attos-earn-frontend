@@ -46,7 +46,7 @@
         <button
           (click)="toggleFaq(i)"
           class="w-full text-left p-4 flex justify-between items-center text-white hover:bg-gray-600 transition-colors duration-200"
-          >
+        >
           <span class="text-lg font-medium">{{ faq.question }}</span>
           <svg
             [ngClass]="{'rotate-180': faq.isOpen}"
@@ -54,15 +54,15 @@
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
-            >
+          >
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
           </svg>
         </button>
         <div
           *ngIf="faq.isOpen"
           class="p-4 bg-gray-800 text-gray-300"
-          >
-          <p>{{ faq.answer }}</p>
+          [innerHTML]="faq.answer"
+        >
         </div>
       </div>
     </div>
@@ -138,11 +138,17 @@
               <span class="inline-block md:hidden font-medium mr-2">Invested:</span>
               {{ item.invested | currency }}
               <div>~{{ item.investedXrd | currency:'':'':'1.2-2' }} XRD</div>
+              <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
+                Collateral: {{ item.loanAmount | currency:'':'':'1.2-2' }} {{ item.loanCurrency }}
+              </div>
             </td>
             <td class="py-2 px-4 block md:table-cell md:text-right">
               <span class="inline-block md:hidden font-medium mr-2">Current Value:</span>
               <div>{{ item.currentValue | currency }}</div>
               <div>~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD</div>
+              <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
+                Borrowed: {{ item.borrowAmount | currency:'':'':'1.2-2' }} {{ item.borrowCurrency }}
+              </div>
             </td>
             <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': item.pnl > 0, 'text-red-500': item.pnl < 0}">
               <span class="inline-block md:hidden font-medium mr-2">PnL:</span>

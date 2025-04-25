@@ -49,7 +49,7 @@
           class="text-blue-400 hover:text-blue-300 transition duration-300">
           {{ poolInfo.left_alt }}
         </a>
-        <span class="pl-1 pr-1">/</span>
+        <span class="pl-1 pr-1" *ngIf="poolInfo.left_alt && poolInfo.right_alt">/</span>
         <a [href]="'https://radxplorer.com/resources/' + poolInfo.right_token"
           target="_blank"
           rel="noopener noreferrer"

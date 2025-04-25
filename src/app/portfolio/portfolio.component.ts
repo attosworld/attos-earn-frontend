@@ -16,6 +16,11 @@ import { PortfolioService, PortfolioItem } from '../portfolio.service';
 import { RadixConnectService } from '../radix-connect.service';
 import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
 
+type PortfolioFilterableColumns = keyof Omit<
+  PortfolioItem,
+  'strategy' | 'loanAmount' | 'loanCurrency' | 'borrowAmount' | 'borrowCurrency'
+>;
+
 @Component({
   selector: 'app-portfolio',
   standalone: true,
@@ -47,7 +52,7 @@ export class PortfolioComponent implements OnInit {
   transactionResult: Observable<TransactionStatus | undefined> = of(undefined);
 
   private sortSubject = new BehaviorSubject<{
-    column: keyof Omit<PortfolioItem, 'strategy'> | null;
+    column: PortfolioFilterableColumns | null;
     direction: 'asc' | 'desc' | 'none';
   }>({
     column: null,
@@ -61,8 +66,15 @@ export class PortfolioComponent implements OnInit {
   faqs = [
     {
       question: "Why can't I close my strategy sometimes?",
-      answer:
-        "If you're unable to close a strategy, it's likely because the price has changed since you last attempted. This is a normal occurrence in dynamic markets. Simply wait for a short while and try again when market conditions are more favorable.",
+      answer: `
+        There are a few reasons why you might not be able to close your strategy:
+        <ul class="list-disc pl-5 mt-2">
+          <li>The position cannot repay the loan due to market conditions or insufficient funds.</li>
+          <li>The market has moved since you attempted to close, making the transaction unfavorable or impossible.</li>
+          <li>There might be temporary liquidity issues in the pool.</li>
+        </ul>
+        <p class="mt-2">These are normal occurrences in dynamic markets. If you encounter this issue, wait for a short while and try again when market conditions are more favorable.</p>
+      `,
       isOpen: false,
     },
     {
@@ -131,7 +143,7 @@ export class PortfolioComponent implements OnInit {
     this.totalPnlPercentage = (this.totalPnl / this.totalInvested) * 100;
   }
 
-  sortPortfolioItems(column: keyof Omit<PortfolioItem, 'strategy'>) {
+  sortPortfolioItems(column: PortfolioFilterableColumns) {
     const currentSort = this.sortSubject.value;
     let newDirection: 'asc' | 'desc' | 'none' = 'asc';
 
@@ -149,7 +161,7 @@ export class PortfolioComponent implements OnInit {
   private sortPortfolioItemsByColumn(
     items: PortfolioItem[],
     sort: {
-      column: keyof Omit<PortfolioItem, 'strategy'> | null;
+      column: PortfolioFilterableColumns | null;
       direction: 'asc' | 'desc' | 'none';
     }
   ): PortfolioItem[] {
