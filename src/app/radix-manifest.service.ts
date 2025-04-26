@@ -25,6 +25,10 @@ export class RadixManifestService {
   }): string {
     return `
 CALL_METHOD
+Address("component_rdx1cqjzzku4rrkz3zhm8hldn55evpgmxx9rpq9t98qtnj0asdg88f9yj6")
+"track_lp"
+;
+CALL_METHOD
   Address("${account}")
   "withdraw"
   Address("${xAddress}")
@@ -78,6 +82,10 @@ CALL_METHOD
   }): string {
     return `
 CALL_METHOD
+Address("component_rdx1cqjzzku4rrkz3zhm8hldn55evpgmxx9rpq9t98qtnj0asdg88f9yj6")
+"track_lp"
+;
+CALL_METHOD
   Address("${account}")
   "withdraw"
   Address("${xAddress}")
@@ -124,6 +132,10 @@ CALL_METHOD
     address: string;
   }): string {
     return `
+CALL_METHOD
+Address("component_rdx1cqjzzku4rrkz3zhm8hldn55evpgmxx9rpq9t98qtnj0asdg88f9yj6")
+"track_lp"
+;
 CALL_METHOD
   Address("${account}")
   "withdraw"
