@@ -26,6 +26,7 @@ import {
 import Decimal from 'decimal.js';
 import Fuse from 'fuse.js';
 import { PoolDetailsComponent } from '../pool-details/pool-details.component';
+import { PoolService } from '../pool.service';
 
 interface StrategyFilters {
   requiredAssets: string[];
@@ -83,6 +84,10 @@ export class StrategiesComponent {
   swapPreview: Observable<SwapPreview | null> = of(null);
   copied = false;
 
+  sevenDayVolume: number[] = [3000, 5000, 2000, 8000, 6500, 4500, 7000];
+  maxVolume = 0;
+  lastSevenDays: Date[] = [];
+
   faqs = [
     {
       question: 'What is a DeFi strategy?',
@@ -112,7 +117,10 @@ export class StrategiesComponent {
 
   private strategiesService = inject(StrategiesService);
   private radixConnectService = inject(RadixConnectService);
+  private poolService = inject(PoolService);
   ociswapService = inject(OciswapService);
+
+  sevenDayVolume$: Observable<number[]> | undefined;
 
   requiredAssetsFilter: string[] = [];
   rewardTokensFilter: string[] = [];
@@ -210,6 +218,16 @@ export class StrategiesComponent {
     this.setRequiredResources(
       strategy.requiredAssets.map(asset => asset.resource_address)
     );
+
+    if (strategy.poolInfo) {
+      this.sevenDayVolume$ = this.poolService
+        .getPoolVolumePerDay(
+          strategy.poolInfo?.component,
+          strategy.poolInfo.type
+        )
+        .pipe(map(volumeData => volumeData.volume_per_day));
+    }
+
     // Reset LTV value when opening modal
     this.ltvValue = strategy.optimalLtv;
     // Calculate low and high prices
@@ -565,5 +583,22 @@ export class StrategiesComponent {
 
   toggleFaq(index: number) {
     this.faqs[index].isOpen = !this.faqs[index].isOpen;
+  }
+
+  calculateMaxVolume(volumes: number[]) {
+    this.maxVolume = Math.max(...volumes);
+    this.maxVolume = Math.ceil(this.maxVolume / 1000) * 1000;
+  }
+
+  generateLastSevenDays() {
+    const today = new Date();
+    this.lastSevenDays = Array(7)
+      .fill(null)
+      .map((_, i) => {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        return date;
+      })
+      .reverse();
   }
 }
