@@ -1,15 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { StrategiesService } from '../strategies.service';
+import { AnimatedCounterComponent } from '../animated-counter/animated-counter.component';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AnimatedCounterComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
 export class HomeComponent {
   currentYear = new Date().getFullYear();
+
+  strategyService = inject(StrategiesService);
+
+  strategyStats$ = this.strategyService.getStats();
 
   features = [
     {

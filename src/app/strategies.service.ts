@@ -28,6 +28,11 @@ export interface Strategy {
   lendingPriceUsd: number;
 }
 
+export interface StrategyStats {
+  pools: number;
+  strategies: number;
+}
+
 export interface ExecuteStrategyResponse {
   manifest: string;
 }
@@ -39,6 +44,15 @@ export class StrategiesService {
   private apiUrl = environment.apiUrl;
 
   http = inject(HttpClient);
+
+  getStats(): Observable<StrategyStats> {
+    return this.http.get<StrategyStats>(`${this.apiUrl}/stats`).pipe(
+      catchError(error => {
+        console.error('Error fetching stats:', error);
+        return of({ pools: 0, strategies: 0 }); // Return null in case of error
+      })
+    );
+  }
 
   getStrategies(): Observable<Strategy[]> {
     return this.http.get<Strategy[]>(`${this.apiUrl}/strategies`).pipe(
