@@ -433,8 +433,14 @@ export class PoolListComponent implements AfterViewInit, OnInit {
                 .toFixed(18);
       }
     }
-    this.validateInput(this.selectedPool?.left_token || '');
-    this.validateInput(this.selectedPool?.right_token || '');
+
+    if (this.selectedPool?.left_alt) {
+      this.validateInput(this.selectedPool?.left_token || '');
+    }
+    if (this.selectedPool?.right_alt) {
+      this.validateInput(this.selectedPool?.right_token || '');
+    }
+    console.log(this.inputErrors);
   }
 
   updateBalance(resourceAddress: string, event: Event) {
@@ -473,8 +479,8 @@ export class PoolListComponent implements AfterViewInit, OnInit {
   deposit() {
     if (
       this.hasInputErrors() ||
-      !this.xAmount ||
-      !this.yAmount ||
+      (this.selectedPool?.left_alt && !this.xAmount) ||
+      (this.selectedPool?.right_alt && !this.yAmount) ||
       !this.selectedPool
     ) {
       return;
@@ -573,8 +579,14 @@ export class PoolListComponent implements AfterViewInit, OnInit {
               .mul(this.selectedPool?.current_price || 0)
               .toString();
     }
-    this.validateInput(this.selectedPool?.left_token || '');
-    this.validateInput(this.selectedPool?.right_token || '');
+
+    if (this.selectedPool?.left_alt) {
+      this.validateInput(this.selectedPool?.left_token || '');
+    }
+
+    if (this.selectedPool?.right_alt) {
+      this.validateInput(this.selectedPool?.right_token || '');
+    }
   }
 
   updateYAmount(yAmount: string, ratio: string | null | undefined) {
@@ -592,7 +604,13 @@ export class PoolListComponent implements AfterViewInit, OnInit {
               )
               .toString();
     }
-    this.validateInput(this.selectedPool?.left_token || '');
-    this.validateInput(this.selectedPool?.right_token || '');
+
+    if (this.selectedPool?.left_alt) {
+      this.validateInput(this.selectedPool?.left_token || '');
+    }
+
+    if (this.selectedPool?.right_alt) {
+      this.validateInput(this.selectedPool?.right_token || '');
+    }
   }
 }
