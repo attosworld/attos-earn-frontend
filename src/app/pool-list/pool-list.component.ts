@@ -406,7 +406,7 @@ export class PoolListComponent implements AfterViewInit, OnInit {
     const maxAmount = this.maxAmounts[resourceAddress];
     if (this.selectedPool) {
       if (resourceAddress === this.selectedPool.left_token) {
-        this.xAmount = maxAmount.toString();
+        this.xAmount = maxAmount;
         this.yAmount =
           this.selectedPool?.type === 'defiplaza'
             ? new Decimal(this.xAmount)
@@ -416,7 +416,7 @@ export class PoolListComponent implements AfterViewInit, OnInit {
                 .mul(this.selectedPool?.current_price || 0)
                 .toFixed(18);
       } else if (resourceAddress === this.selectedPool.right_token) {
-        this.yAmount = maxAmount.toString();
+        this.yAmount = maxAmount;
         this.xAmount =
           this.selectedPool?.type === 'defiplaza'
             ? new Decimal(this.yAmount)
@@ -529,7 +529,7 @@ export class PoolListComponent implements AfterViewInit, OnInit {
                         address: selectedPool.left_alt
                           ? selectedPool.left_token
                           : selectedPool.right_token,
-                        amount: this.xAmount
+                        amount: selectedPool.left_alt
                           ? new Decimal(this.xAmount).toFixed(18)
                           : new Decimal(this.yAmount).toFixed(18),
                       }
