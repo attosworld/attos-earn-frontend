@@ -1,18 +1,19 @@
+import { CommonModule } from '@angular/common';
 import { Component, Input, OnInit } from '@angular/core';
-import { timer } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { BehaviorSubject, map, Observable, takeWhile, timer } from 'rxjs';
 
 @Component({
   selector: 'app-animated-counter',
-  standalone: true,
-  imports: [],
-  template: '{{ displayValue }}',
-  styles: [],
+  imports: [CommonModule],
+  templateUrl: './animated-counter.component.html',
+  styleUrl: './animated-counter.component.css',
 })
 export class AnimatedCounterComponent implements OnInit {
   @Input() endValue = 0;
   @Input() duration = 2000; // Duration in milliseconds
-  displayValue = 0;
+
+  private counterSubject = new BehaviorSubject<number>(0);
+  displayValue$: Observable<number> = this.counterSubject.asObservable();
 
   ngOnInit() {
     const threshold = 20; // Threshold for small numbers
@@ -21,19 +22,21 @@ export class AnimatedCounterComponent implements OnInit {
     if (this.endValue < threshold) {
       // For small numbers, increment by 1
       const interval = this.duration / this.endValue;
-      timer(0, interval)
-        .pipe(take(this.endValue))
-        .subscribe(() => {
-          this.displayValue = Math.min(this.displayValue + 1, this.endValue);
-        });
+      this.animateCounter(interval, 1);
     } else {
       // For larger numbers, use the original approach
       const step = Math.ceil(this.endValue / steps);
-      timer(0, this.duration / steps)
-        .pipe(take(steps))
-        .subscribe(() => {
-          this.displayValue = Math.min(this.displayValue + step, this.endValue);
-        });
+      const interval = this.duration / steps;
+      this.animateCounter(interval, step);
     }
+  }
+
+  private animateCounter(interval: number, step: number) {
+    timer(0, interval)
+      .pipe(
+        map(i => Math.min((i + 1) * step, this.endValue)),
+        takeWhile(val => val <= this.endValue, true)
+      )
+      .subscribe(value => this.counterSubject.next(value));
   }
 }
