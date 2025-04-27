@@ -158,4 +158,79 @@ CALL_METHOD
     Expression("ENTIRE_WORKTOP")
 ;`;
   }
+
+  removeLpDefiplazaManifest({
+    account,
+    poolAddress,
+    address,
+    amount,
+    isQuote,
+  }: {
+    account: string;
+    poolAddress: string;
+    address: string;
+    amount: string;
+    isQuote: boolean;
+  }) {
+    return `
+CALL_METHOD
+  Address("${account}")
+  "withdraw"
+  Address("${address}")
+  Decimal("${amount}")
+;
+TAKE_ALL_FROM_WORKTOP
+  Address("${address}")
+  Bucket("x")
+;
+CALL_METHOD
+    Address("${poolAddress}")
+    "remove_liquidity"
+    Bucket("x")
+    ${isQuote}
+;
+CALL_METHOD
+    Address("${account}")
+    "deposit_batch"
+    Expression("ENTIRE_WORKTOP")
+;`;
+  }
+
+  removeLpOciswapManifest({
+    account,
+    poolAddress,
+    address,
+    amount,
+  }: {
+    account: string;
+    poolAddress: string;
+    address: string;
+    amount: string;
+  }) {
+    return `
+CALL_METHOD
+Address("component_rdx1cqjzzku4rrkz3zhm8hldn55evpgmxx9rpq9t98qtnj0asdg88f9yj6")
+"track_lp"
+;
+CALL_METHOD
+  Address("${account}")
+  "withdraw"
+  Address("${address}")
+  Decimal("${amount}")
+;
+TAKE_ALL_FROM_WORKTOP
+  Address("${address}")
+  Bucket("x")
+;
+CALL_METHOD
+    Address("${poolAddress}")
+    "remove_liquidity"
+    Bucket("x")
+;
+CALL_METHOD
+    Address("${account}")
+    "deposit_batch"
+    Expression("ENTIRE_WORKTOP")
+;`;
+  }
 }
