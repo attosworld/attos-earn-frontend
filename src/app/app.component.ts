@@ -32,6 +32,8 @@ export class AppComponent implements OnInit {
 
   isAccountDropdownOpen = false;
 
+  showBanner = true;
+
   radixConnect = inject(RadixConnectService);
 
   router = inject(Router);
@@ -42,6 +44,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.checkScreenSize();
+    this.checkBannerVisibility();
   }
 
   @HostListener('window:resize', ['$event'])
@@ -81,5 +84,15 @@ export class AppComponent implements OnInit {
 
   ultraShortenAddress(address: string): string {
     return address ? `${address.slice(0, 2)}...${address.slice(-2)}` : '';
+  }
+
+  checkBannerVisibility() {
+    const bannerClosed = localStorage.getItem('bannerClosed');
+    this.showBanner = bannerClosed !== 'true';
+  }
+
+  closeBanner() {
+    this.showBanner = false;
+    localStorage.setItem('bannerClosed', 'true');
   }
 }

@@ -36,7 +36,7 @@ import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
 import { TokenInputComponent } from '../token-input/token-input.component';
 import { PoolDetailsComponent } from '../pool-details/pool-details.component';
 
-type SortColumn = 'tvl' | 'bonus_7d' | 'volume_7d' | null;
+type SortColumn = 'tvl' | 'bonus_7d' | 'volume_7d' | 'bonus_name' | null;
 type SortDirection = 'asc' | 'desc' | 'none';
 type PoolType = 'all' | 'double' | 'single' | 'boosted';
 
@@ -212,10 +212,22 @@ export class PoolListComponent implements AfterViewInit, OnInit {
         return 0;
       }
 
-      if (sort.direction === 'asc') {
-        return a[sort.column] - b[sort.column];
+      if (sort.column === 'bonus_name') {
+        // Handle string comparison for bonus_name
+        const aValue = (a[sort.column] || '').toLowerCase();
+        const bValue = (b[sort.column] || '').toLowerCase();
+        if (sort.direction === 'asc') {
+          return aValue.localeCompare(bValue);
+        } else {
+          return bValue.localeCompare(aValue);
+        }
       } else {
-        return b[sort.column] - a[sort.column];
+        // Handle numeric comparison for other columns
+        if (sort.direction === 'asc') {
+          return a[sort.column] - b[sort.column];
+        } else {
+          return b[sort.column] - a[sort.column];
+        }
       }
     });
   }

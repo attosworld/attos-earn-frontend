@@ -53,7 +53,7 @@
     <div>
       <label class="block text-sm font-medium mb-1">TVL</label>
       <div class="flex items-center">
-        <select [(ngModel)]="tvlFilter.condition" class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
+        <select [(ngModel)]="tvlFilter.condition" (change)="applyFilters()" class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
           <option value="above">Above</option>
           <option value="below">Below</option>
         </select>
@@ -63,7 +63,7 @@
     <div>
       <label class="block text-sm font-medium mb-1">Bonus 7d</label>
       <div class="flex items-center">
-        <select [(ngModel)]="bonusFilter.condition" class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
+        <select [(ngModel)]="bonusFilter.condition"(change)="applyFilters()"  class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
           <option value="above">Above</option>
           <option value="below">Below</option>
         </select>
@@ -73,7 +73,7 @@
     <div>
       <label class="block text-sm font-medium mb-1">7d Volume</label>
       <div class="flex items-center">
-        <select [(ngModel)]="volumeFilter.condition" class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
+        <select [(ngModel)]="volumeFilter.condition"(change)="applyFilters()"  class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
           <option value="above">Above</option>
           <option value="below">Below</option>
         </select>
@@ -87,7 +87,7 @@
   <div class="flex mb-4 border-b border-gray-700 overflow-x-auto">
     <ng-container *ngIf="selectedTab$ | async as selectedTab">
       <button
-        class="py-2 px-4 mr-2 focus:outline-none whitespace-nowrap"
+        class="py-2 px-4 mr-2 focus:outline-none whitespace-nowrap hover:bg-gray-800 cursor-pointer"
         [class.text-yellow-500]="selectedTab === 'all'"
         [class.border-b-2]="selectedTab === 'all'"
         [class.border-yellow-500]="selectedTab === 'all'"
@@ -96,7 +96,7 @@
         All Pools
       </button>
       <button
-        class="py-2 px-4 mr-2 focus:outline-none whitespace-nowrap"
+        class="py-2 px-4 mr-2 focus:outline-none whitespace-nowrap hover:bg-gray-800 cursor-pointer"
         [class.text-yellow-500]="selectedTab === 'double'"
         [class.border-b-2]="selectedTab === 'double'"
         [class.border-yellow-500]="selectedTab === 'double'"
@@ -105,7 +105,7 @@
         Double Sided
       </button>
       <button
-        class="py-2 px-4 mr-2 focus:outline-none whitespace-nowrap"
+        class="py-2 px-4 mr-2 focus:outline-none whitespace-nowrap hover:bg-gray-800 cursor-pointer"
         [class.text-yellow-500]="selectedTab === 'single'"
         [class.border-b-2]="selectedTab === 'single'"
         [class.border-yellow-500]="selectedTab === 'single'"
@@ -114,7 +114,7 @@
         Single Sided
       </button>
       <button
-        class="py-2 px-4 focus:outline-none whitespace-nowrap"
+        class="py-2 px-4 focus:outline-none whitespace-nowrap hover:bg-gray-800 cursor-pointer"
         [class.text-yellow-500]="selectedTab === 'boosted'"
         [class.border-b-2]="selectedTab === 'boosted'"
         [class.border-yellow-500]="selectedTab === 'boosted'"
@@ -158,7 +158,17 @@
         Each DEX has its own metric for measuring fees generated from a pool.
       </div>
     </div>
-    <div>Bonus Type</div>
+    <div class="cursor-pointer flex items-center" (click)="sortPools('bonus_name')">
+      Bonus Type
+      <ng-container *ngIf="(sort$ | async)?.column !== 'bonus_name'; else bonusNameSorted">
+        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+        </svg>
+      </ng-container>
+      <ng-template #bonusNameSorted>
+        {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
+      </ng-template>
+    </div>
     <div class="cursor-pointer flex items-center" (click)="sortPools('volume_7d')">
       7d Volume
       <ng-container *ngIf="(sort$ | async)?.column !== 'volume_7d'; else volumeSorted">
