@@ -5,6 +5,7 @@ import { environment } from '../environments/environment';
 
 export interface PortfolioItem {
   poolName: string;
+  tx?: string;
   leftIcon: string;
   rightIcon: string;
   leftAlt: string;

@@ -15,16 +15,27 @@ import { PoolIconPairComponent } from '../pool-icon-pair/pool-icon-pair.componen
 import { PortfolioService, PortfolioItem } from '../portfolio.service';
 import { RadixConnectService } from '../radix-connect.service';
 import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
+import { ShortenAddressPipe } from '../shorten-address.pipe';
 
 type PortfolioFilterableColumns = keyof Omit<
   PortfolioItem,
-  'strategy' | 'loanAmount' | 'loanCurrency' | 'borrowAmount' | 'borrowCurrency'
+  | 'strategy'
+  | 'loanAmount'
+  | 'loanCurrency'
+  | 'borrowAmount'
+  | 'borrowCurrency'
+  | 'tx'
 >;
 
 @Component({
   selector: 'app-portfolio',
   standalone: true,
-  imports: [CommonModule, FormsModule, PoolIconPairComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    PoolIconPairComponent,
+    ShortenAddressPipe,
+  ],
   templateUrl: './portfolio.component.html',
   styleUrls: ['./portfolio.component.css'],
 })

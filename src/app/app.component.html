@@ -6,9 +6,9 @@
     </a>
     <div class="flex items-center space-x-2 sm:space-x-4">
       <ul class="hidden lg:flex items-center space-x-4 text-sm text-white">
-        <li><a class="hover:text-yellow-500 transition-colors duration-200" routerLink="/pools" routerLinkActive="text-yellow-500">Pools</a></li>
-        <li><a class="hover:text-yellow-500 transition-colors duration-200" routerLink="/strategies" routerLinkActive="text-yellow-500">Strategies</a></li>
-        <li><a class="hover:text-yellow-500 transition-colors duration-200" routerLink="/portfolio" routerLinkActive="text-yellow-500">Portfolio</a></li>
+        <li><a class="hover:text-yellow-500 text-lg transition-colors duration-200" routerLink="/pools" routerLinkActive="text-yellow-500">Pools</a></li>
+        <li><a class="hover:text-yellow-500 text-lg transition-colors duration-200" routerLink="/strategies" routerLinkActive="text-yellow-500">Strategies</a></li>
+        <li><a class="hover:text-yellow-500 text-lg transition-colors duration-200" routerLink="/portfolio" routerLinkActive="text-yellow-500">Portfolio</a></li>
       </ul>
       <div *ngIf="selectedAccount$ | async as selectedAccount" class="relative">
         <button (click)="toggleAccountDropdown()" class="flex items-center bg-gray-700 rounded-full px-2 sm:px-3 py-1 text-xs sm:text-sm text-white">
