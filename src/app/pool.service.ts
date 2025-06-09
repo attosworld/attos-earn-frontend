@@ -31,6 +31,7 @@ export interface Pool {
   deposit_link: string;
   boosted: boolean;
   incentivised_lp_docs: string;
+  tags: string[];
 }
 
 @Injectable({

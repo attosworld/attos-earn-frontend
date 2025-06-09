@@ -161,11 +161,11 @@
                 Borrowed: {{ item.borrowAmount | currency:'':'':'1.2-2' }} {{ item.borrowCurrency }}
               </div>
             </td>
-            <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': item.pnl > 0, 'text-red-500': item.pnl < 0}">
+            <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
               <span class="inline-block md:hidden font-medium mr-2">PnL:</span>
               {{ item.pnl | currency }}
             </td>
-            <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': item.pnlPercentage > 0, 'text-red-500': item.pnlPercentage < 0}">
+            <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnlPercentage > 0, 'text-red-500': +item.pnlPercentage < 0}">
               <span class="inline-block md:hidden font-medium mr-2">PnL %:</span>
               {{ item.pnlPercentage | number:'1.2-2' }}%
             </td>

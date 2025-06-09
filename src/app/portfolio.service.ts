@@ -10,12 +10,12 @@ export interface PortfolioItem {
   rightIcon: string;
   leftAlt: string;
   rightAlt: string;
-  invested: number;
-  currentValue: number;
-  investedXrd: number;
-  currentValueXrd: number;
-  pnl: number;
-  pnlPercentage: number;
+  invested: string;
+  currentValue: string;
+  investedXrd: string;
+  currentValueXrd: string;
+  pnl: string;
+  pnlPercentage: string;
   provider: string;
   closeManifest: string;
   strategy?: boolean;

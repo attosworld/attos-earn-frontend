@@ -9,6 +9,7 @@ import {
   debounceTime,
   switchMap,
   tap,
+  share,
 } from 'rxjs/operators';
 import Fuse from 'fuse.js';
 import { PoolIconPairComponent } from '../pool-icon-pair/pool-icon-pair.component';
@@ -125,7 +126,7 @@ export class PortfolioComponent implements OnInit {
             this.calculateTotals(items);
           }),
           finalize(() => (this.isLoading = false)),
-          shareReplay(1)
+          share()
         );
       })
     );
@@ -139,7 +140,7 @@ export class PortfolioComponent implements OnInit {
         const filteredItems = this.searchPortfolioItems(items, searchTerm);
         return this.sortPortfolioItemsByColumn(filteredItems, sort);
       }),
-      shareReplay(1)
+      share()
     );
   }
 
