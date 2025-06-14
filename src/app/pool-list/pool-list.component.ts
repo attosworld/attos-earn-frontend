@@ -119,22 +119,6 @@ export class PoolListComponent implements AfterViewInit {
     })[]
   > = of([]);
 
-  // Update these methods to work with the Observable
-  calculateMaxVolume(volumes: Record<string, number>) {
-    this.maxVolume = Math.max(...Object.values(volumes));
-    this.maxVolume = Math.ceil(this.maxVolume / 1000) * 1000;
-  }
-
-  generateLastSevenDays(volumes: Record<string, number>) {
-    return Object.keys(volumes)
-      .reverse()
-      .map(date => new Date(date));
-  }
-
-  getVolumes(volumes: Record<string, number>): number[] {
-    return Object.values(volumes).reverse();
-  }
-
   private sortSubject = new BehaviorSubject<SortEvent>({
     column: null,
     direction: 'none',

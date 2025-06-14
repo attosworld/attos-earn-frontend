@@ -586,19 +586,4 @@ export class StrategiesComponent {
   toggleFaq(index: number) {
     this.faqs[index].isOpen = !this.faqs[index].isOpen;
   }
-
-  calculateMaxVolume(volumes: Record<string, number>) {
-    this.maxVolume = Math.max(...Object.values(volumes));
-    this.maxVolume = Math.ceil(this.maxVolume / 1000) * 1000;
-  }
-
-  generateLastSevenDays(volumes: Record<string, number>) {
-    return Object.keys(volumes)
-      .reverse()
-      .map(date => new Date(date));
-  }
-
-  getVolumes(volumes: Record<string, number>): number[] {
-    return Object.values(volumes).reverse();
-  }
 }
