@@ -52,7 +52,9 @@
           <div class="space-y-3">
             <ng-container *ngIf="featuredPools$ | async as featured">
               <div *ngFor="let pool of featured.deepestLiquidity"
-                class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer">
+                class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
+                (click)="openDepositModal(pool)"
+                >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
                     <app-pool-icon-pair
@@ -89,7 +91,9 @@
           <div class="space-y-3">
             <ng-container *ngIf="featuredPools$ | async as featured">
               <div *ngFor="let pool of featured.highestVolume"
-                class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer">
+                class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
+                (click)="openDepositModal(pool)"
+                >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
                     <app-pool-icon-pair
@@ -126,7 +130,9 @@
           <div class="space-y-3">
             <ng-container *ngIf="featuredPools$ | async as featured">
               <div *ngFor="let pool of featured.bestBonus"
-                class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer">
+                class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
+                (click)="openDepositModal(pool)"
+                >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
                     <app-pool-icon-pair
