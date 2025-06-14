@@ -1,0 +1,35 @@
+<ng-container *ngIf="sevenDayVolume as sevenDayVolume">
+  <div class="mb-6">
+    <h3 class="text-lg font-semibold mb-2">7-Day Volume Chart</h3>
+    <div class="bg-gray-700 p-4 rounded-lg pt-8">
+      <div class="flex">
+        <!-- Y-axis labels -->
+        <div class="flex flex-col justify-between text-xs text-gray-400 pr-2">
+          {{ calculateMaxVolume(sevenDayVolume) }}
+          <span>{{ maxVolume | currency:'USD':'symbol':'1.0-0' }}</span>
+          <span>{{ (maxVolume * 0.75) | currency:'USD':'symbol':'1.0-0' }}</span>
+          <span>{{ (maxVolume * 0.5) | currency:'USD':'symbol':'1.0-0' }}</span>
+          <span>{{ (maxVolume * 0.25) | currency:'USD':'symbol':'1.0-0' }}</span>
+          <span>$0</span>
+        </div>
+        <!-- Chart bars -->
+        <div class="flex-grow">
+          <div class="flex items-end h-40 space-x-2">
+            <ng-container *ngFor="let volume of getVolumes(sevenDayVolume); let i = index">
+              <div class="flex-1 bg-yellow-500 rounded-t relative" [style.height.%]="(volume / maxVolume) * 100">
+                <span class="absolute top-[-20px] left-1/2 transform -translate-x-1/2 text-xs text-gray-400">
+                  {{ volume | currency:'USD':'symbol':'1.0-0' }}
+                </span>
+              </div>
+            </ng-container>
+          </div>
+          <div class="flex justify-between mt-2 text-xs text-gray-400">
+            <ng-container *ngFor="let date of generateLastSevenDays(sevenDayVolume)">
+              <span>{{ date | date:'MMM d' }}</span>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

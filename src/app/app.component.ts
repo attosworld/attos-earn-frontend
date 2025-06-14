@@ -14,6 +14,7 @@ import {
 } from '@angular/router';
 import { RadixConnectService } from './radix-connect.service';
 import { WalletDataStateAccount } from '@radixdlt/radix-dapp-toolkit';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -41,6 +42,29 @@ export class AppComponent implements OnInit {
   selectedAccount$ = this.radixConnect.getSelectedAccount();
 
   accounts$ = this.radixConnect.getAccounts();
+
+  baseBalances = this.radixConnect.getWalletData().pipe(
+    map(balances => {
+      const xrdBalance = balances?.fungibles.find(
+        token => token.resourceInfo.resourceAddress === RadixConnectService.XRD
+      );
+
+      const dfp2Balance = balances?.fungibles.find(
+        token => token.resourceInfo.resourceAddress === RadixConnectService.DFP2
+      );
+
+      return {
+        XRD: {
+          balance: xrdBalance?.balance,
+          iconUrl: xrdBalance?.resourceInfo.metadata.iconUrl,
+        },
+        DFP2: {
+          balance: dfp2Balance?.balance,
+          iconUrl: dfp2Balance?.resourceInfo.metadata.iconUrl,
+        },
+      };
+    })
+  );
 
   ngOnInit() {
     this.checkScreenSize();
@@ -83,7 +107,7 @@ export class AppComponent implements OnInit {
   }
 
   ultraShortenAddress(address: string): string {
-    return address ? `${address.slice(0, 2)}...${address.slice(-2)}` : '';
+    return address ? `${address.slice(0, 4)}...${address.slice(-4)}` : '';
   }
 
   checkBannerVisibility() {

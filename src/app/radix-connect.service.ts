@@ -48,6 +48,12 @@ export interface ResourceRoleAndInfo {
   providedIn: 'root',
 })
 export class RadixConnectService {
+  static XRD =
+    'resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd';
+
+  static DFP2 =
+    'resource_rdx1t5ywq4c6nd2lxkemkv4uzt8v7x7smjcguzq5sgafwtasa6luq7fclq';
+
   setSelectedAccount(account: WalletDataStateAccount) {
     this.selectedAccount$.next(account);
   }
@@ -122,7 +128,6 @@ export class RadixConnectService {
         const address = account.address;
 
         if (this.accountBalanceCache$.getValue()[address]) {
-          console.log('Using cached balances');
           return this.accountBalanceCache$
             .asObservable()
             .pipe(map(balances => balances[address]));

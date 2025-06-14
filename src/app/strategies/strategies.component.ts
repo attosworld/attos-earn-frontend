@@ -27,6 +27,7 @@ import Decimal from 'decimal.js';
 import Fuse from 'fuse.js';
 import { PoolDetailsComponent } from '../pool-details/pool-details.component';
 import { PoolService } from '../pool.service';
+import { VolumeChartComponent } from '../volume-chart/volume-chart.component';
 
 interface StrategyFilters {
   requiredAssets: string[];
@@ -48,6 +49,7 @@ interface ApyFilter {
     PrecisionPoolComponent,
     TokenInputComponent,
     PoolDetailsComponent,
+    VolumeChartComponent,
   ],
   templateUrl: './strategies.component.html',
   styleUrls: ['./strategies.component.css'],
@@ -120,7 +122,7 @@ export class StrategiesComponent {
   private poolService = inject(PoolService);
   ociswapService = inject(OciswapService);
 
-  sevenDayVolume$: Observable<number[]> | undefined;
+  sevenDayVolume$: Observable<Record<string, number>> | undefined;
 
   requiredAssetsFilter: string[] = [];
   rewardTokensFilter: string[] = [];
@@ -585,20 +587,18 @@ export class StrategiesComponent {
     this.faqs[index].isOpen = !this.faqs[index].isOpen;
   }
 
-  calculateMaxVolume(volumes: number[]) {
-    this.maxVolume = Math.max(...volumes);
+  calculateMaxVolume(volumes: Record<string, number>) {
+    this.maxVolume = Math.max(...Object.values(volumes));
     this.maxVolume = Math.ceil(this.maxVolume / 1000) * 1000;
   }
 
-  generateLastSevenDays() {
-    const today = new Date();
-    this.lastSevenDays = Array(7)
-      .fill(null)
-      .map((_, i) => {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        return date;
-      })
-      .reverse();
+  generateLastSevenDays(volumes: Record<string, number>) {
+    return Object.keys(volumes)
+      .reverse()
+      .map(date => new Date(date));
+  }
+
+  getVolumes(volumes: Record<string, number>): number[] {
+    return Object.values(volumes).reverse();
   }
 }

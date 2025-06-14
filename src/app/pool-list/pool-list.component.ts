@@ -6,7 +6,6 @@ import {
   AfterViewInit,
   inject,
   ChangeDetectorRef,
-  OnInit,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -25,6 +24,8 @@ import {
   switchMap,
   tap,
   catchError,
+  share,
+  filter,
 } from 'rxjs/operators';
 import Fuse from 'fuse.js';
 import { PrecisionPoolComponent } from '../precision-pool/precision-pool.component';
@@ -37,11 +38,12 @@ import { TokenInputComponent } from '../token-input/token-input.component';
 import { PoolDetailsComponent } from '../pool-details/pool-details.component';
 import { PortfolioItem, PortfolioService } from '../portfolio.service';
 import { PoolIconPairComponent } from '../pool-icon-pair/pool-icon-pair.component';
+import { VolumeChartComponent } from '../volume-chart/volume-chart.component';
 import { ShortenAddressPipe } from '../shorten-address.pipe';
 
 type SortColumn = 'tvl' | 'bonus_7d' | 'volume_7d' | 'bonus_name' | null;
 type SortDirection = 'asc' | 'desc' | 'none';
-type PoolType = 'all' | 'double' | 'single' | 'boosted';
+type PoolType = 'all' | 'double' | 'single' | 'boosted' | 'my_pools';
 
 interface SortEvent {
   column: SortColumn;
@@ -74,17 +76,18 @@ export type TagFilters = Record<string, boolean>;
     PoolDetailsComponent,
     PoolIconPairComponent,
     ShortenAddressPipe,
+    VolumeChartComponent,
   ],
   providers: [PoolService],
   templateUrl: './pool-list.component.html',
   styleUrls: ['./pool-list.component.css'],
 })
-export class PoolListComponent implements AfterViewInit, OnInit {
+export class PoolListComponent implements AfterViewInit {
   @ViewChild(CdkVirtualScrollViewport) viewport!: CdkVirtualScrollViewport;
 
   @ViewChild('dummyItem') dummyItem!: ElementRef;
 
-  sevenDayVolume$: Observable<number[]> | undefined;
+  sevenDayVolume$: Observable<Record<string, number>> | undefined;
 
   cdRef = inject(ChangeDetectorRef);
   sevenDayVolume: number[] = [3000, 5000, 2000, 8000, 6500, 4500, 7000];
@@ -92,6 +95,8 @@ export class PoolListComponent implements AfterViewInit, OnInit {
   lastSevenDays: Date[] = [];
 
   tagFilters: TagFilters = {
+    'bridged token': false,
+    dex: false,
     defi: false,
     dao: false,
     meme: false,
@@ -108,27 +113,26 @@ export class PoolListComponent implements AfterViewInit, OnInit {
   };
 
   closingItems: Record<string, boolean> = {};
-
-  ngOnInit() {
-    this.generateLastSevenDays();
-  }
+  portfolioPools: Observable<
+    (Pool & {
+      volume_chart: Observable<Record<string, number>>;
+    })[]
+  > = of([]);
 
   // Update these methods to work with the Observable
-  calculateMaxVolume(volumes: number[]) {
-    this.maxVolume = Math.max(...volumes);
+  calculateMaxVolume(volumes: Record<string, number>) {
+    this.maxVolume = Math.max(...Object.values(volumes));
     this.maxVolume = Math.ceil(this.maxVolume / 1000) * 1000;
   }
 
-  generateLastSevenDays() {
-    const today = new Date();
-    this.lastSevenDays = Array(7)
-      .fill(null)
-      .map((_, i) => {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        return date;
-      })
-      .reverse();
+  generateLastSevenDays(volumes: Record<string, number>) {
+    return Object.keys(volumes)
+      .reverse()
+      .map(date => new Date(date));
+  }
+
+  getVolumes(volumes: Record<string, number>): number[] {
+    return Object.values(volumes).reverse();
   }
 
   private sortSubject = new BehaviorSubject<SortEvent>({
@@ -198,6 +202,84 @@ export class PoolListComponent implements AfterViewInit, OnInit {
     shareReplay(1)
   );
 
+  featuredPools$ = this.pools$.pipe(
+    map(pools => {
+      // Create a copy of the pools array to avoid modifying the original
+      const poolsCopy = [...pools];
+
+      // Sort by TVL (descending) for deepest liquidity
+      const deepestLiquidity = [...poolsCopy]
+        .sort((a, b) => b.tvl - a.tvl)
+        .slice(0, 3);
+
+      // Sort by 7-day volume (descending) for highest volume
+      const highestVolume = [...poolsCopy]
+        .sort((a, b) => b.volume_7d - a.volume_7d)
+        .slice(0, 3);
+
+      // Sort by bonus rate (descending) for best bonus rates
+      // Only include pools that are marked as boosted
+      const bestBonus = [...poolsCopy]
+        .filter(pool => pool.boosted)
+        .sort((a, b) => b.bonus_7d - a.bonus_7d)
+        .slice(0, 3);
+
+      return {
+        deepestLiquidity,
+        highestVolume,
+        bestBonus,
+      };
+    }),
+    shareReplay(1)
+  );
+
+  portfolioItems$ = (this.radixConnectService.getAccounts() || of([])).pipe(
+    switchMap(accounts => {
+      if (!accounts || !accounts.length) {
+        return of([]).pipe(
+          finalize(() => (this.isLoading = false)),
+          shareReplay(1)
+        );
+      }
+
+      return combineLatest(
+        accounts.map(account =>
+          this.portfolioService.getPortfolioItems(account.address)
+        )
+      ).pipe(
+        map(itemArrays => itemArrays.flat()),
+        finalize(() => (this.isPortfolioLoading = false)),
+        tap(portfolioItems => {
+          this.portfolioPools = this.pools$.pipe(
+            map(pools =>
+              pools
+                .filter(pool =>
+                  portfolioItems.some(
+                    item =>
+                      item.component === pool.component &&
+                      pool.sub_type !== 'single'
+                  )
+                )
+                .map(
+                  pool =>
+                    ({
+                      ...pool,
+                      volume_chart: this.poolService
+                        .getPoolVolumePerDay(pool.component, pool.type)
+                        .pipe(map(volumeData => volumeData.volume_per_day)),
+                    }) as Pool & {
+                      volume_chart: Observable<Record<string, number>>;
+                    }
+                )
+            ),
+            tap(pi => console.log(pi))
+          );
+        })
+      );
+    }),
+    share()
+  );
+
   sortedPools$ = combineLatest([
     this.pools$,
     this.sort$,
@@ -206,6 +288,7 @@ export class PoolListComponent implements AfterViewInit, OnInit {
     this.filters$,
   ]).pipe(
     map(([pools, sort, searchTerm, selectedTab, filters]) => {
+      console.log(selectedTab);
       let filteredPools = this.filterPoolsByType(pools, selectedTab);
       filteredPools = this.searchPools(filteredPools, searchTerm);
       filteredPools = this.applyAdvancedFilters(filteredPools, filters);
@@ -253,26 +336,6 @@ export class PoolListComponent implements AfterViewInit, OnInit {
   //       'CALL_METHOD\n  Address("account_rdx12962a8y6penj8wudzyddp07r6l4uccvaxyet2pqptkx96ylk5n770v")\n  "withdraw"\n  Address("resource_rdx1t4z3dn6u57kj069wru4tkmdrx8njz2d9a5rlfsphs87cyuaj9tufv0")\n  Decimal("2361.061214041296133865")\n;\nTAKE_ALL_FROM_WORKTOP\n  Address("resource_rdx1t4z3dn6u57kj069wru4tkmdrx8njz2d9a5rlfsphs87cyuaj9tufv0")\n  Bucket("surge_lp")\n;\nCALL_METHOD\n  Address("component_rdx1cz9akawaf6d2qefds33c5py9w3fjpgp2qnaddtlcxm06m060wl2j68")\n  "remove_liquidity"\n  Bucket("surge_lp")\n  false\n;\nCALL_METHOD\n  Address("account_rdx12962a8y6penj8wudzyddp07r6l4uccvaxyet2pqptkx96ylk5n770v")\n  "deposit_batch"\n  Expression("ENTIRE_WORKTOP")\n;',
   //   },
   // ] as PortfolioItem[]);
-
-  portfolioItems$ = (this.radixConnectService.getAccounts() || of([])).pipe(
-    switchMap(accounts => {
-      if (!accounts || !accounts.length) {
-        return of([]).pipe(
-          finalize(() => (this.isLoading = false)),
-          shareReplay(1)
-        );
-      }
-
-      return combineLatest(
-        accounts.map(account =>
-          this.portfolioService.getPortfolioItems(account.address)
-        )
-      ).pipe(
-        map(itemArrays => itemArrays.flat()),
-        finalize(() => (this.isPortfolioLoading = false))
-      );
-    })
-  );
 
   sortPools(column: SortColumn) {
     const currentSort = this.sortSubject.value;
@@ -757,5 +820,24 @@ export class PoolListComponent implements AfterViewInit, OnInit {
     } finally {
       this.closingItems[item.poolName] = false;
     }
+  }
+
+  private userHasPosition(
+    pool: Pool,
+    portfolioItems: PortfolioItem[]
+  ): boolean {
+    // Implement this method to check if the user has a position in the given pool
+    // You can use the portfolioItems$ observable to check this
+    if (portfolioItems.some(item => item.component === pool.component)) {
+      console.log(portfolioItems.some(item => item.component === pool.name));
+    }
+    return portfolioItems.some(item => item.component === pool.component);
+    // return portfolioItems.some(item => item.poolName === pool.name);
+  }
+
+  getPoolVolume(pool: Pool): Observable<Record<string, number>> {
+    return this.poolService
+      .getPoolVolumePerDay(pool.component, pool.type)
+      .pipe(map(volumeData => volumeData.volume_per_day));
   }
 }
