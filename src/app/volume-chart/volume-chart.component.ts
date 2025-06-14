@@ -18,12 +18,10 @@ export class VolumeChartComponent {
   }
 
   generateLastSevenDays(volumes: Record<string, number>) {
-    return Object.keys(volumes)
-      .reverse()
-      .map(date => new Date(date));
+    return Object.keys(volumes).map(date => new Date(date));
   }
 
   getVolumes(volumes: Record<string, number>): number[] {
-    return Object.values(volumes).reverse();
+    return Object.values(volumes);
   }
 }
