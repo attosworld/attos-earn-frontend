@@ -96,6 +96,7 @@ export class PoolListComponent implements AfterViewInit {
 
   tagFilters: TagFilters = {
     'bridged token': false,
+    stablecoin: false,
     dex: false,
     defi: false,
     dao: false,
