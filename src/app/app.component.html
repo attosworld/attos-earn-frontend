@@ -20,12 +20,26 @@
                 <div>
                   <div class="text-white text-sm font-medium">{{ balances.XRD.balance | number:'1.0-2' }}</div>
                 </div>
+                <a href="https://astrl.trade/bridge" target="_blank" rel="noopener noreferrer"
+                                                                     class="ml-2 text-yellow-500 hover:text-yellow-400 transition-colors duration-200 bg-gray-900 rounded-sm"
+                                                                     title="Fund XRD via Astrolescent Bridge">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                </a>
               </div>
               <div class="flex items-center">
                 <img src="https://radix.defiplaza.net/assets/img/babylon/defiplaza-icon.png" alt="DFP2" class="w-5 h-5 mr-2">
                 <div>
                   <div class="text-white text-sm font-medium">{{ balances.DFP2.balance | number:'1.0-2' }}</div>
                 </div>
+                <button (click)="openDFP2SwapModal()"
+                  class="ml-2 text-yellow-500 hover:text-yellow-400 transition-colors duration-200 bg-gray-900 rounded-sm"
+                  title="Fund DFP2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -100,15 +114,29 @@
             <div class="flex flex-col space-y-2">
               <div class="flex items-center bg-gray-700 rounded-md p-2">
                 <img src="https://assets.radixdlt.com/icons/icon-xrd.png" alt="XRD" class="w-5 h-5 mr-2">
-                <div>
+                <div class="flex-grow">
                   <div class="text-white text-sm font-medium">{{ balances.XRD.balance | number:'1.0-2' }} XRD</div>
                 </div>
+                <a href="https://astrl.trade/bridge" target="_blank" rel="noopener noreferrer"
+                                                                     class="text-yellow-500 hover:text-yellow-400 transition-colors duration-200 p-1"
+                                                                     title="Fund XRD via Astrolescent Bridge">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                </a>
               </div>
               <div class="flex items-center bg-gray-700 rounded-md p-2">
                 <img src="https://radix.defiplaza.net/assets/img/babylon/defiplaza-icon.png" alt="DFP2" class="w-5 h-5 mr-2">
-                <div>
+                <div class="flex-grow">
                   <div class="text-white text-sm font-medium">{{ balances.DFP2.balance | number:'1.0-2' }} DFP2</div>
                 </div>
+                <button (click)="openDFP2SwapModal()"
+                  class="text-yellow-500 hover:text-yellow-400 transition-colors duration-200 p-1"
+                  title="Swap XRD to DFP2">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                  </svg>
+                </button>
               </div>
             </div>
           </ng-container>
@@ -212,3 +240,99 @@
     </div>
   </div>
 </footer>
+
+<!-- DFP2 Swap Modal -->
+<div *ngIf="showSwapModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+  <div class="bg-gray-800 rounded-lg w-full max-w-md overflow-y-auto max-h-[90vh]">
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold text-yellow-500">Fund DFP2</h2>
+        <button (click)="closeSwapModal()" class="text-gray-400 hover:text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-300 mb-2">Amount of XRD to swap</label>
+        <div class="relative">
+          <input
+            type="number"
+            [value]="swapAmount"
+            [max]="(baseBalances | async)?.XRD?.balance || 0"
+            (input)="updateSwapAmount($event)"
+            [min]="0"
+            placeholder="Enter amount"
+            class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white pr-16"
+          >
+          <button
+            *ngIf="baseBalances | async as balances"
+            (click)="setMaxAmount(balances?.XRD?.balance || '0')"
+            class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-2 py-1 rounded text-xs font-medium"
+          >
+            MAX
+          </button>
+        </div>
+        <div class="flex justify-between text-xs text-gray-400 mt-1">
+          <span>Enter an amount to see the quote</span>
+          <span *ngIf="baseBalances | async as balances">Balance: {{ balances.XRD.balance | number:'1.0-6' }} XRD</span>
+        </div>
+      </div>
+
+      <div *ngIf="swapError" class="mb-4 p-3 bg-red-900 text-white rounded">
+        {{ swapError }}
+      </div>
+
+      <div *ngIf="isLoadingQuote" class="mb-6 bg-gray-700 p-4 rounded">
+        <div  class="text-center mb-3">
+          <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+      </div>
+
+      <ng-container *ngIf="!isLoadingQuote && (swapQuote$ | async) as swapQuote">
+        <div class="mb-6 bg-gray-700 p-4 rounded text-sm">
+          <div *ngIf="!isLoadingQuote">
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-300">You pay:</span>
+              <span class="font-medium">{{ swapAmount | number:'1.0-18' }} XRD</span>
+            </div>
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-300">You receive:</span>
+              <span class="font-medium">{{ swapQuote.outputTokens | number:'1.0-6' }} DFP2</span>
+            </div>
+            <div class="flex justify-between mb-2">
+              <span class="text-gray-300">Price impact:</span>
+              <span class="font-medium" [ngClass]="{'text-red-500': swapQuote.priceImpact > 5}">
+                {{ swapQuote.priceImpact | number:'1.2-2' }}%
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-300">Rate:</span>
+              <span class="font-medium">1 XRD = {{ swapQuote.outputTokens / +swapAmount | number:'1.0-6' }} DFP2</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button
+            (click)="closeSwapModal()"
+            class="bg-gray-700 text-white px-4 py-2 rounded mr-2 hover:bg-gray-600 transition duration-300"
+            >
+            Cancel
+          </button>
+          <button
+            (click)="executeSwap(swapQuote.manifest)"
+            class="bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300"
+            [disabled]="!swapQuote || isLoadingQuote"
+            >
+            Swap
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

@@ -452,10 +452,10 @@
               Current Value
             </th>
             <th class="py-2 px-4 text-right cursor-pointer" >
-              PnL
+              Profit/Loss
             </th>
             <th class="py-2 px-4 text-right cursor-pointer" >
-              PnL %
+              Profit/Loss %
             </th>
             <th class="py-2 px-4 text-right cursor-pointer" >
               Provider
@@ -489,37 +489,37 @@
                   </span>
                 </div>
               </td>
-              <td class="py-2 px-4 block md:table-cell md:text-right">
+              <td class="py-2 px-4 md:table-cell md:text-right hidden">
                 <span class="inline-block md:hidden font-medium mr-2">Invested:</span>
-                {{ item.invested | currency }}
+                <div>{{ item.invested | currency }}</div>
                 <div>~{{ item.investedXrd | currency:'':'':'1.2-2' }} XRD</div>
                 <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
                   Collateral: {{ item.loanAmount | currency:'':'':'1.2-2' }} {{ item.loanCurrency }}
                 </div>
               </td>
-              <td class="py-2 px-4 block md:table-cell md:text-right">
-                <span class="inline-block md:hidden font-medium mr-2">Current Value:</span>
-                <div>{{ item.currentValue | currency }}</div>
-                <div>~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD</div>
+              <td class="py-1 px-4 block md:table-cell md:text-right">
+                <span class="hidden md:hidden font-medium mr-2">Current Value:</span>
+                <div [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">{{ item.currentValue | currency }} (
+                ~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD)</div>
                 <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
                   Borrowed: {{ item.borrowAmount | currency:'':'':'1.2-2' }} {{ item.borrowCurrency }}
                 </div>
               </td>
-              <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
-                <span class="inline-block md:hidden font-medium mr-2">PnL:</span>
-                {{ item.pnl | currency }}
+              <td class="py-1 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
+                <span class="inline-block md:hidden font-medium mr-2">Profit/Loss:</span>
+                {{ item.pnl | currency }} <span class="inline-block md:hidden">({{ item.pnlPercentage | number:'1.2-2' }}%)</span>
               </td>
-              <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnlPercentage > 0, 'text-red-500': +item.pnlPercentage < 0}">
-                <span class="inline-block md:hidden font-medium mr-2">PnL %:</span>
+              <td class="py-2 px-4 hidden md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnlPercentage > 0, 'text-red-500': +item.pnlPercentage < 0}">
+                <span class="inline-block md:hidden font-medium mr-2">Profit/Loss %:</span>
                 {{ item.pnlPercentage | number:'1.2-2' }}%
               </td>
-              <td class="py-2 px-4 block md:table-cell md:text-right">
+              <td class="py-2 px-4 md:table-cell hidden md:text-right">
                 <span class="inline-block md:hidden font-medium mr-2">Provider:</span>
                 {{ item.provider }}
               </td>
               <td class="py-2 px-4 block md:table-cell">
-                <div class="flex justify-end">
-                  <span class="inline-block md:hidden font-medium mr-2">Actions:</span>
+                <div class="flex md:justify-end">
+                  <span class="hidden md:hidden font-medium mr-2">Actions:</span>
                   <button
                     *ngIf="item.strategy"
                     (click)="closeStrategy(item)"
@@ -538,7 +538,7 @@
                   <button
                     *ngIf="!item.strategy"
                     (click)="closeStrategy(item)"
-                    class="w-48 bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center ml-auto"
+                    class="w-48 bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center"
                     [disabled]="closingItems[item.poolName]"
                     >
                     @if (closingItems[item.poolName]) {

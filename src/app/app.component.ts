@@ -13,8 +13,24 @@ import {
   Router,
 } from '@angular/router';
 import { RadixConnectService } from './radix-connect.service';
-import { WalletDataStateAccount } from '@radixdlt/radix-dapp-toolkit';
-import { map } from 'rxjs';
+import {
+  TransactionStatus,
+  WalletDataStateAccount,
+} from '@radixdlt/radix-dapp-toolkit';
+import {
+  BehaviorSubject,
+  catchError,
+  debounceTime,
+  finalize,
+  from,
+  map,
+  Observable,
+  of,
+  share,
+  Subject,
+  switchMap,
+} from 'rxjs';
+import { AstrolescentService } from './astrolescent.service';
 
 @Component({
   selector: 'app-root',
@@ -38,6 +54,54 @@ export class AppComponent implements OnInit {
   radixConnect = inject(RadixConnectService);
 
   router = inject(Router);
+
+  showSwapModal = false;
+  swapAmount = '';
+  swapError = '';
+
+  // Subjects for reactive programming
+  private swapAmountSubject = new BehaviorSubject<string>('1000');
+
+  // Exposed observable for the template
+  swapQuote$ = this.swapAmountSubject.pipe(
+    debounceTime(500),
+    switchMap(amount => {
+      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+        this.swapError = 'Please enter a valid amount';
+        return of(null);
+      }
+
+      this.isLoadingQuote = true;
+      this.swapError = '';
+
+      return this.selectedAccount$.pipe(
+        switchMap(account => {
+          if (!account) {
+            return of(null);
+          }
+
+          return this.astrolescentService
+            .getSwapDetails({
+              inputToken: RadixConnectService.XRD,
+              outputToken: RadixConnectService.DFP2,
+              amount: amount,
+              accountAddress: account.address,
+            })
+            .pipe(
+              catchError(error => {
+                console.error('Error getting swap quote:', error);
+                this.swapError = 'Failed to get swap quote. Please try again.';
+                return of(null);
+              }),
+              finalize(() => {
+                this.isLoadingQuote = false;
+              })
+            );
+        })
+      );
+    }),
+    share()
+  );
 
   selectedAccount$ = this.radixConnect.getSelectedAccount();
 
@@ -65,6 +129,11 @@ export class AppComponent implements OnInit {
       };
     })
   );
+
+  isLoadingQuote: boolean | null = null;
+
+  astrolescentService = inject(AstrolescentService);
+  topupStatus: Observable<string> = of('');
 
   ngOnInit() {
     this.checkScreenSize();
@@ -118,5 +187,45 @@ export class AppComponent implements OnInit {
   closeBanner() {
     this.showBanner = false;
     localStorage.setItem('bannerClosed', 'true');
+  }
+
+  openDFP2SwapModal() {
+    this.showSwapModal = true;
+    this.swapAmount = '1000';
+    this.swapError = '';
+  }
+
+  closeSwapModal() {
+    this.showSwapModal = false;
+  }
+
+  async executeSwap(manifest: string) {
+    if (!this.swapQuote$) {
+      this.swapError = 'Please get a quote first';
+      return;
+    }
+
+    try {
+      this.topupStatus = from(
+        this.radixConnect
+          .sendTransaction(manifest)
+          ?.map(f => f.status)
+          .mapErr(() => TransactionStatus.Rejected)
+          .unwrapOr(TransactionStatus.Rejected) || TransactionStatus.Rejected
+      );
+    } catch (error) {
+      console.error('Error executing swap:', error);
+      this.swapError = 'Failed to execute swap. Please try again.';
+    }
+  }
+
+  updateSwapAmount(event: Event) {
+    this.swapAmount = (event.target as HTMLInputElement).value;
+    this.swapAmountSubject.next(this.swapAmount);
+  }
+
+  setMaxAmount(max: string) {
+    this.swapAmount = max;
+    this.swapAmountSubject.next(this.swapAmount);
   }
 }
