@@ -5,6 +5,7 @@ import { environment } from '../environments/environment';
 
 export interface Pool {
   type: string;
+  side?: 'base' | 'quote';
   component: string;
   sub_type: string;
   xRatio: string;
@@ -52,6 +53,15 @@ export class PoolService {
   ): Observable<{ volume_per_day: Record<string, number> }> {
     return this.http.get<{ volume_per_day: Record<string, number> }>(
       `${this.apiUrl}/volume/${component}?provider=${provider}`
+    );
+  }
+
+  getPoolPerformance(
+    baseToken: string,
+    type: 'base' | 'quote' | undefined
+  ): Observable<Record<string, number>> {
+    return this.http.get<Record<string, number>>(
+      `${this.apiUrl}/performance?base_token=${baseToken}&type=${type ? type : ''}`
     );
   }
 }

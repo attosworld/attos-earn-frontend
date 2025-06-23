@@ -37,7 +37,7 @@
 
   <div class="bg-gray-900 text-white p-4">
     <!-- Featured Pools Section -->
-    <div class="mb-8">
+    <div class="mb-8" *ngIf="balances$ | async as balances">
       <h2 class="text-2xl font-bold text-yellow-500 mb-4">Featured Pools</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
@@ -53,7 +53,7 @@
             <ng-container *ngIf="featuredPools$ | async as featured">
               <div *ngFor="let pool of featured.deepestLiquidity"
                 class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
-                (click)="openDepositModal(pool)"
+                (click)="openDepositModal(pool, balances)"
                 >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
@@ -92,7 +92,7 @@
             <ng-container *ngIf="featuredPools$ | async as featured">
               <div *ngFor="let pool of featured.highestVolume"
                 class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
-                (click)="openDepositModal(pool)"
+                (click)="openDepositModal(pool, balances)"
                 >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
@@ -131,7 +131,7 @@
             <ng-container *ngIf="featuredPools$ | async as featured">
               <div *ngFor="let pool of featured.bestBonus"
                 class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
-                (click)="openDepositModal(pool)"
+                (click)="openDepositModal(pool, balances)"
                 >
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
@@ -384,7 +384,7 @@
           <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-yellow-500"></div>
         </div>
 
-        <div>
+        <div *ngIf="balances$ | async as balances">
           <ng-container *ngIf="sortedPools$ | async as pools">
             <ng-container *ngIf="!isLoading">
               <div #dummyItem class="fixed opacity-0" *ngIf="pools.length > 0">
@@ -393,13 +393,13 @@
 
               <cdk-virtual-scroll-viewport
                 [itemSize]="itemSize"
-                class="h-[calc(100vh-300px)] w-full overflow-x-hidden"
+                class="h-[calc(100vh-300px)] w-full overflow-x-hidden min-h-90"
                 *ngIf="(selectedTab$ | async) !== 'my_pools'">
                 <div class="w-full overflow-x-hidden">
                   <app-pool-item
                     *cdkVirtualFor="let pool of pools"
                     [pool]="pool"
-                    (depositClicked)="openDepositModal(pool)"
+                    (depositClicked)="openDepositModal(pool, balances)"
                     class="w-full">
                   </app-pool-item>
                 </div>
@@ -567,8 +567,21 @@
             <!-- Pool Details (left side on larger screens, top on smaller screens) -->
             <div class="lg:w-1/2 mb-6 lg:mb-0">
 
-              <!-- 7-Day Volume Chart -->
-              <app-volume-chart [sevenDayVolume]="sevenDayVolume$ | async"></app-volume-chart>
+              <!-- Chart Toggle Component -->
+              <app-chart-toggle
+                [selectedType]="selectedChartType"
+                [lpPerformanceEnabled]="lpPerformanceEnabled"
+                (typeChange)="selectedChartType = $event">
+              </app-chart-toggle>
+
+              <!-- Conditionally display either Volume Chart or LP Performance Chart -->
+              <ng-container *ngIf="selectedChartType === 'volume'">
+                <app-volume-chart [sevenDayVolume]="sevenDayVolume$ | async"></app-volume-chart>
+              </ng-container>
+              <ng-container *ngIf="selectedChartType === 'performance' && lpPerformanceEnabled">
+                <app-lp-performance-chart [tokenValueData]="tokenValueData$ | async"></app-lp-performance-chart>
+              </ng-container>
+
               <app-pool-details [poolInfo]="selectedPool"></app-pool-details>
             </div>
 

@@ -43,6 +43,8 @@ export interface ExecuteStrategyResponse {
 export class StrategiesService {
   private apiUrl = environment.apiUrl;
 
+  private baseV2 = `${environment.apiUrl}/v2`;
+
   http = inject(HttpClient);
 
   getStats(): Observable<StrategyStats> {
@@ -104,5 +106,14 @@ export class StrategiesService {
           throw error; // Rethrow the error to be handled by the component
         })
       );
+  }
+
+  getStrategiesV2() {
+    return this.http.get<Strategy[]>(`${this.baseV2}/strategies`).pipe(
+      catchError(error => {
+        console.error('Error executing strategy:', error);
+        throw error; // Rethrow the error to be handled by the component
+      })
+    );
   }
 }

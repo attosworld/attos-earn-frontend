@@ -1,0 +1,75 @@
+<ng-container *ngIf="tokenValueData as tokenValueData">
+  <div class="mb-6">
+    <h3 class="text-lg font-semibold mb-2">LP Token Value (30 Days)</h3>
+    <div class="bg-gray-700 p-4 rounded-lg">
+      <div class="flex">
+        <!-- Y-axis labels -->
+        <div class="flex flex-col justify-between text-xs text-gray-400 pr-2 h-40">
+          <span>{{ maxYAxisValue | number:'1.0-0' }} XRD</span>
+          <span>{{ getYAxisValue(0.75) | number:'1.0-0' }} XRD</span>
+          <span>{{ getYAxisValue(0.5) | number:'1.0-0' }} XRD</span>
+          <span>{{ getYAxisValue(0.25) | number:'1.0-0' }} XRD</span>
+          <span>{{ minYAxisValue | number:'1.0-0' }} XRD</span>
+        </div>
+
+        <!-- Chart area -->
+        <div class="flex-grow">
+          <div class="relative h-40">
+            <!-- Grid lines -->
+            <div class="absolute inset-0 border-b border-gray-600"></div>
+            <div class="absolute inset-0 h-1/4 border-b border-gray-600 border-opacity-50"></div>
+            <div class="absolute inset-0 h-2/4 border-b border-gray-600 border-opacity-50"></div>
+            <div class="absolute inset-0 h-3/4 border-b border-gray-600 border-opacity-50"></div>
+
+            <!-- Chart line -->
+            <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <polyline
+                *ngIf="chartValues.length > 0"
+                [attr.points]="chartPoints"
+                fill="none"
+                stroke="#FBBF24"
+                stroke-width="1"
+              />
+              <ng-container *ngFor="let value of chartValues; let i = index">
+                <circle
+                  [attr.cx]="getPointX(i)"
+                  [attr.cy]="getPointY(value)"
+                  r="0.25"
+                  fill="#FBBF20"
+                />
+              </ng-container>
+            </svg>
+          </div>
+
+          <!-- X-axis dates -->
+          <div class="flex justify-between mt-2 text-xs text-gray-400">
+            <!-- Show only a subset of dates to avoid overcrowding -->
+            <ng-container *ngFor="let date of getDisplayDates(); let i = index">
+              <span>{{ date | date:'MMM d' }}</span>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tooltip or value indicator -->
+      <div class="mt-4 flex justify-between text-sm">
+        <div class="text-gray-400">
+          <span>Start: </span>
+          <span class="text-white">{{ getFirstValue() | number:'1.2-2' }} XRD</span>
+        </div>
+        <div class="text-gray-400">
+          <span>End: </span>
+          <span class="text-white">{{ getLastValue() | number:'1.2-2' }} XRD</span>
+        </div>
+        <div class="text-gray-400">
+          <span>Change: </span>
+          <span [class.text-green-400]="getPercentChange() > 0"
+                [class.text-red-400]="getPercentChange() < 0"
+                class="font-medium">
+            {{ getPercentChange() > 0 ? '+' : '' }}{{ getPercentChange().toFixed(2) }}%
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

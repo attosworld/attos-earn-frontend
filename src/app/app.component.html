@@ -1,14 +1,38 @@
-<nav class="bg-gray-800 p-4 relative">
+<nav class="bg-gray-800 p-1 relative">
   <div class="container mx-auto flex items-center justify-between">
     <a routerLink="/" class="flex items-center text-white text-xl font-bold">
-      <img src="attos-earn-logo.png" alt="Attos Earn Logo" class="h-14 w-auto mr-2">
-      <span class="animate-title page-title text-xl">Attos Earn</span>
+      <img src="attos-earn-logo.png" alt="Attos Earn Logo" class="h-10 w-auto mr-2">
+      <span class="animate-title page-title text-3xl">Attos Earn</span>
     </a>
     <div class="flex items-center space-x-2 sm:space-x-4">
       <ul class="hidden lg:flex items-center space-x-4 text-sm text-white">
-        <li><a class="hover:text-yellow-500 text-lg transition-colors duration-200" routerLink="/pools" routerLinkActive="text-yellow-500">Pools</a></li>
-        <li><a class="hover:text-yellow-500 text-lg transition-colors duration-200" routerLink="/strategies" routerLinkActive="text-yellow-500">Strategies</a></li>
-        <li><a class="hover:text-yellow-500 text-lg transition-colors duration-200" routerLink="/portfolio" routerLinkActive="text-yellow-500">Portfolio</a></li>
+        <li>
+          <a class="relative px-1 py-1 hover:text-yellow-500 transition-colors duration-200"
+             routerLink="/pools"
+             [class.text-yellow-500]="isActive('/pools')">
+            Pools
+            <span class="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-500 transform origin-center transition-all duration-300"
+                  [ngClass]="isActive('/pools') ? 'scale-x-100' : 'scale-x-0 hover:scale-x-100'"></span>
+          </a>
+        </li>
+        <li>
+          <a class="relative px-1 py-1 hover:text-yellow-500 transition-colors duration-200"
+             routerLink="/strategies"
+             [class.text-yellow-500]="isActive('/strategies')">
+            Strategies
+            <span class="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-500 transform origin-center transition-all duration-300"
+                  [ngClass]="isActive('/strategies') ? 'scale-x-100' : 'scale-x-0 hover:scale-x-100'"></span>
+          </a>
+        </li>
+        <li>
+          <a class="relative px-1 py-1 hover:text-yellow-500 transition-colors duration-200"
+             routerLink="/portfolio"
+             [class.text-yellow-500]="isActive('/portfolio')">
+            Portfolio
+            <span class="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-500 transform origin-center transition-all duration-300"
+                  [ngClass]="isActive('/portfolio') ? 'scale-x-100' : 'scale-x-0 hover:scale-x-100'"></span>
+          </a>
+        </li>
       </ul>
       <div class="hidden md:block mr-4">
         <ng-container *ngIf="baseBalances | async as balances">
@@ -83,9 +107,33 @@
   <!-- Mobile menu -->
   <div class="lg:hidden" [ngClass]="{'hidden': !isMenuOpen}">
     <ul class="pt-2 pb-3 space-y-1">
-      <li><a class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700" routerLink="/pools" routerLinkActive="bg-gray-700">Pools</a></li>
-      <li><a class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700" routerLink="/strategies" routerLinkActive="bg-gray-700">Strategies</a></li>
-      <li><a class="block px-3 py-2 text-base font-medium text-white hover:bg-gray-700" routerLink="/portfolio" routerLinkActive="bg-gray-700">Portfolio</a></li>
+      <li>
+        <a class="block relative px-3 py-2 text-base font-medium text-white hover:bg-gray-700"
+           routerLink="/pools"
+           [class.border-l-4]="isActive('/pools')"
+           [class.border-yellow-500]="isActive('/pools')"
+           [class.pl-2]="isActive('/pools')">
+          Pools
+        </a>
+      </li>
+      <li>
+        <a class="block relative px-3 py-2 text-base font-medium text-white hover:bg-gray-700"
+           routerLink="/strategies"
+           [class.border-l-4]="isActive('/strategies')"
+           [class.border-yellow-500]="isActive('/strategies')"
+           [class.pl-2]="isActive('/strategies')">
+          Strategies
+        </a>
+      </li>
+      <li>
+        <a class="block relative px-3 py-2 text-base font-medium text-white hover:bg-gray-700"
+           routerLink="/portfolio"
+           [class.border-l-4]="isActive('/portfolio')"
+           [class.border-yellow-500]="isActive('/portfolio')"
+           [class.pl-2]="isActive('/portfolio')">
+          Portfolio
+        </a>
+      </li>
 
       <!-- Mobile account switcher -->
       <li class="px-3 py-2">
@@ -227,7 +275,7 @@
         <a href="#" class="text-gray-400 hover:text-yellow-500 transition-colors duration-300">
           <span class="sr-only">X (formerly Twitter)</span>
           <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
           </svg>
         </a>
         <a href="#" class="text-gray-400 hover:text-yellow-500 transition-colors duration-300">

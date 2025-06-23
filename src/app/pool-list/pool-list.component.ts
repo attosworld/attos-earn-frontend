@@ -6,6 +6,7 @@ import {
   AfterViewInit,
   inject,
   ChangeDetectorRef,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -15,7 +16,7 @@ import {
 } from '@angular/cdk/scrolling';
 import { PoolItemComponent } from '../pool-item/pool-item.component';
 import { PoolService, Pool } from '../pool.service';
-import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, of, Subject } from 'rxjs';
 import {
   map,
   shareReplay,
@@ -25,12 +26,12 @@ import {
   tap,
   catchError,
   share,
-  filter,
+  takeUntil,
 } from 'rxjs/operators';
 import Fuse from 'fuse.js';
 import { PrecisionPoolComponent } from '../precision-pool/precision-pool.component';
 import { Decimal } from 'decimal.js';
-import { RadixConnectService } from '../radix-connect.service';
+import { Balances, RadixConnectService } from '../radix-connect.service';
 import { AddLiquidityPreview, OciswapService } from '../ociswap.service';
 import { RadixManifestService } from '../radix-manifest.service';
 import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
@@ -40,6 +41,11 @@ import { PortfolioItem, PortfolioService } from '../portfolio.service';
 import { PoolIconPairComponent } from '../pool-icon-pair/pool-icon-pair.component';
 import { VolumeChartComponent } from '../volume-chart/volume-chart.component';
 import { ShortenAddressPipe } from '../shorten-address.pipe';
+import {
+  ChartToggleComponent,
+  ChartType,
+} from '../chart-toggle/chart-toggle.component';
+import { LpPerformanceChartComponent } from '../lp-performance-chart/lp-performance-chart.component';
 
 type SortColumn = 'tvl' | 'bonus_7d' | 'volume_7d' | 'bonus_name' | null;
 type SortDirection = 'asc' | 'desc' | 'none';
@@ -77,22 +83,25 @@ export type TagFilters = Record<string, boolean>;
     PoolIconPairComponent,
     ShortenAddressPipe,
     VolumeChartComponent,
+    LpPerformanceChartComponent,
+    ChartToggleComponent,
   ],
   providers: [PoolService],
   templateUrl: './pool-list.component.html',
   styleUrls: ['./pool-list.component.css'],
 })
-export class PoolListComponent implements AfterViewInit {
+export class PoolListComponent implements AfterViewInit, OnDestroy {
   @ViewChild(CdkVirtualScrollViewport) viewport!: CdkVirtualScrollViewport;
 
   @ViewChild('dummyItem') dummyItem!: ElementRef;
 
+  lpPerformanceEnabled = false;
+
   sevenDayVolume$: Observable<Record<string, number>> | undefined;
 
   cdRef = inject(ChangeDetectorRef);
-  sevenDayVolume: number[] = [3000, 5000, 2000, 8000, 6500, 4500, 7000];
-  maxVolume = 0;
-  lastSevenDays: Date[] = [];
+
+  private destroy$ = new Subject<void>();
 
   tagFilters: TagFilters = {
     'bridged token': false,
@@ -124,17 +133,26 @@ export class PoolListComponent implements AfterViewInit {
     column: null,
     direction: 'none',
   });
-  sort$ = this.sortSubject.asObservable();
+  sort$ = this.sortSubject.asObservable().pipe(
+    takeUntil(this.destroy$),
+    tap(() => console.log('Sort updated'))
+  );
 
   isLoading = true;
   isPortfolioLoading = true;
 
   private selectedTabSubject = new BehaviorSubject<PoolType>('all');
-  selectedTab$ = this.selectedTabSubject.asObservable();
+  selectedTab$ = this.selectedTabSubject
+    .asObservable()
+    .pipe(tap(() => console.log('tab updated')));
 
   searchTerm = '';
   private searchSubject = new BehaviorSubject<string>('');
-  search$ = this.searchSubject.asObservable().pipe(debounceTime(300));
+  search$ = this.searchSubject.asObservable().pipe(
+    debounceTime(300),
+    takeUntil(this.destroy$),
+    tap(() => console.log('search updated'))
+  );
 
   showBonusInfo = false;
 
@@ -159,7 +177,12 @@ export class PoolListComponent implements AfterViewInit {
     bonus: this.bonusFilter,
     volume: this.volumeFilter,
   });
-  filters$ = this.filtersSubject.asObservable();
+
+  filters$ = this.filtersSubject.asObservable().pipe(
+    takeUntil(this.destroy$),
+    tap(() => console.log('Filters updated'))
+  );
+
   selectedPool: Pool | null = null;
   showModal = false;
   minValue = -90;
@@ -184,7 +207,7 @@ export class PoolListComponent implements AfterViewInit {
       this.isLoading = false;
       setTimeout(() => this.updateItemSize(), 32);
     }),
-    shareReplay(1)
+    share()
   );
 
   featuredPools$ = this.pools$.pipe(
@@ -215,7 +238,7 @@ export class PoolListComponent implements AfterViewInit {
         bestBonus,
       };
     }),
-    shareReplay(1)
+    share()
   );
 
   portfolioItems$ = (this.radixConnectService.getAccounts() || of([])).pipe(
@@ -273,7 +296,6 @@ export class PoolListComponent implements AfterViewInit {
     this.filters$,
   ]).pipe(
     map(([pools, sort, searchTerm, selectedTab, filters]) => {
-      console.log(selectedTab);
       let filteredPools = this.filterPoolsByType(pools, selectedTab);
       filteredPools = this.searchPools(filteredPools, searchTerm);
       filteredPools = this.applyAdvancedFilters(filteredPools, filters);
@@ -321,6 +343,12 @@ export class PoolListComponent implements AfterViewInit {
   //       'CALL_METHOD\n  Address("account_rdx12962a8y6penj8wudzyddp07r6l4uccvaxyet2pqptkx96ylk5n770v")\n  "withdraw"\n  Address("resource_rdx1t4z3dn6u57kj069wru4tkmdrx8njz2d9a5rlfsphs87cyuaj9tufv0")\n  Decimal("2361.061214041296133865")\n;\nTAKE_ALL_FROM_WORKTOP\n  Address("resource_rdx1t4z3dn6u57kj069wru4tkmdrx8njz2d9a5rlfsphs87cyuaj9tufv0")\n  Bucket("surge_lp")\n;\nCALL_METHOD\n  Address("component_rdx1cz9akawaf6d2qefds33c5py9w3fjpgp2qnaddtlcxm06m060wl2j68")\n  "remove_liquidity"\n  Bucket("surge_lp")\n  false\n;\nCALL_METHOD\n  Address("account_rdx12962a8y6penj8wudzyddp07r6l4uccvaxyet2pqptkx96ylk5n770v")\n  "deposit_batch"\n  Expression("ENTIRE_WORKTOP")\n;',
   //   },
   // ] as PortfolioItem[]);
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.destroy$.unsubscribe();
+  }
 
   sortPools(column: SortColumn) {
     const currentSort = this.sortSubject.value;
@@ -533,22 +561,31 @@ export class PoolListComponent implements AfterViewInit {
         );
     }
   }
-  openDepositModal(pool: Pool) {
+
+  selectedChartType: ChartType = 'volume';
+  tokenValueData$: Observable<Record<string, number>> | undefined;
+
+  balances$ = this.radixConnectService.getWalletData();
+
+  openDepositModal(pool: Pool, balances: Balances | undefined) {
     this.selectedPool = pool;
     this.showModal = true;
     this.xAmount = '';
     this.yAmount = '';
     this.inputErrors = {};
-    this.updateMaxAmounts();
+    this.updateMaxAmounts(balances);
+    this.selectedChartType = 'volume'; // Default to volume chart
 
     // Fetch the seven-day volume data
     this.sevenDayVolume$ = this.poolService
       .getPoolVolumePerDay(pool.component, pool.type)
       .pipe(map(volumeData => volumeData.volume_per_day));
 
-    // Reset maxVolume and lastSevenDays
-    this.maxVolume = 0;
-    this.lastSevenDays = [];
+    // Fetch the token value data for LP performance chart
+    this.tokenValueData$ = this.poolService.getPoolPerformance(
+      pool.left_token,
+      pool.side
+    );
   }
 
   closeModal() {
@@ -559,23 +596,20 @@ export class PoolListComponent implements AfterViewInit {
     this.inputErrors = {};
   }
 
-  updateMaxAmounts() {
+  updateMaxAmounts(walletData: Balances | undefined) {
     if (this.selectedPool) {
-      this.radixConnectService.getWalletData()?.subscribe(walletData => {
-        if (walletData && this.selectedPool) {
-          this.maxAmounts[this.selectedPool.left_token] =
-            walletData.fungibles.find(
-              f =>
-                f.resourceInfo.resourceAddress === this.selectedPool?.left_token
-            )?.balance || '0';
-          this.maxAmounts[this.selectedPool.right_token] =
-            walletData.fungibles.find(
-              f =>
-                f.resourceInfo.resourceAddress ===
-                this.selectedPool?.right_token
-            )?.balance || '0';
-        }
-      });
+      if (walletData && this.selectedPool) {
+        this.maxAmounts[this.selectedPool.left_token] =
+          walletData.fungibles.find(
+            f =>
+              f.resourceInfo.resourceAddress === this.selectedPool?.left_token
+          )?.balance || '0';
+        this.maxAmounts[this.selectedPool.right_token] =
+          walletData.fungibles.find(
+            f =>
+              f.resourceInfo.resourceAddress === this.selectedPool?.right_token
+          )?.balance || '0';
+      }
     }
   }
 
@@ -722,7 +756,6 @@ export class PoolListComponent implements AfterViewInit {
                       }
                     );
 
-            console.log(manifest);
             return this.radixConnectService
               .sendTransaction(manifest)
               ?.map(f => f.status)
@@ -824,5 +857,10 @@ export class PoolListComponent implements AfterViewInit {
     return this.poolService
       .getPoolVolumePerDay(pool.component, pool.type)
       .pipe(map(volumeData => volumeData.volume_per_day));
+  }
+
+  onChartTypeChange(chartType: ChartType): void {
+    // Update the selected chart type for this specific pool
+    this.selectedChartType = chartType;
   }
 }

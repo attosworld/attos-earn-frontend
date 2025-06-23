@@ -120,6 +120,9 @@ export class StrategiesComponent {
   private strategiesService = inject(StrategiesService);
   private radixConnectService = inject(RadixConnectService);
   private poolService = inject(PoolService);
+
+  strategiesV2 = this.strategiesService.getStrategiesV2();
+
   ociswapService = inject(OciswapService);
 
   sevenDayVolume$: Observable<Record<string, number>> | undefined;

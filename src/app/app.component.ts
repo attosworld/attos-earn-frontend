@@ -27,7 +27,6 @@ import {
   Observable,
   of,
   share,
-  Subject,
   switchMap,
 } from 'rxjs';
 import { AstrolescentService } from './astrolescent.service';

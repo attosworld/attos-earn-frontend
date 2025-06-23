@@ -7,6 +7,7 @@ import {
 } from '@radixdlt/radix-dapp-toolkit';
 import {
   BehaviorSubject,
+  combineLatest,
   forkJoin,
   from,
   map,
@@ -16,12 +17,15 @@ import {
   tap,
 } from 'rxjs';
 import { GatewayEzMode } from '@calamari-radix/gateway-ez-mode';
-import { FungibleResourceBalance } from '@calamari-radix/gateway-ez-mode/dist/types';
+import {
+  FungibleResourceBalance,
+  NftBalance,
+} from '@calamari-radix/gateway-ez-mode/dist/types';
 
 export interface Balances {
   account: string;
   fungibles: FungibleResourceBalance[];
-  nonFungibles: FungibleResourceBalance[];
+  nonFungibles: NftBalance[];
 }
 
 export interface TokenMetadata {
@@ -109,8 +113,11 @@ export class RadixConnectService {
       return of(undefined);
     }
 
-    return this.rdt?.walletApi.walletData$.pipe(
-      tap(data => {
+    return combineLatest([
+      this.rdt?.walletApi.walletData$,
+      this.accountBalanceCache$,
+    ]).pipe(
+      tap(([data]) => {
         if (data.accounts.length) {
           this.accounts$.next(data.accounts);
 
@@ -119,7 +126,7 @@ export class RadixConnectService {
           }
         }
       }),
-      switchMap(data => {
+      switchMap(([data]) => {
         const account = this.selectedAccount$.getValue();
         if (!data.accounts.length || !account) {
           return of(undefined);
@@ -151,6 +158,33 @@ export class RadixConnectService {
           });
         }
       })
+    );
+  }
+
+  updateBalanceCache(address?: string): Observable<Balances | undefined> {
+    const accountAddress = address || this.selectedAccount$.getValue()?.address;
+
+    if (!accountAddress) {
+      return of(undefined);
+    }
+
+    return forkJoin({
+      account: of(accountAddress),
+      fungibles: from(
+        this.gatewayEz.state.getComponentFungibleBalances(accountAddress)
+      ),
+      nonFungibles: from(
+        this.gatewayEz.state.getComponentNonFungibleBalances(accountAddress)
+      ),
+    }).pipe(
+      tap(data => {
+        // Update the cache with the new balance data
+        this.accountBalanceCache$.next({
+          ...this.accountBalanceCache$.getValue(),
+          [accountAddress]: data as Balances,
+        });
+      }),
+      map(data => data as Balances)
     );
   }
 
