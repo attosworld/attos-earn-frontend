@@ -103,6 +103,8 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  showAdvancedSearch = false;
+
   tagFilters: TagFilters = {
     'bridged token': false,
     stablecoin: false,
@@ -449,6 +451,12 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
   checkScreenSize() {
     this.isMobile = window.innerWidth < 768; // Adjust this breakpoint as needed
+
+    if (this.isMobile) {
+      this.showAdvancedSearch = false;
+    } else {
+      this.showAdvancedSearch = true;
+    }
   }
 
   updateItemSize() {
@@ -862,5 +870,9 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   onChartTypeChange(chartType: ChartType): void {
     // Update the selected chart type for this specific pool
     this.selectedChartType = chartType;
+  }
+
+  toggleAdvancedSearch() {
+    this.showAdvancedSearch = !this.showAdvancedSearch;
   }
 }

@@ -39,8 +39,9 @@
     <!-- Featured Pools Section -->
     <div class="mb-8" *ngIf="balances$ | async as balances">
       <h2 class="text-2xl font-bold text-yellow-500 mb-4">Featured Pools</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
+      <!-- Desktop view: Grid layout -->
+      <div class="hidden md:grid md:grid-cols-3 gap-6">
         <!-- Deepest Liquidity Pools -->
         <div class="bg-gray-800 rounded-lg p-4">
           <div class="flex items-center mb-4">
@@ -53,8 +54,7 @@
             <ng-container *ngIf="featuredPools$ | async as featured">
               <div *ngFor="let pool of featured.deepestLiquidity"
                 class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
-                (click)="openDepositModal(pool, balances)"
-                >
+                (click)="openDepositModal(pool, balances)">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
                     <app-pool-icon-pair
@@ -92,8 +92,7 @@
             <ng-container *ngIf="featuredPools$ | async as featured">
               <div *ngFor="let pool of featured.highestVolume"
                 class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
-                (click)="openDepositModal(pool, balances)"
-                >
+                (click)="openDepositModal(pool, balances)">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
                     <app-pool-icon-pair
@@ -131,8 +130,7 @@
             <ng-container *ngIf="featuredPools$ | async as featured">
               <div *ngFor="let pool of featured.bestBonus"
                 class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
-                (click)="openDepositModal(pool, balances)"
-                >
+                (click)="openDepositModal(pool, balances)">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
                     <app-pool-icon-pair
@@ -158,6 +156,123 @@
           </div>
         </div>
       </div>
+
+      <!-- Mobile view: Horizontal scrollable sections -->
+      <div class="md:hidden space-y-6">
+        <!-- Deepest Liquidity Pools -->
+        <div>
+          <div class="flex items-center mb-2">
+            <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold text-blue-400">Deepest Liquidity</h3>
+          </div>
+          <div class="overflow-x-auto scrollbar-hide">
+            <div class="flex space-x-3 pb-2" *ngIf="featuredPools$ | async as featured">
+              <div *ngFor="let pool of featured.deepestLiquidity"
+                class="flex-shrink-0 w-72 rounded-lg p-3 cursor-pointer border border-gray-700"
+                (click)="openDepositModal(pool, balances)">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <app-pool-icon-pair
+                      [leftIcon]="pool.left_icon"
+                      [rightIcon]="pool.right_icon"
+                      [leftAlt]="pool.left_alt"
+                      [rightAlt]="pool.right_alt"
+                      class="mr-2">
+                    </app-pool-icon-pair>
+                    <div>
+                      <div class="font-medium">{{ pool.name }}</div>
+                      <div class="text-xs text-gray-400">{{ pool.pool_type | titlecase }}</div>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-bold text-green-400">{{ pool.bonus_7d | number:'1.2-2' }}% {{ pool.bonus_name }}</div>
+                    <div class="text-xs text-gray-400">TVL</div>
+                    <div class="font-bold">{{ pool.tvl | currency }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Most Volume Pools -->
+        <div>
+          <div class="flex items-center mb-2">
+            <svg class="w-5 h-5 text-purple-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold text-purple-400">Highest Volume</h3>
+          </div>
+          <div class="overflow-x-auto scrollbar-hide">
+            <div class="flex space-x-3 pb-2" *ngIf="featuredPools$ | async as featured">
+              <div *ngFor="let pool of featured.highestVolume"
+                class="flex-shrink-0 w-72 rounded-lg p-3 cursor-pointer border border-gray-700"
+                (click)="openDepositModal(pool, balances)">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <app-pool-icon-pair
+                      [leftIcon]="pool.left_icon"
+                      [rightIcon]="pool.right_icon"
+                      [leftAlt]="pool.left_alt"
+                      [rightAlt]="pool.right_alt"
+                      class="mr-2">
+                    </app-pool-icon-pair>
+                    <div>
+                      <div class="font-medium">{{ pool.name }}</div>
+                      <div class="text-xs text-gray-400">{{ pool.pool_type | titlecase }}</div>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-bold text-green-400">{{ pool.bonus_7d | number:'1.2-2' }}% {{ pool.bonus_name }}</div>
+                    <div class="text-xs text-gray-400">7d Volume</div>
+                    <div class="font-bold">{{ pool.volume_7d | currency }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Best Bonus Boosted Pools -->
+        <div>
+          <div class="flex items-center mb-2">
+            <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold text-yellow-400">Best Boosted Pools</h3>
+          </div>
+          <div class="overflow-x-auto scrollbar-hide">
+            <div class="flex space-x-3 pb-2" *ngIf="featuredPools$ | async as featured">
+              <div *ngFor="let pool of featured.bestBonus"
+                class="flex-shrink-0 w-72 rounded-lg p-3 cursor-pointer border border-gray-700"
+                (click)="openDepositModal(pool, balances)">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <app-pool-icon-pair
+                      [leftIcon]="pool.left_icon"
+                      [rightIcon]="pool.right_icon"
+                      [leftAlt]="pool.left_alt"
+                      [rightAlt]="pool.right_alt"
+                      class="mr-2">
+                    </app-pool-icon-pair>
+                    <div>
+                      <div class="font-medium">{{ pool.name }}</div>
+                      <div class="text-xs text-gray-400">{{ pool.pool_type | titlecase }}</div>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="font-bold text-green-400">{{ pool.bonus_7d | number:'1.2-2' }}% {{ pool.bonus_name }}</div>
+                    <div class="text-xs text-gray-400">Bonus</div>
+                    <div class="font-bold">{{ pool.tvl | currency }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Search bar -->
@@ -171,43 +286,63 @@
         >
     </div>
 
-    <!-- Advanced search -->
-    <div class="mb-4 bg-gray-800 p-4 rounded-lg">
-      <h3 class="text-lg font-semibold mb-2">Advanced Search</h3>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">TVL</label>
-          <div class="flex items-center">
-            <select [(ngModel)]="tvlFilter.condition" (change)="applyFilters()" class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
-              <option value="above">Above</option>
-              <option value="below">Below</option>
-            </select>
-            <input type="number" [(ngModel)]="tvlFilter.value" (ngModelChange)="applyFilters()" placeholder="Enter amount" class="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white h-10">
+    <!-- Advanced search - collapsible on mobile -->
+    <div class="mb-4">
+      <button
+        (click)="toggleAdvancedSearch()"
+        class="w-full flex justify-between items-center p-3 bg-gray-800 rounded-lg text-white mb-2"
+      >
+        <span class="text-lg font-semibold">Advanced Search</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 transition-transform duration-300"
+          [ngClass]="{'rotate-180': showAdvancedSearch}"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      <div
+        class="bg-gray-800 p-4 rounded-lg overflow-hidden"
+        [ngClass]="{'max-h-0 p-0 opacity-0 hidden': !showAdvancedSearch, 'max-h-[500px] block': showAdvancedSearch}"
+      >
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">TVL</label>
+            <div class="flex items-center">
+              <select [(ngModel)]="tvlFilter.condition" (change)="applyFilters()" class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
+                <option value="above">Above</option>
+                <option value="below">Below</option>
+              </select>
+              <input type="number" [(ngModel)]="tvlFilter.value" (ngModelChange)="applyFilters()" placeholder="Enter amount" class="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white h-10">
+            </div>
           </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Bonus 7d</label>
-          <div class="flex items-center">
-            <select [(ngModel)]="bonusFilter.condition"(change)="applyFilters()"  class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
-              <option value="above">Above</option>
-              <option value="below">Below</option>
-            </select>
-            <input type="number" [(ngModel)]="bonusFilter.value" (ngModelChange)="applyFilters()" placeholder="Enter amount" class="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white h-10">
+          <div>
+            <label class="block text-sm font-medium mb-1">Bonus 7d</label>
+            <div class="flex items-center">
+              <select [(ngModel)]="bonusFilter.condition" (change)="applyFilters()" class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
+                <option value="above">Above</option>
+                <option value="below">Below</option>
+              </select>
+              <input type="number" [(ngModel)]="bonusFilter.value" (ngModelChange)="applyFilters()" placeholder="Enter amount" class="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white h-10">
+            </div>
           </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">7d Volume</label>
-          <div class="flex items-center">
-            <select [(ngModel)]="volumeFilter.condition"(change)="applyFilters()"  class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
-              <option value="above">Above</option>
-              <option value="below">Below</option>
-            </select>
-            <input type="number" [(ngModel)]="volumeFilter.value" (ngModelChange)="applyFilters()" placeholder="Enter amount" class="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white h-10">
+          <div>
+            <label class="block text-sm font-medium mb-1">7d Volume</label>
+            <div class="flex items-center">
+              <select [(ngModel)]="volumeFilter.condition" (change)="applyFilters()" class="mr-2 bg-gray-800 border border-gray-700 rounded text-white p-2 h-10">
+                <option value="above">Above</option>
+                <option value="below">Below</option>
+              </select>
+              <input type="number" [(ngModel)]="volumeFilter.value" (ngModelChange)="applyFilters()" placeholder="Enter amount" class="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white h-10">
+            </div>
           </div>
         </div>
       </div>
     </div>
-
 
     <!-- Sub-menu tabs -->
 
@@ -393,7 +528,7 @@
 
               <cdk-virtual-scroll-viewport
                 [itemSize]="itemSize"
-                class="h-[calc(100vh-300px)] w-full overflow-x-hidden min-h-96"
+                class="h-[calc(100vh-300px)] w-full overflow-x-hidden" style="min-height: 580px;"
                 *ngIf="(selectedTab$ | async) !== 'my_pools'">
                 <div class="w-full overflow-x-hidden">
                   <app-pool-item
@@ -466,7 +601,7 @@
         <tbody>
           <ng-container >
             <tr *ngFor="let item of items" class="border-b border-gray-700 block md:table-row mb-4 md:mb-0 text-sm">
-              <td class="py-2 px-4 block md:table-cell">
+              <td class="py-2 px-1 block md:table-cell">
                 <div class="flex items-center">
                   <app-pool-icon-pair
                     [leftIcon]="item.leftIcon"
@@ -489,7 +624,7 @@
                   </span>
                 </div>
               </td>
-              <td class="py-2 px-4 md:table-cell md:text-right hidden">
+              <td class="py-2 px-1 md:table-cell md:text-right hidden">
                 <span class="inline-block md:hidden font-medium mr-2">Invested:</span>
                 <div>{{ item.invested | currency }}</div>
                 <div>~{{ item.investedXrd | currency:'':'':'1.2-2' }} XRD</div>
@@ -497,7 +632,7 @@
                   Collateral: {{ item.loanAmount | currency:'':'':'1.2-2' }} {{ item.loanCurrency }}
                 </div>
               </td>
-              <td class="py-1 px-4 block md:table-cell md:text-right">
+              <td class="py-1 px-1 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
                 <span class="hidden md:hidden font-medium mr-2">Current Value:</span>
                 <div [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">{{ item.currentValue | currency }} (
                 ~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD)</div>
@@ -505,25 +640,25 @@
                   Borrowed: {{ item.borrowAmount | currency:'':'':'1.2-2' }} {{ item.borrowCurrency }}
                 </div>
               </td>
-              <td class="py-1 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
+              <td class="py-1 px-1 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
                 <span class="inline-block md:hidden font-medium mr-2">Profit/Loss:</span>
                 {{ item.pnl | currency }} <span class="inline-block md:hidden">({{ item.pnlPercentage | number:'1.2-2' }}%)</span>
               </td>
-              <td class="py-2 px-4 hidden md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnlPercentage > 0, 'text-red-500': +item.pnlPercentage < 0}">
+              <td class="py-2 px-1 hidden md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnlPercentage > 0, 'text-red-500': +item.pnlPercentage < 0}">
                 <span class="inline-block md:hidden font-medium mr-2">Profit/Loss %:</span>
                 {{ item.pnlPercentage | number:'1.2-2' }}%
               </td>
-              <td class="py-2 px-4 md:table-cell hidden md:text-right">
+              <td class="py-2 px-1 md:table-cell hidden md:text-right">
                 <span class="inline-block md:hidden font-medium mr-2">Provider:</span>
                 {{ item.provider }}
               </td>
-              <td class="py-2 px-4 block md:table-cell">
+              <td class="py-2 px-1 block md:table-cell">
                 <div class="flex md:justify-end">
                   <span class="hidden md:hidden font-medium mr-2">Actions:</span>
                   <button
                     *ngIf="item.strategy"
                     (click)="closeStrategy(item)"
-                    class="bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24 ml-auto"
+                    class="bg-yellow-500 text-gray-900 px-1 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24 ml-auto"
                     [disabled]="closingItems[item.poolName]"
                     >
                     @if (closingItems[item.poolName]) {
@@ -538,7 +673,7 @@
                   <button
                     *ngIf="!item.strategy"
                     (click)="closeStrategy(item)"
-                    class="w-48 bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center"
+                    class="w-48 bg-yellow-500 text-gray-900 px-1 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center"
                     [disabled]="closingItems[item.poolName]"
                     >
                     @if (closingItems[item.poolName]) {

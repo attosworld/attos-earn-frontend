@@ -6,12 +6,7 @@ import {
   HostListener,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  RouterOutlet,
-  RouterLink,
-  RouterLinkActive,
-  Router,
-} from '@angular/router';
+import { RouterOutlet, RouterLink, Router } from '@angular/router';
 import { RadixConnectService } from './radix-connect.service';
 import {
   TransactionStatus,
