@@ -34,7 +34,7 @@ import { AstrolescentService } from './astrolescent.service';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [CommonModule, RouterOutlet, RouterLink],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

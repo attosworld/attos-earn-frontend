@@ -1,10 +1,11 @@
+import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 export type ChartType = 'volume' | 'performance';
 
 @Component({
   selector: 'app-chart-toggle',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './chart-toggle.component.html',
   styleUrl: './chart-toggle.component.css',
 })
