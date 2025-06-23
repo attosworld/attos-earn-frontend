@@ -19,7 +19,6 @@ import { PoolService, Pool } from '../pool.service';
 import { BehaviorSubject, combineLatest, Observable, of, Subject } from 'rxjs';
 import {
   map,
-  shareReplay,
   finalize,
   debounceTime,
   switchMap,
@@ -104,6 +103,8 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   showAdvancedSearch = false;
+
+  showPortfolioModal = false;
 
   tagFilters: TagFilters = {
     'bridged token': false,
@@ -248,7 +249,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
       if (!accounts || !accounts.length) {
         return of([]).pipe(
           finalize(() => (this.isLoading = false)),
-          shareReplay(1)
+          share()
         );
       }
 
@@ -303,7 +304,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
       filteredPools = this.applyAdvancedFilters(filteredPools, filters);
       return this.sortBasedOnEvent(filteredPools, sort);
     }),
-    shareReplay(1)
+    share()
   );
 
   portfolioService = inject(PortfolioService);
@@ -874,5 +875,16 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
   toggleAdvancedSearch() {
     this.showAdvancedSearch = !this.showAdvancedSearch;
+  }
+
+  togglePortfolioModal(): void {
+    this.showPortfolioModal = !this.showPortfolioModal;
+
+    // Prevent body scrolling when modal is open
+    if (this.showPortfolioModal) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
   }
 }

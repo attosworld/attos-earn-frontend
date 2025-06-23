@@ -569,128 +569,257 @@
       </div>
 
     </div>
-    <div class="bg-gray-800 rounded-lg p-4 mt-4">
-      <!-- Spinner for portfolio items -->
-      <div *ngIf="isPortfolioLoading" class="flex justify-center items-center h-32">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
+    <ng-container *ngIf="portfolioItems$ | async as items">
+      <div class="border-gray-700 md:border-0 md:bg-gray-800 rounded-lg hidden md:p-4 mt-4 md:block">
+        <!-- Spinner for portfolio items -->
+        <div *ngIf="isPortfolioLoading" class="flex justify-center items-center h-32">
+          <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
+        </div>
+
+        <div class="block text-lg font-bold border-b-1 border-b-gray-700 md:hidden">LP Positions</div>
+
+        <!-- Portfolio table (only show when not loading) -->
+        <table class="w-full">
+          <thead class="hidden md:table-header-group">
+            <tr class="text-sm font-medium text-gray-100 border-b border-gray-700">
+              <th class="py-2 px-4 text-left">Pool</th>
+              <th class="py-2 px-4 text-right cursor-pointer">
+                Invested
+              </th>
+              <th class="py-2 px-4 text-right cursor-pointer">
+                Current Value
+              </th>
+              <th class="py-2 px-4 text-right cursor-pointer" >
+                Profit/Loss
+              </th>
+              <th class="py-2 px-4 text-right cursor-pointer" >
+                Profit/Loss %
+              </th>
+              <th class="py-2 px-4 text-right cursor-pointer" >
+                Provider
+              </th>
+              <th class="py-2 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container >
+              <tr *ngFor="let item of items" class="border-b border-gray-700 block md:table-row mb-4 md:mb-0 text-sm">
+                <td class="py-2 px-1 block md:table-cell">
+                  <div class="flex items-center">
+                    <app-pool-icon-pair
+                      [leftIcon]="item.leftIcon"
+                      [rightIcon]="item.rightIcon"
+                      [leftAlt]="item.leftAlt"
+                      [rightAlt]="item.rightAlt"
+                      class="mr-2"
+                      ></app-pool-icon-pair>
+                    <span>{{ item.poolName  }}<ng-container *ngIf="item.tx"> (<a
+                      [href]="'https://radxplorer.com/transactions/' + item.tx"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="text-yellow-500 hover:underline"
+                      >{{ item.tx | shortenAddress }}
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                        </a>)
+                      </ng-container>
+                    </span>
+                  </div>
+                </td>
+                <td class="py-2 px-1 md:table-cell md:text-right hidden">
+                  <span class="inline-block md:hidden font-medium mr-2">Invested:</span>
+                  <div>{{ item.invested | currency }}</div>
+                  <div>~{{ item.investedXrd | currency:'':'':'1.2-2' }} XRD</div>
+                  <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
+                    Collateral: {{ item.loanAmount | currency:'':'':'1.2-2' }} {{ item.loanCurrency }}
+                  </div>
+                </td>
+                <td class="py-1 px-1 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
+                  <span class="hidden md:hidden font-medium mr-2">Current Value:</span>
+                  <div [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">{{ item.currentValue | currency }} (
+                    ~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD)</div>
+                  <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
+                    Borrowed: {{ item.borrowAmount | currency:'':'':'1.2-2' }} {{ item.borrowCurrency }}
+                  </div>
+                </td>
+                <td class="py-1 px-1 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
+                  <span class="inline-block md:hidden font-medium mr-2">Profit/Loss:</span>
+                  {{ item.pnl | currency }} <span class="inline-block md:hidden">({{ item.pnlPercentage | number:'1.2-2' }}%)</span>
+                </td>
+                <td class="py-2 px-1 hidden md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnlPercentage > 0, 'text-red-500': +item.pnlPercentage < 0}">
+                  <span class="inline-block md:hidden font-medium mr-2">Profit/Loss %:</span>
+                  {{ item.pnlPercentage | number:'1.2-2' }}%
+                </td>
+                <td class="py-2 px-1 md:table-cell hidden md:text-right">
+                  <span class="inline-block md:hidden font-medium mr-2">Provider:</span>
+                  {{ item.provider }}
+                </td>
+                <td class="py-2 px-1 block md:table-cell">
+                  <div class="flex md:justify-end">
+                    <span class="hidden md:hidden font-medium mr-2">Actions:</span>
+                    <button
+                      *ngIf="item.strategy"
+                      (click)="closeStrategy(item)"
+                      class="bg-yellow-500 text-gray-900 px-1 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24 ml-auto"
+                      [disabled]="closingItems[item.poolName]"
+                      >
+                      @if (closingItems[item.poolName]) {
+                      <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      } @else {
+                      <span>Close</span>
+                      }
+                    </button>
+                    <button
+                      *ngIf="!item.strategy"
+                      (click)="closeStrategy(item)"
+                      class="w-48 bg-yellow-500 text-gray-900 px-1 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center"
+                      [disabled]="closingItems[item.poolName]"
+                      >
+                      @if (closingItems[item.poolName]) {
+                      <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      } @else {
+                      <span>Remove Liquidity</span>
+                      }
+                    </button>
+                  </div>
+                </td>
+            </ng-container>
+          </tbody>
+        </table>
       </div>
 
-      <!-- Portfolio table (only show when not loading) -->
-      <table *ngIf="portfolioItems$ | async as items" class="w-full">
-        <thead class="hidden md:table-header-group">
-          <tr class="text-sm font-medium text-gray-100 border-b border-gray-700">
-            <th class="py-2 px-4 text-left">Pool</th>
-            <th class="py-2 px-4 text-right cursor-pointer">
-              Invested
-            </th>
-            <th class="py-2 px-4 text-right cursor-pointer">
-              Current Value
-            </th>
-            <th class="py-2 px-4 text-right cursor-pointer" >
-              Profit/Loss
-            </th>
-            <th class="py-2 px-4 text-right cursor-pointer" >
-              Profit/Loss %
-            </th>
-            <th class="py-2 px-4 text-right cursor-pointer" >
-              Provider
-            </th>
-            <th class="py-2 px-4 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <ng-container >
-            <tr *ngFor="let item of items" class="border-b border-gray-700 block md:table-row mb-4 md:mb-0 text-sm">
-              <td class="py-2 px-1 block md:table-cell">
-                <div class="flex items-center">
-                  <app-pool-icon-pair
-                    [leftIcon]="item.leftIcon"
-                    [rightIcon]="item.rightIcon"
-                    [leftAlt]="item.leftAlt"
-                    [rightAlt]="item.rightAlt"
-                    class="mr-2"
-                    ></app-pool-icon-pair>
-                  <span>{{ item.poolName  }}<ng-container *ngIf="item.tx"> (<a
-                    [href]="'https://radxplorer.com/transactions/' + item.tx"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="text-yellow-500 hover:underline"
-                    >{{ item.tx | shortenAddress }}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                      </a>)
-                    </ng-container>
-                  </span>
+      <!-- Floating Portfolio Button for Mobile -->
+      <div class="fixed bottom-4 right-4 md:hidden z-40">
+        <button
+          (click)="togglePortfolioModal()"
+          class="bg-yellow-500 text-gray-900 rounded-full w-14 h-14 flex items-center justify-center shadow-lg hover:bg-yellow-600 transition-colors duration-300"
+          >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Portfolio Modal -->
+      <div
+        *ngIf="showPortfolioModal"
+        class="fixed inset-0 bg-gray-900 opacity-95 z-50 md:hidden overflow-y-auto"
+        >
+        <div class="p-4">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-bold text-yellow-500">Your Portfolio</h2>
+            <button
+              (click)="togglePortfolioModal()"
+              class="text-gray-400 hover:text-white"
+              >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Spinner for portfolio items -->
+          <div *ngIf="isPortfolioLoading" class="flex justify-center items-center h-32">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
+          </div>
+
+          <!-- Mobile Portfolio List -->
+          <div *ngIf="items.length === 0" class="text-center py-8 text-gray-400">
+            No positions found. Add liquidity to get started.
+          </div>
+
+          <div *ngFor="let item of items" class="bg-gray-800 rounded-lg p-4 mb-4">
+            <div class="flex items-center mb-3">
+              <app-pool-icon-pair
+                [leftIcon]="item.leftIcon"
+                [rightIcon]="item.rightIcon"
+                [leftAlt]="item.leftAlt"
+                [rightAlt]="item.rightAlt"
+                class="mr-2"
+                ></app-pool-icon-pair>
+              <div>
+                <div class="font-medium">{{ item.poolName }}</div>
+                <div class="text-xs text-gray-400">{{ item.provider }}</div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <div>
+                <div class="text-xs text-gray-400">Current Value</div>
+                <div [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
+                  {{ item.currentValue | currency }}
                 </div>
-              </td>
-              <td class="py-2 px-1 md:table-cell md:text-right hidden">
-                <span class="inline-block md:hidden font-medium mr-2">Invested:</span>
-                <div>{{ item.invested | currency }}</div>
-                <div>~{{ item.investedXrd | currency:'':'':'1.2-2' }} XRD</div>
-                <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
-                  Collateral: {{ item.loanAmount | currency:'':'':'1.2-2' }} {{ item.loanCurrency }}
+                <div class="text-xs">~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD</div>
+              </div>
+
+              <div>
+                <div class="text-xs text-gray-400">Profit/Loss</div>
+                <div [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
+                  {{ item.pnl | currency }}
                 </div>
-              </td>
-              <td class="py-1 px-1 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
-                <span class="hidden md:hidden font-medium mr-2">Current Value:</span>
-                <div [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">{{ item.currentValue | currency }} (
-                ~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD)</div>
-                <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
-                  Borrowed: {{ item.borrowAmount | currency:'':'':'1.2-2' }} {{ item.borrowCurrency }}
+                <div class="text-xs" [ngClass]="{'text-green-500': +item.pnlPercentage > 0, 'text-red-500': +item.pnlPercentage < 0}">
+                  {{ item.pnlPercentage | number:'1.2-2' }}%
                 </div>
-              </td>
-              <td class="py-1 px-1 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
-                <span class="inline-block md:hidden font-medium mr-2">Profit/Loss:</span>
-                {{ item.pnl | currency }} <span class="inline-block md:hidden">({{ item.pnlPercentage | number:'1.2-2' }}%)</span>
-              </td>
-              <td class="py-2 px-1 hidden md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnlPercentage > 0, 'text-red-500': +item.pnlPercentage < 0}">
-                <span class="inline-block md:hidden font-medium mr-2">Profit/Loss %:</span>
-                {{ item.pnlPercentage | number:'1.2-2' }}%
-              </td>
-              <td class="py-2 px-1 md:table-cell hidden md:text-right">
-                <span class="inline-block md:hidden font-medium mr-2">Provider:</span>
-                {{ item.provider }}
-              </td>
-              <td class="py-2 px-1 block md:table-cell">
-                <div class="flex md:justify-end">
-                  <span class="hidden md:hidden font-medium mr-2">Actions:</span>
-                  <button
-                    *ngIf="item.strategy"
-                    (click)="closeStrategy(item)"
-                    class="bg-yellow-500 text-gray-900 px-1 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24 ml-auto"
-                    [disabled]="closingItems[item.poolName]"
-                    >
-                    @if (closingItems[item.poolName]) {
-                    <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    } @else {
-                    <span>Close</span>
-                    }
-                  </button>
-                  <button
-                    *ngIf="!item.strategy"
-                    (click)="closeStrategy(item)"
-                    class="w-48 bg-yellow-500 text-gray-900 px-1 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center"
-                    [disabled]="closingItems[item.poolName]"
-                    >
-                    @if (closingItems[item.poolName]) {
-                    <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    } @else {
-                    <span>Remove Liquidity</span>
-                    }
-                  </button>
-                </div>
-              </td>
-          </ng-container>
-        </tbody>
-      </table>
-    </div>
+              </div>
+            </div>
+
+            <div *ngIf="item.tx" class="mb-3">
+              <a
+                [href]="'https://radxplorer.com/transactions/' + item.tx"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-xs text-yellow-500 hover:underline flex items-center"
+                >
+                View Transaction
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            </div>
+
+            <div class="flex justify-end">
+              <button
+                *ngIf="item.strategy"
+                (click)="closeStrategy(item)"
+                class="bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24"
+                [disabled]="closingItems[item.poolName]"
+                >
+                @if (closingItems[item.poolName]) {
+                <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                } @else {
+                <span>Close</span>
+                }
+              </button>
+              <button
+                *ngIf="!item.strategy"
+                (click)="closeStrategy(item)"
+                class="bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center"
+                [disabled]="closingItems[item.poolName]"
+                >
+                @if (closingItems[item.poolName]) {
+                <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                } @else {
+                <span>Remove Liquidity</span>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
 
     <!-- Modal -->
     <div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -789,3 +918,4 @@
       </div>
     </div>
   </div>
+</div>
