@@ -13,6 +13,7 @@ import {
   shareReplay,
   catchError,
   debounceTime,
+  share,
 } from 'rxjs';
 import { RadixConnectService } from '../radix-connect.service';
 import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
@@ -28,6 +29,7 @@ import Fuse from 'fuse.js';
 import { PoolDetailsComponent } from '../pool-details/pool-details.component';
 import { PoolService } from '../pool.service';
 import { VolumeChartComponent } from '../volume-chart/volume-chart.component';
+import { YieldListComponent } from '../yield-list/yield-list.component';
 
 interface StrategyFilters {
   requiredAssets: string[];
@@ -50,6 +52,7 @@ interface ApyFilter {
     TokenInputComponent,
     PoolDetailsComponent,
     VolumeChartComponent,
+    YieldListComponent,
   ],
   templateUrl: './strategies.component.html',
   styleUrls: ['./strategies.component.css'],
@@ -121,7 +124,19 @@ export class StrategiesComponent {
   private radixConnectService = inject(RadixConnectService);
   private poolService = inject(PoolService);
 
-  strategiesV2 = this.strategiesService.getStrategiesV2();
+  strategiesV2$ = this.strategiesService.getStrategiesV2().pipe(share());
+
+  lendingStrategies$ = this.strategiesV2$.pipe(
+    map(strategies => strategies.filter(s => s.strategy_type === 'Lending'))
+  );
+
+  stakingStrategies$ = this.strategiesV2$.pipe(
+    map(strategies => strategies.filter(s => s.strategy_type === 'Staking'))
+  );
+
+  liquidationStrategies$ = this.strategiesV2$.pipe(
+    map(strategies => strategies.filter(s => s.strategy_type === 'Liquidation'))
+  );
 
   ociswapService = inject(OciswapService);
 
@@ -182,6 +197,16 @@ export class StrategiesComponent {
   amountBorrowableWithoutLtv = '0';
 
   amountBorrowableWithLtv = '0';
+
+  collapsedSections: {
+    lending: boolean;
+    staking: boolean;
+    liquidation: boolean;
+  } = {
+    lending: true,
+    staking: true,
+    liquidation: true,
+  };
 
   hasInputErrors(): boolean {
     return (
@@ -588,5 +613,12 @@ export class StrategiesComponent {
 
   toggleFaq(index: number) {
     this.faqs[index].isOpen = !this.faqs[index].isOpen;
+  }
+
+  toggleStrategySection(section: keyof typeof this.collapsedSections) {
+    this.collapsedSections = {
+      ...this.collapsedSections,
+      [section]: !this.collapsedSections[section],
+    };
   }
 }

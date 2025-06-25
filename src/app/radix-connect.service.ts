@@ -116,6 +116,7 @@ export class RadixConnectService {
     return combineLatest([
       this.rdt?.walletApi.walletData$,
       this.accountBalanceCache$,
+      this.selectedAccount$,
     ]).pipe(
       tap(([data]) => {
         if (data.accounts.length) {

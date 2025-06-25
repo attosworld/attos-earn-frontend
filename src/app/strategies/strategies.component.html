@@ -2,32 +2,32 @@
   <h1 class="text-3xl font-bold text-white mb-8">DeFi Strategies</h1>
 
   <!-- New sections for benefits and risks -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4">
-    <!-- Benefits section -->
-    <div class="bg-gray-800 rounded-lg p-6">
-      <h2 class="text-2xl font-semibold text-yellow-500 mb-4">Why Use DeFi Strategies?</h2>
-      <ul class="list-disc list-inside text-gray-300 space-y-2">
-        <li>Potential for higher yields compared to traditional finance</li>
-        <li>Access to a wide range of financial instruments and markets</li>
-        <li>Increased control and transparency over your investments</li>
-        <li>Opportunity to participate in innovative financial products</li>
-        <li>Ability to diversify your portfolio across multiple protocols</li>
-      </ul>
-    </div>
+  <!-- <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4"> -->
+  <!--   <!-1- Benefits section -1-> -->
+  <!--   <div class="bg-gray-800 rounded-lg p-6"> -->
+  <!--     <h2 class="text-2xl font-semibold text-yellow-500 mb-4">Why Use DeFi Strategies?</h2> -->
+  <!--     <ul class="list-disc list-inside text-gray-300 space-y-2"> -->
+  <!--       <li>Potential for higher yields compared to traditional finance</li> -->
+  <!--       <li>Access to a wide range of financial instruments and markets</li> -->
+  <!--       <li>Increased control and transparency over your investments</li> -->
+  <!--       <li>Opportunity to participate in innovative financial products</li> -->
+  <!--       <li>Ability to diversify your portfolio across multiple protocols</li> -->
+  <!--     </ul> -->
+  <!--   </div> -->
 
-    <!-- Risks section -->
-    <div class="bg-gray-800 rounded-lg p-6">
-      <h2 class="text-2xl font-semibold text-red-500 mb-4">Risks of Complex DeFi Strategies</h2>
-      <ul class="list-disc list-inside text-gray-300 space-y-2">
-        <li>Smart contract vulnerabilities and potential exploits</li>
-        <li>High volatility in cryptocurrency markets</li>
-        <li>Impermanent loss in liquidity provision</li>
-        <li>Regulatory uncertainties in the DeFi space</li>
-        <li>Complexity of strategies may lead to user errors</li>
-        <li>Potential for significant financial losses</li>
-      </ul>
-    </div>
-  </div>
+  <!--   <!-1- Risks section -1-> -->
+  <!--   <div class="bg-gray-800 rounded-lg p-6"> -->
+  <!--     <h2 class="text-2xl font-semibold text-red-500 mb-4">Risks of Complex DeFi Strategies</h2> -->
+  <!--     <ul class="list-disc list-inside text-gray-300 space-y-2"> -->
+  <!--       <li>Smart contract vulnerabilities and potential exploits</li> -->
+  <!--       <li>High volatility in cryptocurrency markets</li> -->
+  <!--       <li>Impermanent loss in liquidity provision</li> -->
+  <!--       <li>Regulatory uncertainties in the DeFi space</li> -->
+  <!--       <li>Complexity of strategies may lead to user errors</li> -->
+  <!--       <li>Potential for significant financial losses</li> -->
+  <!--     </ul> -->
+  <!--   </div> -->
+  <!-- </div> -->
   <div class="mb-8">
     <button
       (click)="toggleFaqSection()"
@@ -146,8 +146,213 @@
       </div>
     </div>
   </div>
-  <div *ngIf="strategiesV2 | async as strategiesV2">
-    <!-- {{ strategiesV2 | json }} -->
+  <div>
+
+    <div class="rounded-lg">
+      <div class="flex items-center mb-4">
+        <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <h3 class="text-lg font-semibold text-blue-400">Top Lending Yield</h3>
+      </div>
+      <div class="space-x-3 mb-4 flex">
+        <ng-container *ngIf="lendingStrategies$  | async as featured">
+          <div *ngFor="let foo of [1, 2, 3]"
+            class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer flex-grow"
+            >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center">
+                <div>
+                  <div class="font-medium">Foo Strategy</div>
+                  <div class="text-xs text-gray-400">Fudge</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="font-bold text-green-400">123% APR</div>
+                <div class="text-xs text-gray-400">Total value locked</div>
+                <div class="font-bold">$1230.231</div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <app-yield-list
+      [strategies]="lendingStrategies$ | async"
+      [isCollapsed]="collapsedSections.lending"
+      [category]="'lending'"
+      (collapseToggle)="toggleStrategySection('lending')"
+      ></app-yield-list>
+    <app-yield-list
+      [strategies]="stakingStrategies$ | async"
+      [isCollapsed]="collapsedSections.staking"
+      [category]="'staking'"
+      (collapseToggle)="toggleStrategySection('staking')"
+      ></app-yield-list>
+    <app-yield-list
+      [strategies]="liquidationStrategies$ | async"
+      [isCollapsed]="collapsedSections.liquidation"
+      [category]="'liquidation'"
+      (collapseToggle)="toggleStrategySection('liquidation')"
+      ></app-yield-list>
+    <!-- <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden mb-4" *ngIf="lendingStrategies$ | async as strategies"> -->
+    <!--   <button -->
+    <!--     (click)="toggleStrategySection('lending')" -->
+    <!--     class="w-full flex justify-between items-center p-4 bg-gray-700 text-white hover:bg-gray-650 transition-colors duration-200" -->
+    <!--     > -->
+    <!--     <h3 class="text-xl font-semibold text-blue-400">{{ strategies[0].strategy_type }} Strategies</h3> -->
+    <!--     <div class="flex items-center"> -->
+    <!--       <span class="mr-3 text-sm text-white px-2 py-1 rounded-full"> -->
+    <!--         {{ strategies.length }} -->
+    <!--       </span> -->
+    <!--       <svg -->
+    <!--         [ngClass]="{'rotate-180': !collapsedSections.lending}" -->
+    <!--         class="w-5 h-5 transition-transform duration-200" -->
+    <!--         fill="none" -->
+    <!--         viewBox="0 0 24 24" -->
+    <!--         stroke="currentColor" -->
+    <!--         > -->
+    <!--         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /> -->
+    <!--       </svg> -->
+    <!--     </div> -->
+    <!--   </button> -->
+
+    <!--   <div [hidden]="collapsedSections.lending"> -->
+    <!--     <!-1- Desktop view for Lending strategies -1-> -->
+    <!--     <div class="hidden md:block"> -->
+    <!--       <!-1- Table header -1-> -->
+    <!--       <div class="grid grid-cols-8 gap-4 p-4 bg-gray-750 text-gray-300 font-semibold text-sm"> -->
+    <!--         <div class="col-span-2">Strategy</div> -->
+    <!--         <div class="text-center">Type</div> -->
+    <!--         <div class="text-center">Provider</div> -->
+    <!--         <div class="text-center">Deposited</div> -->
+    <!--         <div class="text-center">Bonus Type</div> -->
+    <!--         <div class="text-center">Bonus</div> -->
+    <!--         <div class="text-center">Actions</div> -->
+    <!--       </div> -->
+
+    <!--       <!-1- Table body for Lending strategies -1-> -->
+    <!--       <div class="divide-y divide-gray-700"> -->
+    <!--         <div *ngFor="let strategy of strategies" -->
+    <!--           class="grid grid-cols-8 gap-4 p-4 items-center hover:bg-gray-750 transition-colors duration-200"> -->
+    <!--           <!-1- Strategy name and icon -1-> -->
+    <!--           <div class="col-span-2 flex items-center"> -->
+    <!--             <img *ngIf="strategy.icon_url" [src]="strategy.icon_url" [alt]="strategy.name" class="w-8 h-8 mr-3 rounded-full"> -->
+    <!--             <div> -->
+    <!--               <h3 class="text-yellow-500 font-medium">{{ strategy.name }}</h3> -->
+    <!--               <h4 class="font-medium">{{ strategy.symbol }}</h4> -->
+    <!--               <div class="text-xs text-gray-400 mt-1 truncate max-w-xs" title="{{ strategy.resource_address }}"> -->
+    <!--                 {{ strategy.resource_address | slice:0:16 }}... -->
+    <!--               </div> -->
+    <!--             </div> -->
+    <!--           </div> -->
+
+    <!--           <!-1- Strategy type -1-> -->
+    <!--           <div class="text-center"> -->
+    <!--             {{ strategy.strategy_type }} -->
+    <!--           </div> -->
+
+    <!--           <!-1- Provider -1-> -->
+    <!--           <div class="text-center"> -->
+    <!--             {{ strategy.provider || 'Unknown' }} -->
+    <!--           </div> -->
+
+    <!--           <!-1- Deposited -1-> -->
+    <!--           <div class="text-center text-white font-medium"> -->
+    <!--             {{ strategy.deposited | currency }} -->
+    <!--           </div> -->
+
+    <!--           <!-1- Bonus Type -1-> -->
+    <!--           <div class="text-center text-white"> -->
+    <!--             {{ strategy.bonus_type }} -->
+    <!--           </div> -->
+
+    <!--           <!-1- Bonus value -1-> -->
+    <!--           <div class="text-center text-green-400 font-bold"> -->
+    <!--             {{ strategy.bonus_value | number:'1.2-2' }}% -->
+    <!--           </div> -->
+
+    <!--           <!-1- Actions -1-> -->
+    <!--           <div class="text-center flex justify-center space-x-2"> -->
+    <!--             <button -->
+    <!--               class="bg-yellow-500 text-gray-900 py-1 px-3 rounded text-sm hover:bg-yellow-600 transition duration-300" -->
+    <!--               > -->
+    <!--               Execute -->
+    <!--             </button> -->
+    <!--             <a -->
+    <!--               [href]="strategy.info_url" -->
+    <!--               target="_blank" -->
+    <!--               rel="noopener noreferrer" -->
+    <!--               class="bg-gray-600 text-white py-1 px-3 rounded text-sm hover:bg-gray-500 transition duration-300 flex items-center" -->
+    <!--               > -->
+    <!--               Info -->
+    <!--               <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> -->
+    <!--                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path> -->
+    <!--               </svg> -->
+    <!--             </a> -->
+    <!--           </div> -->
+    <!--         </div> -->
+    <!--       </div> -->
+
+    <!--       <!-1- Empty state for Lending -1-> -->
+    <!--       <div *ngIf="strategies.length === 0" class="p-8 text-center text-gray-400"> -->
+    <!--         <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> -->
+    <!--           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path> -->
+    <!--         </svg> -->
+    <!--         <p>No lending strategies found matching your criteria.</p> -->
+    <!--       </div> -->
+    <!--     </div> -->
+
+    <!--     <!-1- Mobile view for Lending strategies -1-> -->
+    <!--     <div class="md:hidden space-y-4 p-4"> -->
+    <!--       <div *ngFor="let strategy of strategies" class="bg-gray-750 rounded-lg shadow-lg p-4"> -->
+    <!--         <div class="flex justify-between items-start mb-3"> -->
+    <!--           <div class="flex items-center"> -->
+    <!--             <img *ngIf="strategy.icon_url" [src]="strategy.icon_url" [alt]="strategy.name" class="w-8 h-8 mr-2 rounded-full"> -->
+    <!--             <h3 class="text-yellow-500 font-medium">{{ strategy.name }}</h3> -->
+    <!--           </div> -->
+    <!--           <span class="text-blue-400">{{ strategy.strategy_type }}</span> -->
+    <!--         </div> -->
+
+    <!--         <div class="grid grid-cols-2 gap-2 mb-3 text-sm"> -->
+    <!--           <div class="text-gray-400">Symbol:</div> -->
+    <!--           <div class="text-blue-400">{{ strategy.symbol }}</div> -->
+
+    <!--           <div class="text-gray-400">Provider:</div> -->
+    <!--           <div class="text-purple-400">{{ strategy.provider || 'Unknown' }}</div> -->
+
+    <!--           <div class="text-gray-400">Deposited:</div> -->
+    <!--           <div class="text-white">{{ strategy.bonus_value | currency }}</div> -->
+
+    <!--           <div class="text-gray-400">Bonus Type:</div> -->
+    <!--           <div class="text-white">{{ strategy.bonus_type }}</div> -->
+
+    <!--           <div class="text-gray-400">Bonus:</div> -->
+    <!--           <div class="text-green-400 font-bold">{{ strategy.bonus_value | number:'1.2-2' }}%</div> -->
+    <!--         </div> -->
+
+    <!--         <div class="flex justify-between mt-4"> -->
+    <!--           <button -->
+    <!--             class="bg-yellow-500 text-gray-900 py-1 px-3 rounded text-sm hover:bg-yellow-600 transition duration-300 flex-1 mr-2" -->
+    <!--             > -->
+    <!--             Execute -->
+    <!--           </button> -->
+    <!--           <a -->
+    <!--             [href]="strategy.info_url" -->
+    <!--             target="_blank" -->
+    <!--             rel="noopener noreferrer" -->
+    <!--             class="bg-gray-600 text-white py-1 px-3 rounded text-sm hover:bg-gray-500 transition duration-300 flex items-center justify-center flex-1" -->
+    <!--             > -->
+    <!--             Info -->
+    <!--             <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"> -->
+    <!--               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path> -->
+    <!--             </svg> -->
+    <!--           </a> -->
+    <!--         </div> -->
+    <!--       </div> -->
+    <!--     </div> -->
+    <!--   </div> -->
+    <!-- </div> -->
   </div>
 
   <!-- Existing strategies grid with coming soon overlay -->
@@ -301,7 +506,7 @@
             <!-- LTV Slider -->
             <div *ngFor="let field of selectedStrategy?.fieldsRequired" class="mb-6">
               <ng-container *ngIf="field.fieldName === 'ltv' && field.type === 'slider'">
-                <label [for]="field.fieldName + '-slider'" class="block text-sm font-medium text-gray-300 mb-1 flex items-center">
+                <label [for]="field.fieldName + '-slider'" class="text-sm font-medium text-gray-300 mb-1 flex items-center">
                   <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
                   </svg>

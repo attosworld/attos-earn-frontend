@@ -45,6 +45,7 @@ import {
   ChartType,
 } from '../chart-toggle/chart-toggle.component';
 import { LpPerformanceChartComponent } from '../lp-performance-chart/lp-performance-chart.component';
+import { YieldListComponent } from '../yield-list/yield-list.component';
 
 type SortColumn = 'tvl' | 'bonus_7d' | 'volume_7d' | 'bonus_name' | null;
 type SortDirection = 'asc' | 'desc' | 'none';

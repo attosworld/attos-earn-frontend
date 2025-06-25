@@ -37,6 +37,41 @@ export interface ExecuteStrategyResponse {
   manifest: string;
 }
 
+export interface BaseStrategy {
+  name: string;
+  symbol: string;
+  icon_url: string;
+  info_url: string;
+  resource_address: string;
+  bonus_type: 'APR' | 'APY';
+  strategy_type: 'Lending' | 'Staking' | 'Liquidation';
+  bonus_value: number | string;
+  provider: 'Root Finance' | 'Weft Finance' | 'Flux' | string;
+}
+
+export interface LendingStrategy extends BaseStrategy {
+  strategy_type: 'Lending';
+  deposited: string | number;
+  loaned: string | number;
+}
+
+export interface StakingStrategy extends BaseStrategy {
+  strategy_type: 'Staking';
+  total_stake: number;
+}
+
+export interface LiquidationStrategy extends BaseStrategy {
+  strategy_type: 'Liquidation';
+  deposited: string | number;
+}
+
+export type StrategyV2 =
+  | LendingStrategy
+  | StakingStrategy
+  | LiquidationStrategy;
+
+export type StrategiesResponse = StrategyV2[];
+
 @Injectable({
   providedIn: 'root',
 })
@@ -109,7 +144,7 @@ export class StrategiesService {
   }
 
   getStrategiesV2() {
-    return this.http.get<Strategy[]>(`${this.baseV2}/strategies`).pipe(
+    return this.http.get<StrategiesResponse>(`${this.baseV2}/strategies`).pipe(
       catchError(error => {
         console.error('Error executing strategy:', error);
         throw error; // Rethrow the error to be handled by the component
