@@ -30,6 +30,7 @@ import { PoolDetailsComponent } from '../pool-details/pool-details.component';
 import { PoolService } from '../pool.service';
 import { VolumeChartComponent } from '../volume-chart/volume-chart.component';
 import { YieldListComponent } from '../yield-list/yield-list.component';
+import { StrategyCardComponent } from '../strategy-card/strategy-card.component';
 
 interface StrategyFilters {
   requiredAssets: string[];
@@ -53,6 +54,7 @@ interface ApyFilter {
     PoolDetailsComponent,
     VolumeChartComponent,
     YieldListComponent,
+    StrategyCardComponent,
   ],
   templateUrl: './strategies.component.html',
   styleUrls: ['./strategies.component.css'],
@@ -127,15 +129,68 @@ export class StrategiesComponent {
   strategiesV2$ = this.strategiesService.getStrategiesV2().pipe(share());
 
   lendingStrategies$ = this.strategiesV2$.pipe(
-    map(strategies => strategies.filter(s => s.strategy_type === 'Lending'))
+    map(strategies => strategies.filter(s => s.strategy_type === 'Lending')),
+    share()
+  );
+
+  topLendingStrategies$ = this.lendingStrategies$.pipe(
+    map(strategies => strategies.slice(0, 4))
+  );
+
+  lendingTotalTvl$ = this.lendingStrategies$.pipe(
+    map(strategies =>
+      strategies
+        .reduce((total, strategy) => {
+          const deposited = new Decimal(strategy.deposited ?? '0');
+          return total.plus(deposited);
+        }, new Decimal(0))
+        .toFixed(2)
+    ),
+    share()
   );
 
   stakingStrategies$ = this.strategiesV2$.pipe(
-    map(strategies => strategies.filter(s => s.strategy_type === 'Staking'))
+    map(strategies =>
+      strategies
+        .filter(s => s.strategy_type === 'Staking')
+        .sort((a, b) => +b.bonus_value - +a.bonus_value)
+    ),
+    share()
+  );
+
+  stakingTotalTvl$ = this.stakingStrategies$.pipe(
+    map(strategies =>
+      strategies
+        .reduce((total, strategy) => {
+          const deposited = new Decimal(strategy.total_stake ?? '0');
+          return total.plus(deposited);
+        }, new Decimal(0))
+        .toFixed(2)
+    ),
+    share()
+  );
+
+  topStakingStrategies$ = this.stakingStrategies$.pipe(
+    map(strategies => strategies.slice(0, 4))
   );
 
   liquidationStrategies$ = this.strategiesV2$.pipe(
     map(strategies => strategies.filter(s => s.strategy_type === 'Liquidation'))
+  );
+
+  topLiquidationStrategies$ = this.liquidationStrategies$.pipe(
+    map(strategies => strategies.slice(0, 4))
+  );
+  liquidationTotalTvl$ = this.liquidationStrategies$.pipe(
+    map(strategies =>
+      strategies
+        .reduce((total, strategy) => {
+          const deposited = new Decimal(strategy.deposited ?? '0');
+          return total.plus(deposited);
+        }, new Decimal(0))
+        .toFixed(2)
+    ),
+    share()
   );
 
   ociswapService = inject(OciswapService);

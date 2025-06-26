@@ -12,6 +12,7 @@ export class YieldListComponent {
   @Input() category!: string;
   @Input() isCollapsed = false;
   @Input() strategies!: StrategyV2[] | null;
+  @Input() tvl!: string | number | null;
 
   @Output()
   collapseToggle = new EventEmitter<string>();

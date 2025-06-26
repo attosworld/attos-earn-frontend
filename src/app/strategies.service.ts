@@ -47,6 +47,8 @@ export interface BaseStrategy {
   strategy_type: 'Lending' | 'Staking' | 'Liquidation';
   bonus_value: number | string;
   provider: 'Root Finance' | 'Weft Finance' | 'Flux' | string;
+  requiredAssets: { resource_address: string; symbol: string }[];
+  rewardTokens: string[];
 }
 
 export interface LendingStrategy extends BaseStrategy {

@@ -1,12 +1,12 @@
     <div class="rounded-lg shadow-lg overflow-hidden mb-4" *ngIf="strategies">
       <button
         (click)="toggleStrategySection()"
-        class="w-full flex justify-between items-center p-4 bg-gray-700 text-white hover:bg-gray-650 transition-colors duration-200"
+        class="w-full flex justify-between items-center p-3 bg-gray-700 text-white hover:bg-gray-650 transition-colors duration-200"
         >
-        <h3 class="text-xl font-semibold text-blue-400">{{ strategies[0].strategy_type }} Strategies</h3>
+        <h3 class="text-lg font-semibold text-blue-400">{{ strategies[0].strategy_type }} Strategies</h3>
         <div class="flex items-center">
           <span class="mr-3 text-sm text-white px-2 py-1 rounded-full">
-            {{ strategies.length }}
+            {{ tvl | currency }}
           </span>
           <svg
             [ngClass]="{'rotate-180': !isCollapsed}"
