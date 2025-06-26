@@ -129,7 +129,12 @@ export class StrategiesComponent {
   strategiesV2$ = this.strategiesService.getStrategiesV2().pipe(share());
 
   lendingStrategies$ = this.strategiesV2$.pipe(
-    map(strategies => strategies.filter(s => s.strategy_type === 'Lending')),
+    map(strategies =>
+      strategies
+        .filter(s => s.strategy_type === 'Lending')
+
+        .sort((a, b) => +b.bonus_value - +a.bonus_value)
+    ),
     share()
   );
 
@@ -175,7 +180,11 @@ export class StrategiesComponent {
   );
 
   liquidationStrategies$ = this.strategiesV2$.pipe(
-    map(strategies => strategies.filter(s => s.strategy_type === 'Liquidation'))
+    map(strategies =>
+      strategies
+        .filter(s => s.strategy_type === 'Liquidation')
+        .sort((a, b) => +b.bonus_value - +a.bonus_value)
+    )
   );
 
   topLiquidationStrategies$ = this.liquidationStrategies$.pipe(
