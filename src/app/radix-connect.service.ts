@@ -110,7 +110,11 @@ export class RadixConnectService {
 
   getWalletData() {
     if (!this.rdt) {
-      return of(undefined);
+      return of({
+        account: '',
+        fungibles: [],
+        nonFungibles: [],
+      } as Balances);
     }
 
     return combineLatest([
@@ -130,7 +134,11 @@ export class RadixConnectService {
       switchMap(([data]) => {
         const account = this.selectedAccount$.getValue();
         if (!data.accounts.length || !account) {
-          return of(undefined);
+          return of({
+            account: '',
+            fungibles: [],
+            nonFungibles: [],
+          } as Balances);
         }
 
         const address = account.address;

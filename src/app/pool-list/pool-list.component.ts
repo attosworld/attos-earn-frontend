@@ -26,6 +26,7 @@ import {
   catchError,
   share,
   takeUntil,
+  startWith,
 } from 'rxjs/operators';
 import Fuse from 'fuse.js';
 import { PrecisionPoolComponent } from '../precision-pool/precision-pool.component';
@@ -248,8 +249,8 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   portfolioItems$ = (this.radixConnectService.getAccounts() || of([])).pipe(
     switchMap(accounts => {
       if (!accounts || !accounts.length) {
-        return of([]).pipe(
-          finalize(() => (this.isLoading = false)),
+        return of(undefined).pipe(
+          finalize(() => (this.isPortfolioLoading = false)),
           share()
         );
       }
@@ -575,7 +576,15 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   selectedChartType: ChartType = 'volume';
   tokenValueData$: Observable<Record<string, number>> | undefined;
 
-  balances$ = this.radixConnectService.getWalletData();
+  balances$: Observable<Balances | undefined> = this.radixConnectService
+    .getWalletData()
+    .pipe(
+      startWith({
+        account: '',
+        fungibles: [],
+        nonFungibles: [],
+      } as Balances)
+    );
 
   openDepositModal(pool: Pool, balances: Balances | undefined) {
     this.selectedPool = pool;
