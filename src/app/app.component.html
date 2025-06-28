@@ -1,4 +1,4 @@
-<nav class="bg-gray-800 p-1 relative">
+<nav class="bg-gray-800 p-1 fixed w-full md:relative z-50">
   <div class="container mx-auto flex items-center justify-between">
     <a routerLink="/" class="flex items-center text-white text-xl font-bold">
       <img src="attos-earn-logo.png" alt="Attos Earn Logo" class="h-10 w-auto mr-2">
@@ -96,7 +96,7 @@
         </div>
       </div>
       <radix-connect-button />
-      <button class="text-white lg:hidden" (click)="toggleMenu()">
+      <button class="text-white hidden lg:hidden" (click)="toggleMenu()">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
         </svg>
@@ -193,6 +193,7 @@
     </ul>
   </div>
 </nav>
+<div class="h-10 md:h-0"></div>
 
 <!-- Astrolescent Banner -->
 <div *ngIf="showBanner" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white py-3 px-4 relative overflow-hidden">
@@ -237,6 +238,30 @@
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 </style>
+
+<div class="md:hidden fixed bottom-3 left-0 right-0 bg-blue-950 bg-opacity-75 p-2 flex justify-center items-center h-12 space-x-4 z-50 w-9/10 mx-auto rounded-4xl shadow-xl">
+  <!-- DeFi Strategies -->
+  <a routerLink="/strategies" class="flex flex-col items-center text-white hover:text-yellow-500 transition-colors duration-300 p-2 rounded-xl bg-slate-900"
+     [ngClass]="{'text-yellow-500 bg-slate-950': isActive('/strategies')}">
+    <svg class="w-6 h-6" viewBox="0 0 48 48"><path d="M4.22 60.766V39.249"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.368" d="M2.403 43.091H24.13V24.648h20.05"/><circle cx="24.2" cy="24.857" r=".978" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.368"/><circle cx="2.534" cy="43.158" r=".978" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.368"/><circle cx="43.927" cy="24.476" r=".978" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.368"/><circle cx="24.063" cy="43.216" r=".978" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.368"/><circle cx="11.746" cy="31.77" r="9.958" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><text xml:space="preserve" x="5.951" y="38.619" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" font-size="19.665" style="text-align:start"><tspan x="5.951" y="38.619">$</tspan></text><circle cx="33.143" cy="13.457" r="9.599" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><circle cx="36.022" cy="13.485" r="9.599" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><text xml:space="preserve" x="30.435" y="20.087" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" font-size="18.956" style="text-align:start"><tspan x="30.435" y="20.087">$</tspan></text></svg>
+  </a>
+
+  <!-- Pools (Larger and Centered) -->
+  <a routerLink="/pools" class="flex flex-col items-center text-white hover:text-yellow-500 transition-colors duration-300 p-2 rounded-xl bg-slate-900"
+     [ngClass]="{'text-yellow-500 bg-slate-950': isActive('/pools')}">
+    <svg class="w-6 h-6" viewBox="0 0 12.7 12.7" fill="currentColor" stroke="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M5.45 2.073 4.8 3.633" /><path d="M7.164 12.124c.727-.337 1.16-.837 1.376-1.592.197-.684.036-1.537-.438-2.33-.126-.211-.494-.665-.816-1.01-.69-.735-.865-1.072-.866-1.664-.001-.544.227-.896.755-1.168.311-.16.422-.183.743-.156.719.06 1.312.518 1.829 1.411.518.895.817 1.9.817 2.749 0 .509-.212 1.313-.48 1.82-.538 1.018-1.815 1.894-3.009 2.065l-.266.039zm-2.48-.421c-.502-.213-.678-.337-1.047-.736-.69-.745-.951-1.534-.896-2.698.074-1.55.772-2.972 2.192-4.466.82-.863 1.04-1.138 1.273-1.6.228-.453.434-1.111.441-1.41.003-.127.031-.291.063-.365.036-.084.058.158.06.665.006 1.259-.13 1.719-.93 3.141-.47.834-.558 1.412-.328 2.15.161.52.43.921 1.098 1.645.805.872 1.035 1.554.8 2.371-.094.328-.182.46-.523.792-.277.27-.518.437-.742.516-.422.148-1.108.146-1.462-.005z" />
+    </svg>
+  </a>
+
+  <!-- Portfolio -->
+  <a routerLink="/portfolio" class="flex flex-col items-center text-white hover:text-yellow-500 transition-colors duration-300 p-2 rounded-xl bg-slate-900"
+     [ngClass]="{'text-yellow-500 bg-slate-950': isActive('/portfolio')}">
+    <svg class="w-6 h-6" viewBox="0 0 48 48" fill="currentColor">
+      <rect width="6.332" height="27.472" x="5.157" y="10.979" rx="1"/><rect width="6.332" height="22.264" x="12.536" y="16.179" rx="1"/><rect width="6.332" height="14.196" x="20.06" y="24.234" rx="1"/><rect width="38.604" height=".715" x="5.157" y="38.86" rx=".2"/><rect width=".97" height="8.119" x="39.166" y="10.877" rx=".2"/><rect width=".97" height="8.119" x="14.404" y="-43.711" rx=".2" transform="rotate(90)"/><rect width=".97" height="8.119" x="30.157" y="-43.523" rx=".2" transform="rotate(90)"/>
+    </svg>
+  </a>
+</div>
 
 <!-- Rest of your template -->
 <router-outlet></router-outlet>

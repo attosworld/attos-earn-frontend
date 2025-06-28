@@ -1,11 +1,12 @@
 {
   "name": "Attos Earn",
-  "short_name": "AttosEarn",
-  "theme_color": "#fbbf24",
-  "background_color": "#111827",
+  "short_name": "Attos Earn",
+  "theme_color": "#1e2939",
+  "background_color": "#1e2939",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
+  "categories": ["finance"],
   "icons": [
     {
       "src": "icons/attos-earn-logo-72.png",
