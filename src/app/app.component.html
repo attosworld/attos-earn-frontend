@@ -1,5 +1,5 @@
 <nav class="bg-gray-800 p-1 fixed w-full md:relative z-50">
-  <div class="container mx-auto flex items-center justify-between">
+  <div class="container mx-auto flex items-center justify-between mb-2">
     <a routerLink="/" class="flex items-center text-white text-xl font-bold">
       <img src="attos-earn-logo.png" alt="Attos Earn Logo" class="h-10 w-auto mr-2">
       <span class="animate-title page-title text-3xl">Attos Earn</span>
@@ -192,8 +192,41 @@
       </li>
     </ul>
   </div>
+  <ng-container *ngIf="baseBalances | async as balances">
+    <div class="flex p-2 md:hidden border-t-slate-100 border-t-1">
+      <div class="text-yellow-500 text-sm font-semibold pr-2">Balances:</div>
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center">
+          <img src="https://assets.radixdlt.com/icons/icon-xrd.png" alt="XRD" class="w-5 h-5 mr-2">
+          <div>
+            <div class="text-white text-sm font-medium">{{ balances.XRD.balance | number:'1.0-2' }}</div>
+          </div>
+          <a href="https://astrl.trade/bridge" target="_blank" rel="noopener noreferrer"
+                                                               class="ml-2 text-yellow-500 hover:text-yellow-400 transition-colors duration-200 bg-gray-900 rounded-sm"
+                                                               title="Fund XRD via Astrolescent Bridge">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+          </a>
+        </div>
+        <div class="flex items-center">
+          <img src="https://radix.defiplaza.net/assets/img/babylon/defiplaza-icon.png" alt="DFP2" class="w-5 h-5 mr-2">
+          <div>
+            <div class="text-white text-sm font-medium">{{ balances.DFP2.balance | number:'1.0-2' }}</div>
+          </div>
+          <button (click)="openDFP2SwapModal()"
+            class="ml-2 text-yellow-500 hover:text-yellow-400 transition-colors duration-200 bg-gray-900 rounded-sm"
+            title="Fund DFP2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
 </nav>
-<div class="h-10 md:h-0"></div>
+<div class="h-16 md:h-0"></div>
 
 <!-- Astrolescent Banner -->
 <div *ngIf="showBanner" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white py-3 px-4 relative overflow-hidden">

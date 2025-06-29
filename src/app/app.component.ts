@@ -113,11 +113,11 @@ export class AppComponent implements OnInit {
 
       return {
         XRD: {
-          balance: xrdBalance?.balance,
+          balance: xrdBalance?.balance ?? '0',
           iconUrl: xrdBalance?.resourceInfo.metadata.iconUrl,
         },
         DFP2: {
-          balance: dfp2Balance?.balance,
+          balance: dfp2Balance?.balance ?? '0',
           iconUrl: dfp2Balance?.resourceInfo.metadata.iconUrl,
         },
       };
