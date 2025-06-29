@@ -6,7 +6,7 @@
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
-  "categories": ["finance"],
+  "categories": ["finance", "business", "education"],
   "icons": [
     {
       "src": "icons/attos-earn-logo-72.png",
