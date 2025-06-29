@@ -128,8 +128,15 @@
               <div class="text-gray-400">Provider:</div>
               <div class="text-purple-400">{{ strategy.provider || 'Unknown' }}</div>
 
+              <ng-container *ngIf="strategy.strategy_type === 'Lending' || strategy.strategy_type === 'Liquidation'">
               <div class="text-gray-400">Deposited:</div>
-              <div class="text-white">{{ strategy.bonus_value | currency }}</div>
+              <div class="text-white">{{ strategy.deposited| currency }}</div>
+              </ng-container>
+
+              <ng-container *ngIf="strategy.strategy_type === 'Staking'">
+              <div class="text-gray-400">Total Stake:</div>
+              <div class="text-white">{{ strategy.total_stake | currency }}</div>
+              </ng-container>
 
               <div class="text-gray-400">Bonus Type:</div>
               <div class="text-white">{{ strategy.bonus_type }}</div>
