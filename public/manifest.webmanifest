@@ -1,8 +1,8 @@
 {
   "name": "Attos Earn",
   "short_name": "Attos Earn",
-  "theme_color": "#0c1222",
-  "background_color": "#0c1222",
+  "theme_color": "#1e2939",
+  "background_color": "#1e2939",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
