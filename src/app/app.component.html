@@ -1,4 +1,4 @@
-<nav class="bg-gray-800 p-1 fixed w-full md:relative z-50">
+<nav class="bg-gray-800 p-1 fixed w-full md:relative z-50" *ngIf="!isDiscordVerifyRoute()">
   <div class="container mx-auto flex items-center justify-between mb-2">
     <a routerLink="/" class="flex items-center text-white text-xl font-bold">
       <img src="attos-earn-logo.png" alt="Attos Earn Logo" class="h-10 w-auto mr-2">
@@ -95,7 +95,7 @@
           </div>
         </div>
       </div>
-      <radix-connect-button />
+      <radix-connect-button class="connect-button" />
       <button class="text-white hidden lg:hidden" (click)="toggleMenu()">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
@@ -193,6 +193,30 @@
     </ul>
   </div>
   <ng-container *ngIf="baseBalances | async as balances">
+      <div *ngIf="selectedAccount$ | async as selectedAccount" class="relative md:hidden flex justify-self-left mb-2">
+        <button (click)="toggleAccountDropdown()" class="flex items-center bg-gray-700 rounded-lg px-2 sm:px-3 py-1 text-sm text-white h-9 w-full">
+          <span class="w-2 h-2 bg-green-500 rounded-full mr-1 sm:mr-2"></span>
+          <span class="font-mono xs:inline">{{ shortenAddress(selectedAccount.address) }}</span>
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        <div *ngIf="isAccountDropdownOpen" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg z-20">
+          <div class="py-1">
+            <ng-container *ngIf="accounts$ | async as accounts">
+              <a *ngFor="let account of accounts"
+                 (click)="selectAccount(account)"
+                 class="block px-4 py-2 text-sm text-white hover:bg-gray-700 cursor-pointer">
+                {{ shortenAddress(account.address) }}
+                <span *ngIf="(selectedAccount$ | async)?.address === account.address"
+                  class="ml-2 text-xs bg-yellow-500 text-gray-900 px-2 py-0.5 rounded-full">
+                  Active
+                </span>
+              </a>
+            </ng-container>
+          </div>
+        </div>
+      </div>
     <div class="flex p-2 md:hidden border-t-slate-100 border-t-1">
       <div class="text-yellow-500 text-sm font-semibold pr-2">Balances:</div>
       <div class="flex items-center space-x-4">
@@ -272,7 +296,7 @@
   }
 </style>
 
-<div class="md:hidden fixed bottom-3 left-0 right-0 bg-blue-950 bg-opacity-75 p-2 flex justify-center items-center h-12 space-x-4 z-50 w-9/10 mx-auto rounded-4xl shadow-xl">
+<div class="md:hidden fixed bottom-3 left-0 right-0 bg-blue-950 bg-opacity-75 p-2 flex justify-center items-center h-12 space-x-4 z-50 w-9/10 mx-auto rounded-4xl shadow-xl" *ngIf="!isDiscordVerifyRoute()">
   <!-- DeFi Strategies -->
   <a routerLink="/strategies" class="flex flex-col items-center text-white hover:text-yellow-500 transition-colors duration-300 p-2 rounded-xl bg-slate-900"
      [ngClass]="{'text-yellow-500 bg-slate-950': isActive('/strategies')}">
@@ -301,7 +325,7 @@
 
 <div class="h-10 md:hidden"></div>
 
-<footer class="bg-gray-800 text-white py-8 mt-auto hidden md:block">
+<footer class="bg-gray-800 text-white py-8 mt-auto hidden md:block" *ngIf="!isDiscordVerifyRoute()">
   <div class="container mx-auto px-4">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
       <div>

@@ -222,4 +222,8 @@ export class AppComponent implements OnInit {
     this.swapAmount = max;
     this.swapAmountSubject.next(this.swapAmount);
   }
+
+  isDiscordVerifyRoute() {
+    return this.router.url.includes('/discord-verify');
+  }
 }

@@ -845,8 +845,37 @@
               <ng-container *ngIf="selectedChartType === 'performance' && lpPerformanceEnabled">
                 <app-lp-performance-chart [tokenValueData]="tokenValueData$ | async"></app-lp-performance-chart>
               </ng-container>
-
-              <app-pool-details [poolInfo]="selectedPool"></app-pool-details>
+              <div class="flex justify-end mb-2">
+                <div class="bg-gray-700 rounded-lg overflow-hidden flex">
+                  <button
+                    class="px-3 py-1 text-sm transition-colors duration-200"
+                    [class.bg-yellow-500]="poolModalSelectedView === 'details'"
+                    [class.text-gray-900]="poolModalSelectedView === 'details'"
+                    [class.bg-gray-700]="poolModalSelectedView !== 'details'"
+                    [class.text-white]="poolModalSelectedView !== 'details'"
+                    (click)="togglePoolModalDetails('details')">
+                    Details
+                  </button>
+                  <button
+                    class="px-3 py-1 text-sm transition-colors duration-200"
+                    [class.bg-yellow-500]="poolModalSelectedView === 'news'"
+                    [class.text-gray-900]="poolModalSelectedView === 'news'"
+                    [class.bg-gray-700]="poolModalSelectedView !== 'news'"
+                    [class.text-white]="poolModalSelectedView !== 'news'"
+                    (click)="togglePoolModalDetails('news')">
+                    News
+                  </button>
+                </div>
+              </div>
+              <ng-container *ngIf="poolModalSelectedView === 'details'">
+                <app-pool-details [poolInfo]="selectedPool"></app-pool-details>
+              </ng-container>
+              <ng-container *ngIf="poolModalSelectedView === 'news'">
+                <!-- Replace with your news feed component or embed -->
+                <div class="bg-gray-800 p-4 rounded-lg">
+                  <h3 class="text-lg font-semibold text-yellow-500">Latest News</h3>
+                </div>
+              </ng-container>
             </div>
 
             <!-- Token input sections (right side on larger screens, bottom on smaller screens) -->

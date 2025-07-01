@@ -96,6 +96,8 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('dummyItem') dummyItem!: ElementRef;
 
+  poolModalSelectedView: 'details' | 'news' = 'details';
+
   lpPerformanceEnabled = false;
 
   sevenDayVolume$: Observable<Record<string, number>> | undefined;
@@ -896,5 +898,9 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     } else {
       document.body.classList.remove('overflow-hidden');
     }
+  }
+
+  togglePoolModalDetails(tab: 'details' | 'news') {
+    this.poolModalSelectedView = tab;
   }
 }

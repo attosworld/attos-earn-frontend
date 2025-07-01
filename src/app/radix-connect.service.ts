@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   RadixDappToolkit,
   RadixNetwork,
@@ -8,11 +8,13 @@ import {
 import {
   BehaviorSubject,
   combineLatest,
+  filter,
   forkJoin,
   from,
   map,
   Observable,
   of,
+  Subject,
   switchMap,
   tap,
 } from 'rxjs';
@@ -21,6 +23,8 @@ import {
   FungibleResourceBalance,
   NftBalance,
 } from '@calamari-radix/gateway-ez-mode/dist/types';
+import { NavigationEnd, Router } from '@angular/router';
+import { environment } from '../environments/environment';
 
 export interface Balances {
   account: string;
@@ -57,6 +61,7 @@ export class RadixConnectService {
 
   static DFP2 =
     'resource_rdx1t5ywq4c6nd2lxkemkv4uzt8v7x7smjcguzq5sgafwtasa6luq7fclq';
+  rolaResponse = new Subject<boolean>();
 
   setSelectedAccount(account: WalletDataStateAccount) {
     this.selectedAccount$.next(account);
@@ -74,8 +79,19 @@ export class RadixConnectService {
 
   accountBalanceCache$ = new BehaviorSubject<Record<string, Balances>>({});
 
+  router = inject(Router);
+
   constructor() {
     this.init();
+    const routerEvent = this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe(() => {
+        if (this.router.url.includes('discord-verify')) {
+          this.initDiscordVerification();
+        }
+
+        routerEvent.unsubscribe();
+      });
   }
 
   init() {
@@ -85,11 +101,47 @@ export class RadixConnectService {
       networkId: RadixNetwork.Mainnet,
       applicationName: 'Attos Earn',
       applicationVersion: '1.0.0',
-      // logger: Logger(1),
     });
     this.rdt.buttonApi.setMode('dark');
     this.rdt.buttonApi.setTheme('white');
     this.rdt.walletApi.setRequestData(DataRequestBuilder.accounts().atLeast(1));
+  }
+
+  initDiscordVerification() {
+    this.rdt = RadixDappToolkit({
+      dAppDefinitionAddress:
+        'account_rdx12xpquh9jpf0tekllepvcenhpwdxc3k25qrlhljmylmrksahmcemaw3',
+      networkId: RadixNetwork.Mainnet,
+      applicationName: 'Attos Earn',
+      applicationVersion: '1.0.0',
+    });
+    this.rdt?.disconnect();
+    this.rdt.buttonApi.setMode('dark');
+    this.rdt.buttonApi.setTheme('white');
+    this.rdt.walletApi.setRequestData(
+      DataRequestBuilder.accounts().atLeast(1).withProof()
+    );
+    const getChallenge: () => Promise<string> = () =>
+      fetch(`${environment.apiUrl}/rola/create-challenge`)
+        .then(res => res.json())
+        .then(res => res.challenge);
+
+    this.rdt.walletApi.provideChallengeGenerator(getChallenge);
+
+    this.rdt.walletApi.dataRequestControl(async ({ proofs }) => {
+      const token = sessionStorage.getItem('discord_access_token') || '';
+      const { valid } = await fetch(`${environment.apiUrl}/rola/verify`, {
+        method: 'POST',
+        body: JSON.stringify(proofs),
+        headers: { 'content-type': 'application/json', Authorization: token },
+      }).then((res): Promise<{ valid: boolean }> => res.json());
+
+      this.rolaResponse.next(valid);
+    });
+  }
+
+  getRolaResponse() {
+    return this.rolaResponse.asObservable();
   }
 
   getButtonStatus() {

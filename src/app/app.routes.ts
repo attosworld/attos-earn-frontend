@@ -6,6 +6,7 @@ import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.componen
 import { TermsAndConditionsComponent } from './terms-and-conditions/terms-and-conditions.component';
 import { HomeComponent } from './home/home.component';
 import { WalletGuard } from './wallet.guard';
+import { DiscordVerifyComponent } from './discord-verify/discord-verify.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, canActivate: [WalletGuard] },
@@ -14,4 +15,5 @@ export const routes: Routes = [
   { path: 'portfolio', component: PortfolioComponent },
   { path: 'privacy-policy', component: PrivacyPolicyComponent },
   { path: 'terms-and-conditions', component: TermsAndConditionsComponent },
+  { path: 'discord-verify', component: DiscordVerifyComponent },
 ];
