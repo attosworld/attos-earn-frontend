@@ -87,6 +87,7 @@ export class RadixConnectService {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => {
         if (this.router.url.includes('discord-verify')) {
+          this.rdt?.destroy();
           this.initDiscordVerification();
         }
 
