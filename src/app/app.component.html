@@ -195,19 +195,21 @@
   <ng-container *ngIf="baseBalances | async as balances">
       <div *ngIf="selectedAccount$ | async as selectedAccount" class="relative md:hidden flex justify-self-left mb-2">
         <button (click)="toggleAccountDropdown()" class="flex items-center bg-gray-700 rounded-lg px-2 sm:px-3 py-1 text-sm text-white h-9 w-full">
-          <span class="w-2 h-2 bg-green-500 rounded-full mr-1 sm:mr-2"></span>
-          <span class="font-mono xs:inline">{{ shortenAddress(selectedAccount.address) }}</span>
+          <div class="flex-grow flex items-center">
+            <span class="w-2 h-2 bg-green-500 rounded-full mr-1 sm:mr-2"></span>
+            <span class="font-mono xs:inline">{{ selectedAccount.label }} ({{ shortenAddress(selectedAccount.address) }})</span>
+          </div>
           <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
           </svg>
         </button>
-        <div *ngIf="isAccountDropdownOpen" class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg z-20">
+        <div *ngIf="isAccountDropdownOpen" class="absolute left-0 top-7 mt-2 bg-gray-800 rounded-md shadow-lg z-20">
           <div class="py-1">
             <ng-container *ngIf="accounts$ | async as accounts">
               <a *ngFor="let account of accounts"
                  (click)="selectAccount(account)"
                  class="block px-4 py-2 text-sm text-white hover:bg-gray-700 cursor-pointer">
-                {{ shortenAddress(account.address) }}
+                {{ account.label }} ({{ shortenAddress(account.address) }})
                 <span *ngIf="(selectedAccount$ | async)?.address === account.address"
                   class="ml-2 text-xs bg-yellow-500 text-gray-900 px-2 py-0.5 rounded-full">
                   Active
@@ -250,10 +252,10 @@
     </div>
   </ng-container>
 </nav>
-<div class="h-22 md:h-0"></div>
+<div class="h-32 md:h-0"></div>
 
 <!-- Astrolescent Banner -->
-<div *ngIf="showBanner" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white py-3 px-4 relative overflow-hidden">
+<div *ngIf="showBanner && !isDiscordVerifyRoute()" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white py-3 px-4 relative overflow-hidden">
   <div class="absolute inset-0 bg-pattern opacity-10"></div>
   <div class="container mx-auto flex flex-col sm:flex-row items-center justify-between relative z-10">
     <div class="flex-grow flex items-center mb-3 sm:mb-0">

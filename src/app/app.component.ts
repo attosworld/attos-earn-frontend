@@ -169,6 +169,10 @@ export class AppComponent implements OnInit {
     return address.slice(0, 6) + '...' + address.slice(-4);
   }
 
+  mediumShortenAddress(address: string): string {
+    return address.slice(0, 15) + '...' + address.slice(-18);
+  }
+
   ultraShortenAddress(address: string): string {
     return address ? `${address.slice(0, 4)}...${address.slice(-4)}` : '';
   }

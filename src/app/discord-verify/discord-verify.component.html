@@ -85,6 +85,12 @@
         </div>
       </div>
       }
+
+      @if ((rolaResponse$ | async) && state.isAuthenticated) {
+      <div class="mt-6 mb-6 text-center">
+        <p class="text-white-400 mb-4">You are now verified. You can safely close this window</p>
+      </div>
+      }
     </div>
   </div>
 </div>
