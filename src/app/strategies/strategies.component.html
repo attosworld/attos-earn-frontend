@@ -123,8 +123,9 @@
       [strategies]="stakingStrategies$ | async"
       [isCollapsed]="collapsedSections.staking"
       [category]="'staking'"
-      (collapseToggle)="toggleStrategySection('staking')"
       [tvl]="stakingTotalTvl$ | async"
+      (collapseToggle)="toggleStrategySection('staking')"
+      (executeStrategy)="openExecuteModal($event)"
       ></app-yield-list>
     <app-yield-list
       [strategies]="topLiquidationStrategies$ | async"
@@ -309,16 +310,48 @@
             </h2>
 
             <!-- Strategy Description -->
-            <p class="text-gray-300 mb-6 flex items-start">
+            <p class="text-gray-300 mb-6 flex items-start" *ngIf="isStrategyV1(selectedStrategy)">
               <svg class="w-5 h-5 mr-2 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              {{ selectedStrategy?.description }}
+              {{ selectedStrategy.description }}
             </p>
 
+            <!-- Show volume chart and pool details only for non-staking strategies -->
+            <ng-container *ngIf="isStrategyV1(selectedStrategy)">
+              <app-volume-chart [sevenDayVolume]="sevenDayVolume$ | async"></app-volume-chart>
+              <app-pool-details [poolInfo]="selectedStrategy.poolInfo"></app-pool-details>
+            </ng-container>
 
-            <app-volume-chart [sevenDayVolume]="sevenDayVolume$ | async"></app-volume-chart>
-            <app-pool-details [poolInfo]="selectedStrategy?.poolInfo"></app-pool-details>
+            <!-- Staking-specific information -->
+            <ng-container *ngIf="isStakingStrategy(selectedStrategy)">
+              <div class="mb-6 bg-gray-750 p-4 rounded-lg">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a10 10 0 100 20 10 10 0 000-20zM12 6v6l4 2"></path>
+                  </svg>
+                  Staking Details
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+                  <div class="flex justify-between">
+                    <span>Total Staked:</span>
+                    <span class="font-semibold text-white">{{ selectedStrategy.total_stake | currency }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Bonus Type:</span>
+                    <span class="font-semibold text-white">{{ selectedStrategy.bonus_type }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Bonus Value:</span>
+                    <span class="font-semibold text-green-400">{{ selectedStrategy.bonus_value | number:'1.2-2' }}%</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Provider:</span>
+                    <span class="font-semibold text-purple-400">{{ selectedStrategy.provider || 'Unknown' }}</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
 
             <!-- Required Assets -->
             <div class="mb-6">
@@ -355,68 +388,66 @@
               </div>
             </div>
 
-            <!-- LTV Slider -->
-            <div *ngFor="let field of selectedStrategy?.fieldsRequired" class="mb-6">
-              <ng-container *ngIf="field.fieldName === 'ltv' && field.type === 'slider'">
-                <label [for]="field.fieldName + '-slider'" class="text-sm font-medium text-gray-300 mb-1 flex items-center">
-                  <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
-                  </svg>
-                  {{ field.fieldName.toUpperCase() }} (Max {{ selectedStrategy?.ltvLimit }}%)
-                </label>
-                <input
-                  [id]="field.fieldName + '-slider'"
-                  type="range"
-                  min="0"
-                  [max]="selectedStrategy?.ltvLimit"
-                  step="1"
-                  [value]="ltvValue"
-                  (input)="updateLtv($event)"
-                  class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
-                >
-                <div class="text-right text-gray-300 mt-1">{{ ltvValue }}%</div>
-              </ng-container>
-              <div *ngIf="selectedStrategy?.poolInfo?.sub_type === 'precision'" class="text-gray-300 mt-2">
-                Amount Borrowable: {{ amountBorrowableWithLtv }}
-              </div>
-            </div>
-
-            <!-- Precision Pool Section -->
-            <ng-container *ngIf="selectedStrategy?.poolInfo?.sub_type === 'precision'">
+            <!-- Staking-specific fields -->
+            <ng-container *ngIf="isStakingStrategy(selectedStrategy)">
               <div class="mb-6">
-                <h3 class="text-xl font-semibold text-yellow-500 mb-4 flex items-center">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
                   <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
-                  Set Liquidity Amounts
+                  Staking Options
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <app-token-input
-                    [tokenSymbol]="selectedStrategy?.poolInfo?.left_alt!"
-                    [tokenAddress]="selectedStrategy?.poolInfo?.left_token!"
-                    [amount]="xAmount"
-                    [error]="inputErrors[selectedStrategy?.poolInfo!.left_token]"
-                    (amountChange)="updateXAmount($event, selectedStrategy?.poolInfo?.xRatio)"
-                    (setMax)="setMaxBalance($event, data?.balances?.[selectedStrategy?.poolInfo!.left_token] || 0)"
-                  ></app-token-input>
 
-                  <app-token-input
-                    [tokenSymbol]="selectedStrategy?.poolInfo!.right_alt!"
-                    [tokenAddress]="selectedStrategy?.poolInfo!.right_token"
-                    [amount]="yAmount"
-                    [error]="inputErrors[selectedStrategy?.poolInfo!.right_token]"
-                    (amountChange)="updateYAmount($event, selectedStrategy?.poolInfo?.yRatio)"
-                    (setMax)="setMaxBalance($event, data?.balances?.[selectedStrategy?.poolInfo!.right_token] || 0)"
-                  ></app-token-input>
+                <!-- Add any staking-specific options here -->
+                <div class="bg-gray-750 p-4 rounded-lg text-gray-300">
+                  <p class="mb-4">
+                    By staking your assets, you'll earn rewards at a rate of
+                    <span class="text-green-400 font-bold">{{ selectedStrategy.bonus_value | number:'1.2-2' }}%</span>
+                    per year. Rewards are distributed continuously and can be claimed at any time.
+                  </p>
+
+                  <div class="flex items-center mb-4">
+                    <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Note: There may be a lock-up period for staked assets. Please review the terms before proceeding.</span>
+                  </div>
                 </div>
               </div>
+            </ng-container>
 
-              <app-precision-pool
-                [currentPrice]="selectedStrategy?.poolInfo!.current_price"
-                [symbol]="selectedStrategy?.poolInfo!.left_alt"
-                (minValueChange)="updateMinValue($event)"
-                (maxValueChange)="updateMaxValue($event)"
-              ></app-precision-pool>
+            <!-- LTV Slider (only for non-staking strategies) -->
+            <ng-container *ngIf="isStrategyV1(selectedStrategy)">
+              <div *ngFor="let field of selectedStrategy.fieldsRequired" class="mb-6">
+                <ng-container *ngIf="field.fieldName === 'ltv' && field.type === 'slider'">
+                  <!-- Existing LTV slider code -->
+                  <label [for]="field.fieldName + '-slider'" class="text-sm font-medium text-gray-300 mb-1 flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
+                    </svg>
+                    {{ field.fieldName.toUpperCase() }} (Max {{ selectedStrategy.ltvLimit }}%)
+                  </label>
+                  <input
+                    [id]="field.fieldName + '-slider'"
+                    type="range"
+                    min="0"
+                    [max]="selectedStrategy.ltvLimit || 0"
+                    step="1"
+                    [value]="ltvValue"
+                    (input)="updateLtv($event)"
+                    class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                  >
+                  <div class="text-right text-gray-300 mt-1">{{ ltvValue }}%</div>
+                </ng-container>
+                <div *ngIf="selectedStrategy.poolInfo?.sub_type === 'precision'" class="text-gray-300 mt-2">
+                  Amount Borrowable: {{ amountBorrowableWithLtv }}
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Precision Pool Section (only for non-staking strategies) -->
+            <ng-container *ngIf="isStrategyV1(selectedStrategy) && selectedStrategy.poolInfo?.sub_type === 'precision'">
+              <!-- Existing precision pool code -->
             </ng-container>
 
             <!-- Transaction Result -->

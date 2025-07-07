@@ -197,7 +197,7 @@ export class PortfolioComponent implements OnInit {
   }
 
   async closeStrategy(item: PortfolioItem) {
-    this.closingItems[item.poolName] = true;
+    this.closingItems[item.closeManifest] = true;
     try {
       const response = await this.radixConnectService.sendTransaction(
         item.closeManifest
@@ -208,7 +208,7 @@ export class PortfolioComponent implements OnInit {
         this.transactionResult = of(TransactionStatus.Rejected);
       }
     } finally {
-      this.closingItems[item.poolName] = false;
+      this.closingItems[item.closeManifest] = false;
     }
   }
 

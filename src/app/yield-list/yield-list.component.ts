@@ -17,7 +17,15 @@ export class YieldListComponent {
   @Output()
   collapseToggle = new EventEmitter<string>();
 
+  @Output()
+  executeStrategy = new EventEmitter<StrategyV2>();
+
   toggleStrategySection(): void {
     this.collapseToggle.emit(this.category);
+  }
+
+  executeStrategyV2(strategy: StrategyV2): void {
+    console.log(`Executing strategy: ${strategy.name}`);
+    this.executeStrategy.emit(strategy);
   }
 }

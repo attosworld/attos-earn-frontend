@@ -60,6 +60,7 @@ export interface LendingStrategy extends BaseStrategy {
 export interface StakingStrategy extends BaseStrategy {
   strategy_type: 'Staking';
   total_stake: number;
+  stakeComponent: string;
 }
 
 export interface LiquidationStrategy extends BaseStrategy {
@@ -152,5 +153,27 @@ export class StrategiesService {
         throw error; // Rethrow the error to be handled by the component
       })
     );
+  }
+
+  executeStrategyV2(
+    account: string,
+    component: string,
+    amount: number
+  ): Observable<ExecuteStrategyResponse> {
+    const params = new HttpParams()
+      .set('account', account)
+      .set('component', component)
+      .set('amount', amount);
+
+    return this.http
+      .get<ExecuteStrategyResponse>(`${this.baseV2}/strategies/execute`, {
+        params,
+      })
+      .pipe(
+        catchError(error => {
+          console.error('Error executing strategy:', error);
+          throw error; // Rethrow the error to be handled by the component
+        })
+      );
   }
 }

@@ -1,7 +1,12 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { StrategiesService, Strategy } from '../strategies.service';
+import {
+  StakingStrategy,
+  StrategiesService,
+  Strategy,
+  StrategyV2,
+} from '../strategies.service';
 import {
   BehaviorSubject,
   Observable,
@@ -17,8 +22,8 @@ import {
 } from 'rxjs';
 import { RadixConnectService } from '../radix-connect.service';
 import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
-import { PrecisionPoolComponent } from '../precision-pool/precision-pool.component';
-import { TokenInputComponent } from '../token-input/token-input.component';
+// import { PrecisionPoolComponent } from '../precision-pool/precision-pool.component';
+// import { TokenInputComponent } from '../token-input/token-input.component';
 import {
   AddLiquidityPreview,
   OciswapService,
@@ -49,8 +54,8 @@ interface ApyFilter {
   imports: [
     CommonModule,
     FormsModule,
-    PrecisionPoolComponent,
-    TokenInputComponent,
+    // PrecisionPoolComponent,
+    // TokenInputComponent,
     PoolDetailsComponent,
     VolumeChartComponent,
     YieldListComponent,
@@ -66,7 +71,7 @@ export class StrategiesComponent {
 
   isFaqSectionOpen = false;
 
-  selectedStrategy: Strategy | null = null;
+  selectedStrategy: Strategy | StrategyV2 | null = null;
 
   ltvValue = '45';
 
@@ -306,26 +311,30 @@ export class StrategiesComponent {
     this.requiredResources.next(requiredResources);
   }
 
-  openExecuteModal(strategy: Strategy) {
+  openExecuteModal(strategy: Strategy | StrategyV2) {
     this.showModal = true;
     this.selectedStrategy = strategy;
     this.setRequiredResources(
       strategy.requiredAssets.map(asset => asset.resource_address)
     );
 
-    if (strategy.poolInfo) {
-      this.sevenDayVolume$ = this.poolService
-        .getPoolVolumePerDay(
-          strategy.poolInfo?.component,
-          strategy.poolInfo.type
-        )
-        .pipe(map(volumeData => volumeData.volume_per_day));
-    }
+    console.log('FUCK');
 
-    // Reset LTV value when opening modal
-    this.ltvValue = strategy.optimalLtv;
-    // Calculate low and high prices
-    this.calculatePriceRange();
+    if (this.isStrategyV1(strategy)) {
+      if (strategy.poolInfo) {
+        this.sevenDayVolume$ = this.poolService
+          .getPoolVolumePerDay(
+            strategy.poolInfo?.component,
+            strategy.poolInfo.type
+          )
+          .pipe(map(volumeData => volumeData.volume_per_day));
+      }
+
+      // Reset LTV value when opening modal
+      this.ltvValue = strategy.optimalLtv;
+      // Calculate low and high prices
+      this.calculatePriceRange();
+    }
   }
 
   updateLtv(event: Event) {
@@ -349,7 +358,11 @@ export class StrategiesComponent {
   }
 
   executeStrategy(accountAddress?: string) {
-    if (this.selectedStrategy && accountAddress) {
+    if (
+      this.isStrategyV1(this.selectedStrategy) &&
+      this.selectedStrategy &&
+      accountAddress
+    ) {
       this.transactionResult = this.strategiesService
         .executeStrategy(
           this.selectedStrategy.id,
@@ -364,6 +377,48 @@ export class StrategiesComponent {
           this.selectedStrategy.poolType === 'precision' ? this.maxValue : null,
           this.xAmount,
           this.yAmount
+        )
+        .pipe(
+          map(response => {
+            if (response.manifest) {
+              return response;
+            }
+            throw TransactionStatus.Unknown;
+          }),
+          switchMap(async response => {
+            return this.radixConnectService
+              .sendTransaction(response.manifest)
+              ?.map(f => f.status)
+              .mapErr(() => TransactionStatus.Rejected);
+          }),
+          map(tx => {
+            if (tx?.isOk()) {
+              return tx.value;
+            } else {
+              return 'Rejected';
+            }
+          }),
+          catchError(error => {
+            return of(error);
+          }),
+          tap(tx => {
+            if (tx === TransactionStatus.CommittedSuccess) {
+              this.transactionResult = of(undefined);
+              this.closeModal();
+            }
+          })
+        );
+    } else if (
+      this.isStakingStrategy(this.selectedStrategy) &&
+      accountAddress
+    ) {
+      this.transactionResult = this.strategiesService
+        .executeStrategyV2(
+          accountAddress,
+          this.selectedStrategy.stakeComponent,
+          this.inputAmounts[
+            this.selectedStrategy.requiredAssets[0].resource_address
+          ]
         )
         .pipe(
           map(response => {
@@ -410,13 +465,17 @@ export class StrategiesComponent {
       this.inputAmounts[resourceAddress] = inputValue;
     }
 
-    this.amountBorrowableWithoutLtv = new Decimal(inputValue)
-      .div(this.selectedStrategy?.lendingPriceUsd || 0)
-      .toFixed(18);
+    if (this.isStrategyV1(this.selectedStrategy)) {
+      this.amountBorrowableWithoutLtv = new Decimal(inputValue)
+        .div(this.selectedStrategy?.lendingPriceUsd || 0)
+        .toFixed(18);
 
-    this.amountBorrowableWithLtv = new Decimal(this.amountBorrowableWithoutLtv)
-      .mul((+this.ltvValue || 0) / 100)
-      .toFixed(18);
+      this.amountBorrowableWithLtv = new Decimal(
+        this.amountBorrowableWithoutLtv
+      )
+        .mul((+this.ltvValue || 0) / 100)
+        .toFixed(18);
+    }
   }
 
   updatePriceRange() {
@@ -467,12 +526,14 @@ export class StrategiesComponent {
   }
 
   calculatePriceRange() {
-    if (this.selectedStrategy && this.selectedStrategy.currentPrice) {
-      const currentPrice = this.selectedStrategy.currentPrice;
+    if (this.isStrategyV1(this.selectedStrategy)) {
+      if (this.selectedStrategy && this.selectedStrategy.currentPrice) {
+        const currentPrice = this.selectedStrategy.currentPrice;
 
-      if (currentPrice) {
-        this.lowPrice = +currentPrice * (1 + this.minValue / 100);
-        this.highPrice = +currentPrice * (1 + this.maxValue / 100);
+        if (currentPrice) {
+          this.lowPrice = +currentPrice * (1 + this.minValue / 100);
+          this.highPrice = +currentPrice * (1 + this.maxValue / 100);
+        }
       }
     }
   }
@@ -551,43 +612,47 @@ export class StrategiesComponent {
   updateXAmount(amount: string, ratio: string | null | undefined) {
     this.xAmount = amount;
 
-    if (this.selectedStrategy?.poolInfo?.sub_type !== 'single') {
-      this.yAmount =
-        this.selectedStrategy?.poolInfo?.type === 'defiplaza'
-          ? new Decimal(this.xAmount).mul(ratio || 0).toFixed(18)
-          : new Decimal(this.xAmount)
-              .mul(this.selectedStrategy?.poolInfo?.current_price || 0)
-              .toString();
+    if (this.isStrategyV1(this.selectedStrategy)) {
+      if (this.selectedStrategy?.poolInfo?.sub_type !== 'single') {
+        this.yAmount =
+          this.selectedStrategy?.poolInfo?.type === 'defiplaza'
+            ? new Decimal(this.xAmount).mul(ratio || 0).toFixed(18)
+            : new Decimal(this.xAmount)
+                .mul(this.selectedStrategy?.poolInfo?.current_price || 0)
+                .toString();
+      }
+      this.validateInput(this.selectedStrategy?.poolInfo?.left_token || '');
+      this.validateInput(this.selectedStrategy?.poolInfo?.right_token || '');
     }
-    this.validateInput(this.selectedStrategy?.poolInfo?.left_token || '');
-    this.validateInput(this.selectedStrategy?.poolInfo?.right_token || '');
   }
 
   updateYAmount(amount: string, ratio: string | null | undefined) {
     this.yAmount = amount;
-
-    if (this.selectedStrategy?.poolInfo?.sub_type !== 'single') {
-      this.xAmount =
-        this.selectedStrategy?.poolInfo?.type === 'defiplaza'
-          ? new Decimal(this.yAmount).mul(ratio || 0).toFixed(18)
-          : new Decimal(this.yAmount)
-              .div(
-                new Decimal(
-                  this.selectedStrategy?.poolInfo?.current_price || 0
-                ).plus(
+    if (this.isStrategyV1(this.selectedStrategy)) {
+      if (this.selectedStrategy?.poolInfo?.sub_type !== 'single') {
+        this.xAmount =
+          this.selectedStrategy?.poolInfo?.type === 'defiplaza'
+            ? new Decimal(this.yAmount).mul(ratio || 0).toFixed(18)
+            : new Decimal(this.yAmount)
+                .div(
                   new Decimal(
                     this.selectedStrategy?.poolInfo?.current_price || 0
-                  ).times(0.5)
+                  ).plus(
+                    new Decimal(
+                      this.selectedStrategy?.poolInfo?.current_price || 0
+                    ).times(0.5)
+                  )
                 )
-              )
-              .toString();
+                .toString();
+      }
+      this.validateInput(this.selectedStrategy?.poolInfo?.left_token || '');
+      this.validateInput(this.selectedStrategy?.poolInfo?.right_token || '');
     }
-    this.validateInput(this.selectedStrategy?.poolInfo?.left_token || '');
-    this.validateInput(this.selectedStrategy?.poolInfo?.right_token || '');
   }
 
   private updateAmount() {
     if (
+      this.isStrategyV1(this.selectedStrategy) &&
       this.selectedStrategy &&
       this.selectedStrategy.currentPrice &&
       this.selectedStrategy?.component
@@ -612,17 +677,21 @@ export class StrategiesComponent {
               this.xAmount = data.x_amount.token;
               this.yAmount = data.y_amount.token;
 
-              this.swapPreview = this.ociswapService.getOciswapSwapPreview(
-                this.selectedStrategy?.poolInfo?.left_token || '',
-                '',
-                this.selectedStrategy?.poolInfo?.right_token || '',
-                this.yAmount
-              );
+              if (this.isStrategyV1(this.selectedStrategy)) {
+                this.swapPreview = this.ociswapService.getOciswapSwapPreview(
+                  this.selectedStrategy?.poolInfo?.left_token || '',
+                  '',
+                  this.selectedStrategy?.poolInfo?.right_token || '',
+                  this.yAmount
+                );
+              }
             }
           }),
           catchError(() => {
-            this.inputErrors[this.selectedStrategy?.buyToken || ''] =
-              'An error occurred while fetching add liquidity preview.';
+            if (this.isStrategyV1(this.selectedStrategy)) {
+              this.inputErrors[this.selectedStrategy?.buyToken || ''] =
+                'An error occurred while fetching add liquidity preview.';
+            }
             return of(null);
           })
         );
@@ -684,5 +753,15 @@ export class StrategiesComponent {
       ...this.collapsedSections,
       [section]: !this.collapsedSections[section],
     };
+  }
+
+  isStrategyV1(input: Strategy | StrategyV2 | null): input is Strategy {
+    return 'description' in (input || {});
+  }
+
+  isStakingStrategy(
+    input: Strategy | StrategyV2 | null
+  ): input is StakingStrategy {
+    return 'total_stake' in (input || {});
   }
 }

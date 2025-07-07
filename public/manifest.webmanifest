@@ -1,12 +1,13 @@
 {
   "name": "Attos Earn",
   "short_name": "Attos Earn",
+  "description": "Your comprehensive DeFi platform for aggregating liquidity pools, managing your portfolio, and maximizing yields across multiple protocols.",
   "theme_color": "#1e2939",
   "background_color": "#1e2939",
   "display": "standalone",
   "scope": "./",
   "start_url": "./",
-  "categories": ["finance", "business", "education"],
+  "categories": ["finance", "education"],
   "icons": [
     {
       "src": "icons/attos-earn-logo-72.png",
