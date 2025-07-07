@@ -66,6 +66,7 @@ export interface StakingStrategy extends BaseStrategy {
 export interface LiquidationStrategy extends BaseStrategy {
   strategy_type: 'Liquidation';
   deposited: string | number;
+  reservoirComponent: string;
 }
 
 export type StrategyV2 =
@@ -157,13 +158,22 @@ export class StrategiesService {
 
   executeStrategyV2(
     account: string,
-    component: string,
-    amount: number
+    componentOrResourceAddress: string,
+    amount: number,
+    strategyType: string
   ): Observable<ExecuteStrategyResponse> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('account', account)
-      .set('component', component)
-      .set('amount', amount);
+      .set('amount', amount)
+      .set('strategy_type', strategyType);
+
+    if (componentOrResourceAddress.startsWith('component_')) {
+      params = params.set('component', componentOrResourceAddress);
+    }
+
+    if (componentOrResourceAddress.startsWith('resource_')) {
+      params = params.set('resource_address', componentOrResourceAddress);
+    }
 
     return this.http
       .get<ExecuteStrategyResponse>(`${this.baseV2}/strategies/execute`, {

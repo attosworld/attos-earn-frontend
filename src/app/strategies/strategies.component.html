@@ -133,6 +133,7 @@
       [category]="'liquidation'"
       (collapseToggle)="toggleStrategySection('liquidation')"
       [tvl]="liquidationTotalTvl$ | async"
+      (executeStrategy)="openExecuteModal($event)"
       ></app-yield-list>
   </div>
 
@@ -353,6 +354,31 @@
               </div>
             </ng-container>
 
+            <ng-container *ngIf="isLiquidationStrategy(selectedStrategy)">
+              <div class="mb-6 bg-gray-750 p-4 rounded-lg">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Liquidation Details
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+                  <div class="flex justify-between">
+                    <span>Total Deposited:</span>
+                    <span class="font-semibold text-white">{{ selectedStrategy.deposited | currency }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Expected APY:</span>
+                    <span class="font-semibold text-green-400">{{ selectedStrategy.bonus_value | number:'1.2-2' }}%</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Provider:</span>
+                    <span class="font-semibold text-purple-400">{{ selectedStrategy.provider || 'Unknown' }}</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
             <!-- Required Assets -->
             <div class="mb-6">
               <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
@@ -411,6 +437,43 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     <span>Note: There may be a lock-up period for staked assets. Please review the terms before proceeding.</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Liquidation-specific fields -->
+            <ng-container *ngIf="isLiquidationStrategy(selectedStrategy)">
+              <div class="mb-6">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Liquidation Options
+                </h3>
+
+                <div class="bg-gray-750 p-4 rounded-lg text-gray-300">
+                  <p class="mb-4">
+                    By depositing fUSD into the liquidation pool, you'll earn a portion of liquidation fees when undercollateralized positions are liquidated. Expected returns are approximately
+                    <span class="text-green-400 font-bold">{{ selectedStrategy.bonus_value | number:'1.2-2' }}%</span>
+                    per year, but may vary based on market conditions and liquidation frequency.
+                  </p>
+
+                  <div class="flex items-center mb-4">
+                    <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Note: Returns from liquidation strategies can be variable and depend on market volatility.</span>
+                  </div>
+
+                  <div class="mt-4 bg-gray-700 p-3 rounded-lg">
+                    <h4 class="text-sm font-semibold text-white mb-2">How Liquidation Rewards Work</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-sm">
+                      <li>Your deposited fUSD joins the liquidation pool</li>
+                      <li>When borrowers' positions fall below required collateral ratios, they get liquidated</li>
+                      <li>Each liquidation generates fees that are distributed to pool participants</li>
+                      <li>Your share of rewards is proportional to your deposit in the pool</li>
+                    </ol>
                   </div>
                 </div>
               </div>

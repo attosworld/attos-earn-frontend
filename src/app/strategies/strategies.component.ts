@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
+  LiquidationStrategy,
   StakingStrategy,
   StrategiesService,
   Strategy,
@@ -318,8 +319,6 @@ export class StrategiesComponent {
       strategy.requiredAssets.map(asset => asset.resource_address)
     );
 
-    console.log('FUCK');
-
     if (this.isStrategyV1(strategy)) {
       if (strategy.poolInfo) {
         this.sevenDayVolume$ = this.poolService
@@ -418,7 +417,51 @@ export class StrategiesComponent {
           this.selectedStrategy.stakeComponent,
           this.inputAmounts[
             this.selectedStrategy.requiredAssets[0].resource_address
-          ]
+          ],
+          this.selectedStrategy.strategy_type
+        )
+        .pipe(
+          map(response => {
+            if (response.manifest) {
+              return response;
+            }
+            throw TransactionStatus.Unknown;
+          }),
+          switchMap(async response => {
+            return this.radixConnectService
+              .sendTransaction(response.manifest)
+              ?.map(f => f.status)
+              .mapErr(() => TransactionStatus.Rejected);
+          }),
+          map(tx => {
+            if (tx?.isOk()) {
+              return tx.value;
+            } else {
+              return 'Rejected';
+            }
+          }),
+          catchError(error => {
+            return of(error);
+          }),
+          tap(tx => {
+            if (tx === TransactionStatus.CommittedSuccess) {
+              this.transactionResult = of(undefined);
+              this.closeModal();
+            }
+          })
+        );
+    } else if (
+      this.isLiquidationStrategy(this.selectedStrategy) &&
+      accountAddress
+    ) {
+      this.transactionResult = this.strategiesService
+        .executeStrategyV2(
+          accountAddress,
+          this.selectedStrategy.resource_address,
+          this.inputAmounts[
+            this.selectedStrategy.requiredAssets[0].resource_address
+          ],
+          this.selectedStrategy.strategy_type
         )
         .pipe(
           map(response => {
@@ -763,5 +806,11 @@ export class StrategiesComponent {
     input: Strategy | StrategyV2 | null
   ): input is StakingStrategy {
     return 'total_stake' in (input || {});
+  }
+
+  isLiquidationStrategy(
+    input: Strategy | StrategyV2 | null
+  ): input is LiquidationStrategy {
+    return 'reservoirComponent' in (input || {});
   }
 }
