@@ -871,10 +871,39 @@
                 <app-pool-details [poolInfo]="selectedPool"></app-pool-details>
               </ng-container>
               <ng-container *ngIf="poolModalSelectedView === 'news'">
-                <!-- Replace with your news feed component or embed -->
+                @if (news | async) {
                 <div class="bg-gray-800 p-4 rounded-lg">
                   <h3 class="text-lg font-semibold text-yellow-500">Latest News</h3>
+                  <ng-container *ngIf="(news | async) as newsItems">
+                    <div *ngIf="newsItems.length > 0" class="mt-3 space-y-3">
+                      <div *ngFor="let item of newsItems" class="bg-gray-700 p-3 rounded-lg">
+                        <div class="grid grid-cols-1 sm:grid-cols-[auto,1fr] gap-2 mb-2">
+                          <div class="text-xs text-gray-400 whitespace-nowrap">
+                            {{ item.date ? (item.date | date:'MMM d, y') : 'Recent' }}
+                          </div>
+                          <p class="text-gray-200 whitespace-pre-line break-words line-clamp-3 max-h-20 overflow-hidden">{{ item.text }}</p>
+                        </div>
+                        <div class="flex justify-between items-center mt-2">
+                          <a [href]="item.url" target="_blank" rel="noopener noreferrer"
+                             class="text-blue-400 hover:text-blue-300 flex items-center text-sm">
+                            Read more
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                            </svg>
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                    <div *ngIf="newsItems.length === 0" class="mt-3 text-gray-400 text-center py-4">
+                      No news available
+                    </div>
+                  </ng-container>
                 </div>
+                } @else {
+                <div class="bg-gray-800 p-4 rounded-lg">
+                  <h3 class="text-lg font-semibold text-yellow-500">No news available</h3>
+                </div>
+                }
               </ng-container>
             </div>
 

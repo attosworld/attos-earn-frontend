@@ -46,7 +46,7 @@ import {
   ChartType,
 } from '../chart-toggle/chart-toggle.component';
 import { LpPerformanceChartComponent } from '../lp-performance-chart/lp-performance-chart.component';
-import { YieldListComponent } from '../yield-list/yield-list.component';
+import { NewsService, TokenNews } from '../news.service';
 
 type SortColumn = 'tvl' | 'bonus_7d' | 'volume_7d' | 'bonus_name' | null;
 type SortDirection = 'asc' | 'desc' | 'none';
@@ -110,6 +110,8 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
   showPortfolioModal = false;
 
+  newsService = inject(NewsService);
+
   tagFilters: TagFilters = {
     'bridged token': false,
     stablecoin: false,
@@ -149,9 +151,12 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   isPortfolioLoading = true;
 
   private selectedTabSubject = new BehaviorSubject<PoolType>('all');
+
   selectedTab$ = this.selectedTabSubject
     .asObservable()
     .pipe(tap(() => console.log('tab updated')));
+
+  news: Observable<TokenNews[] | null> = of(null);
 
   searchTerm = '';
   private searchSubject = new BehaviorSubject<string>('');
@@ -578,6 +583,8 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   selectedChartType: ChartType = 'volume';
   tokenValueData$: Observable<Record<string, number>> | undefined;
 
+  XRD = 'resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd';
+
   balances$: Observable<Balances | undefined> = this.radixConnectService
     .getWalletData()
     .pipe(
@@ -601,6 +608,13 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     this.sevenDayVolume$ = this.poolService
       .getPoolVolumePerDay(pool.component, pool.type)
       .pipe(map(volumeData => volumeData.volume_per_day));
+
+    const tokenForNews =
+      pool.left_token === this.XRD && pool.type === 'ociswap'
+        ? pool.right_token
+        : pool.left_token;
+
+    this.news = this.newsService.getNews(tokenForNews);
 
     // Fetch the token value data for LP performance chart
     this.tokenValueData$ = this.poolService.getPoolPerformance(

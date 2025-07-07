@@ -1,9 +1,25 @@
-import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { environment } from '../environments/environment';
+
+export interface TokenNews {
+  id: number;
+  text: string;
+  date: string;
+  url: string;
+}
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NewsService {
+  http = inject(HttpClient);
 
-  constructor() { }
+  getNews(token: string): Observable<TokenNews[]> {
+    console.log(token);
+    const params = new HttpParams().set('token', token);
+
+    return this.http.get<TokenNews[]>(`${environment.apiUrl}/news`, { params });
+  }
 }
