@@ -263,87 +263,90 @@ export class RadixConnectService {
       )
     ).pipe(
       map(tokens => {
-        return tokens.map(t => {
-          const metadata = t.metadata.items.reduce<TokenMetadata>(
-            (acc, item) => {
-              if ('value' in item && 'value' in item.value.typed) {
-                const key = item.key as keyof TokenMetadata;
-                const value = item.value.typed.value;
+        return tokens
+          .sort(a => (a.address === tokenAddresses[0] ? -1 : 1))
+          .map(t => {
+            const metadata = t.metadata.items.reduce<TokenMetadata>(
+              (acc, item) => {
+                if ('value' in item && 'value' in item.value.typed) {
+                  const key = item.key as keyof TokenMetadata;
+                  const value = item.value.typed.value;
 
-                if (typeof value === 'string') {
-                  acc[key as keyof { description: string; info_url: string }] =
-                    value;
+                  if (typeof value === 'string') {
+                    acc[
+                      key as keyof { description: string; info_url: string }
+                    ] = value;
+                  }
                 }
-              }
 
-              if ('values' in item.value.typed) {
-                const key = item.key as keyof TokenMetadata;
-                acc[key as keyof { social_urls: string[] }] = (
-                  item.value.typed.values as string[]
-                ).sort();
-              }
-              return acc;
-            },
-            {} as TokenMetadata
-          );
-
-          const flags: {
-            mintable: boolean;
-            burnable: boolean;
-            withdrawable: boolean;
-            depositable: boolean;
-            totalMinted: string;
-            totalSupply: string;
-            totalBurned: string;
-            divisibility: number;
-          } = {} as {
-            mintable: boolean;
-            burnable: boolean;
-            withdrawable: boolean;
-            depositable: boolean;
-            totalMinted: string;
-            totalSupply: string;
-            totalBurned: string;
-            divisibility: number;
-          };
-
-          if (t.details?.type === 'FungibleResource') {
-            if (t.details.role_assignments) {
-              t.details.role_assignments.entries.forEach(entry => {
-                const roleName = entry.role_key.name;
-                const isAllowed =
-                  ('explicit_rule' in entry.assignment &&
-                    (entry.assignment.explicit_rule as { type: string })
-                      ?.type !== 'DenyAll') ||
-                  entry.assignment.resolution === 'Owner';
-
-                switch (roleName) {
-                  case 'minter':
-                    flags.mintable = isAllowed;
-                    break;
-                  case 'burner':
-                    flags.burnable = isAllowed;
-                    break;
-                  case 'withdrawer':
-                    flags.withdrawable = isAllowed;
-                    break;
-                  case 'depositor':
-                    flags.depositable = isAllowed;
-                    break;
+                if ('values' in item.value.typed) {
+                  const key = item.key as keyof TokenMetadata;
+                  acc[key as keyof { social_urls: string[] }] = (
+                    item.value.typed.values as string[]
+                  ).sort();
                 }
-              });
-              flags.totalMinted = t.details.total_minted;
-              flags.totalSupply = t.details.total_supply;
-              flags.totalBurned = t.details.total_burned;
-              flags.divisibility = t.details.divisibility;
+                return acc;
+              },
+              {} as TokenMetadata
+            );
+
+            const flags: {
+              mintable: boolean;
+              burnable: boolean;
+              withdrawable: boolean;
+              depositable: boolean;
+              totalMinted: string;
+              totalSupply: string;
+              totalBurned: string;
+              divisibility: number;
+            } = {} as {
+              mintable: boolean;
+              burnable: boolean;
+              withdrawable: boolean;
+              depositable: boolean;
+              totalMinted: string;
+              totalSupply: string;
+              totalBurned: string;
+              divisibility: number;
+            };
+
+            if (t.details?.type === 'FungibleResource') {
+              if (t.details.role_assignments) {
+                t.details.role_assignments.entries.forEach(entry => {
+                  const roleName = entry.role_key.name;
+                  const isAllowed =
+                    ('explicit_rule' in entry.assignment &&
+                      (entry.assignment.explicit_rule as { type: string })
+                        ?.type !== 'DenyAll') ||
+                    entry.assignment.resolution === 'Owner';
+
+                  switch (roleName) {
+                    case 'minter':
+                      flags.mintable = isAllowed;
+                      break;
+                    case 'burner':
+                      flags.burnable = isAllowed;
+                      break;
+                    case 'withdrawer':
+                      flags.withdrawable = isAllowed;
+                      break;
+                    case 'depositor':
+                      flags.depositable = isAllowed;
+                      break;
+                  }
+                });
+                flags.totalMinted = t.details.total_minted;
+                flags.totalSupply = t.details.total_supply;
+                flags.totalBurned = t.details.total_burned;
+                flags.divisibility = t.details.divisibility;
+              }
             }
-          }
 
-          return {
-            ...flags,
-            metadata,
-          };
-        });
+            return {
+              ...flags,
+              metadata,
+            };
+          });
       })
     );
   }
