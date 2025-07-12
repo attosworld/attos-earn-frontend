@@ -274,9 +274,9 @@ export class StrategiesComponent {
     staking: boolean;
     liquidation: boolean;
   } = {
-    lending: true,
-    staking: true,
-    liquidation: true,
+    lending: false,
+    staking: false,
+    liquidation: false,
   };
 
   hasInputErrors(): boolean {
