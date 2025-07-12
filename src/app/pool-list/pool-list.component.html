@@ -438,6 +438,15 @@
                 >
                 My Pools
               </button>
+              <button
+                class="py-2 px-3 sm:px-4 focus:outline-none whitespace-nowrap hover:bg-gray-800 cursor-pointer text-sm sm:text-base"
+                [class.text-yellow-500]="selectedTab === 'owned_tokens'"
+                [class.border-b-2]="selectedTab === 'owned_tokens'"
+                [class.border-yellow-500]="selectedTab === 'owned_tokens'"
+                (click)="selectTab('owned_tokens')"
+                >
+                Owned Token Pools
+              </button>
             </ng-container>
           </div>
         </div>

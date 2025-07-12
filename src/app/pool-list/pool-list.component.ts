@@ -35,7 +35,7 @@ import Fuse from 'fuse.js';
 import { PrecisionPoolComponent } from '../precision-pool/precision-pool.component';
 import { Decimal } from 'decimal.js';
 import { Balances, RadixConnectService } from '../radix-connect.service';
-import { AddLiquidityPreview, OciswapService } from '../ociswap.service';
+import { OciswapService } from '../ociswap.service';
 import { RadixManifestService } from '../radix-manifest.service';
 import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
 import { TokenInputComponent } from '../token-input/token-input.component';
@@ -53,7 +53,13 @@ import { NewsService, TokenNews } from '../news.service';
 
 type SortColumn = 'tvl' | 'bonus_7d' | 'volume_7d' | 'bonus_name' | null;
 type SortDirection = 'asc' | 'desc' | 'none';
-type PoolType = 'all' | 'double' | 'single' | 'boosted' | 'my_pools';
+type PoolType =
+  | 'all'
+  | 'double'
+  | 'single'
+  | 'boosted'
+  | 'my_pools'
+  | 'owned_tokens';
 
 interface SortEvent {
   column: SortColumn;
@@ -145,29 +151,22 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     column: null,
     direction: 'none',
   });
-  sort$ = this.sortSubject.asObservable().pipe(
-    takeUntil(this.destroy$),
-    tap(() => console.log('Sort updated'))
-  );
+  sort$ = this.sortSubject.asObservable().pipe(takeUntil(this.destroy$));
 
   isLoading = true;
   isPortfolioLoading = true;
 
   private selectedTabSubject = new BehaviorSubject<PoolType>('all');
 
-  selectedTab$ = this.selectedTabSubject
-    .asObservable()
-    .pipe(tap(() => console.log('tab updated')));
+  selectedTab$ = this.selectedTabSubject.asObservable();
 
   news: Observable<TokenNews[] | null> = of(null);
 
   searchTerm = '';
   private searchSubject = new BehaviorSubject<string>('');
-  search$ = this.searchSubject.asObservable().pipe(
-    debounceTime(300),
-    takeUntil(this.destroy$),
-    tap(() => console.log('search updated'))
-  );
+  search$ = this.searchSubject
+    .asObservable()
+    .pipe(debounceTime(300), takeUntil(this.destroy$));
 
   showBonusInfo = false;
 
@@ -193,10 +192,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     volume: this.volumeFilter,
   });
 
-  filters$ = this.filtersSubject.asObservable().pipe(
-    takeUntil(this.destroy$),
-    tap(() => console.log('Filters updated'))
-  );
+  filters$ = this.filtersSubject.asObservable().pipe(takeUntil(this.destroy$));
 
   private selectedPoolSubject = new BehaviorSubject<Pool | null>(null);
   selectedPool$ = this.selectedPoolSubject.asObservable();
@@ -341,8 +337,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
                       volume_chart: Observable<Record<string, number>>;
                     }
                 )
-            ),
-            tap(pi => console.log(pi))
+            )
           );
         })
       );
@@ -350,15 +345,26 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     share()
   );
 
+  balances$: Observable<Balances | undefined> = this.radixConnectService
+    .getWalletData()
+    .pipe(
+      startWith({
+        account: '',
+        fungibles: [],
+        nonFungibles: [],
+      } as Balances)
+    );
+
   sortedPools$ = combineLatest([
     this.pools$,
     this.sort$,
     this.search$,
     this.selectedTab$,
     this.filters$,
+    this.balances$,
   ]).pipe(
-    map(([pools, sort, searchTerm, selectedTab, filters]) => {
-      let filteredPools = this.filterPoolsByType(pools, selectedTab);
+    map(([pools, sort, searchTerm, selectedTab, filters, balances]) => {
+      let filteredPools = this.filterPoolsByType(pools, selectedTab, balances);
       filteredPools = this.searchPools(filteredPools, searchTerm);
       filteredPools = this.applyAdvancedFilters(filteredPools, filters);
       return this.sortBasedOnEvent(filteredPools, sort);
@@ -372,16 +378,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   tokenValueData$: Observable<Record<string, number>> | undefined;
 
   XRD = 'resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd';
-
-  balances$: Observable<Balances | undefined> = this.radixConnectService
-    .getWalletData()
-    .pipe(
-      startWith({
-        account: '',
-        fungibles: [],
-        nonFungibles: [],
-      } as Balances)
-    );
+  DFP2 = 'resource_rdx1t5ywq4c6nd2lxkemkv4uzt8v7x7smjcguzq5sgafwtasa6luq7fclq';
 
   openDepositModal(pool: Pool, balances: Balances | undefined) {
     this.selectedPoolSubject.next(pool);
@@ -474,12 +471,27 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     this.selectedTabSubject.next(tab);
   }
 
-  private filterPoolsByType(pools: Pool[], selectedTab: PoolType): Pool[] {
+  private filterPoolsByType(
+    pools: Pool[],
+    selectedTab: PoolType,
+    balances: Balances | undefined
+  ): Pool[] {
     switch (selectedTab) {
       case 'all':
         return pools;
       case 'boosted':
         return pools.filter(pool => pool.boosted);
+      case 'owned_tokens':
+        return pools.filter(pool =>
+          balances?.fungibles.some(
+            fungible =>
+              (fungible.resourceInfo.resourceAddress === pool.left_token ||
+                fungible.resourceInfo.resourceAddress === pool.right_token) &&
+              fungible.resourceInfo.resourceAddress != this.XRD &&
+              fungible.resourceInfo.resourceAddress != this.DFP2 &&
+              +fungible.balance > 0
+          )
+        );
       default:
         return pools.filter(pool => pool.pool_type === selectedTab);
     }
