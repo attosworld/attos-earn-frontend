@@ -603,6 +603,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     this.inputErrors = {};
     this.updateMaxAmounts(balances);
     this.selectedChartType = 'volume'; // Default to volume chart
+    this.poolModalSelectedView = 'details';
 
     // Fetch the seven-day volume data
     this.sevenDayVolume$ = this.poolService

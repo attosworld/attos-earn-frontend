@@ -15,6 +15,7 @@ import {
 import {
   BehaviorSubject,
   catchError,
+  combineLatest,
   debounceTime,
   finalize,
   from,
@@ -23,6 +24,7 @@ import {
   of,
   share,
   switchMap,
+  tap,
 } from 'rxjs';
 import { AstrolescentService } from './astrolescent.service';
 
@@ -101,8 +103,13 @@ export class AppComponent implements OnInit {
 
   accounts$ = this.radixConnect.getAccounts();
 
-  baseBalances = this.radixConnect.getWalletData().pipe(
-    map(balances => {
+  updatBaseBalances$ = new BehaviorSubject<undefined>(undefined);
+
+  baseBalances = combineLatest([
+    this.radixConnect.getWalletData(),
+    this.updatBaseBalances$.asObservable(),
+  ]).pipe(
+    map(([balances]) => {
       const xrdBalance = balances?.fungibles.find(
         token => token.resourceInfo.resourceAddress === RadixConnectService.XRD
       );
@@ -210,6 +217,12 @@ export class AppComponent implements OnInit {
           ?.map(f => f.status)
           .mapErr(() => TransactionStatus.Rejected)
           .unwrapOr(TransactionStatus.Rejected) || TransactionStatus.Rejected
+      ).pipe(
+        tap(res => {
+          if (res === TransactionStatus.CommittedSuccess) {
+            this.updatBaseBalances$.next(undefined);
+          }
+        })
       );
     } catch (error) {
       console.error('Error executing swap:', error);

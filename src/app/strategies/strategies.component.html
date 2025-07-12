@@ -85,6 +85,7 @@
         </div>
         <app-strategy-card
           [strategies]="topLendingStrategies$ | async"
+          (strategySelected)="openExecuteModal($event)"
           ></app-strategy-card>
       </div>
       <div class="rounded-lg flex-grow">
@@ -97,6 +98,7 @@
         </div>
         <app-strategy-card
           [strategies]="topStakingStrategies$ | async"
+          (strategySelected)="openExecuteModal($event)"
           ></app-strategy-card>
       </div>
       <div class="rounded-lg flex-grow">
@@ -109,6 +111,7 @@
         </div>
         <app-strategy-card
           [strategies]="topLiquidationStrategies$ | async"
+          (strategySelected)="openExecuteModal($event)"
           ></app-strategy-card>
       </div>
     </div>
@@ -139,168 +142,171 @@
   </div>
 
   <!-- Search bar -->
-  <div class="mb-4 p-0 rounded-lg">
-  <input
-    type="text"
-    [(ngModel)]="searchTerm"
-    (ngModelChange)="onSearch($event)"
-    placeholder="Search strategies..."
-    class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white"
-    >
-    </div>
+  <!-- <div class="mb-4 p-0 rounded-lg"> -->
+  <!-- <input -->
+  <!--   type="text" -->
+  <!--   [(ngModel)]="searchTerm" -->
+  <!--   (ngModelChange)="onSearch($event)" -->
+  <!--   placeholder="Search strategies..." -->
+  <!--   class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" -->
+  <!--   > -->
+  <!--   </div> -->
 
-  <!-- Advanced Filters -->
-  <div class="mb-8 bg-gray-800 p-6 rounded-lg">
-    <div class="flex justify-between items-center mb-4">
-      <h3 class="text-lg font-semibold text-white">Advanced Filters</h3>
-      <button
-        (click)="resetFilters()"
-        class="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-600 transition duration-300"
-      >
-        Clear Filters
-      </button>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <!-- Required Assets Filter -->
-      <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Required Assets</label>
-        <select
-          [(ngModel)]="requiredAssetsFilter"
-          (ngModelChange)="updateFilters()"
-          class="w-full bg-gray-700 border border-gray-600 rounded text-white p-2"
-          multiple
-        >
-          <option *ngFor="let asset of allRequiredAssets$ | async" [value]="asset">{{ asset }}</option>
-        </select>
-      </div>
+  <!-- <!-1- Advanced Filters -1-> -->
+  <!-- <div class="mb-8 bg-gray-800 p-6 rounded-lg"> -->
+  <!--   <div class="flex justify-between items-center mb-4"> -->
+  <!--     <h3 class="text-lg font-semibold text-white">Advanced Filters</h3> -->
+  <!--     <button -->
+  <!--       (click)="resetFilters()" -->
+  <!--       class="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-600 transition duration-300" -->
+  <!--     > -->
+  <!--       Clear Filters -->
+  <!--     </button> -->
+  <!--   </div> -->
+  <!--   <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> -->
+  <!--     <!-1- Required Assets Filter -1-> -->
+  <!--     <div> -->
+  <!--       <label class="block text-sm font-medium text-gray-300 mb-2">Required Assets</label> -->
+  <!--       <select -->
+  <!--         [(ngModel)]="requiredAssetsFilter" -->
+  <!--         (ngModelChange)="updateFilters()" -->
+  <!--         class="w-full bg-gray-700 border border-gray-600 rounded text-white p-2" -->
+  <!--         multiple -->
+  <!--       > -->
+  <!--         <option *ngFor="let asset of allRequiredAssets$ | async" [value]="asset">{{ asset }}</option> -->
+  <!--       </select> -->
+  <!--     </div> -->
 
-      <!-- Reward Tokens Filter -->
-      <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">Reward Tokens</label>
-        <select
-          [(ngModel)]="rewardTokensFilter"
-          (ngModelChange)="updateFilters()"
-          class="w-full bg-gray-700 border border-gray-600 rounded text-white p-2"
-          multiple
-        >
-          <option *ngFor="let token of allRewardTokens$ | async" [value]="token">{{ token }}</option>
-        </select>
-      </div>
+  <!--     <!-1- Reward Tokens Filter -1-> -->
+  <!--     <div> -->
+  <!--       <label class="block text-sm font-medium text-gray-300 mb-2">Reward Tokens</label> -->
+  <!--       <select -->
+  <!--         [(ngModel)]="rewardTokensFilter" -->
+  <!--         (ngModelChange)="updateFilters()" -->
+  <!--         class="w-full bg-gray-700 border border-gray-600 rounded text-white p-2" -->
+  <!--         multiple -->
+  <!--       > -->
+  <!--         <option *ngFor="let token of allRewardTokens$ | async" [value]="token">{{ token }}</option> -->
+  <!--       </select> -->
+  <!--     </div> -->
 
-      <!-- New APY Filter -->
-      <div>
-        <label class="block text-sm font-medium text-gray-300 mb-2">APY</label>
-        <div class="flex items-center">
-          <select
-            [(ngModel)]="apyFilter.condition"
-            (ngModelChange)="updateFilters()"
-            class="mr-2 bg-gray-700 border border-gray-600 rounded text-white p-2"
-          >
-            <option value="above">Above</option>
-            <option value="below">Below</option>
-          </select>
-          <input
-            type="number"
-            [(ngModel)]="apyFilter.value"
-            (ngModelChange)="updateFilters()"
-            placeholder="Enter APY %"
-            class="w-full bg-gray-700 border border-gray-600 rounded text-white p-2"
-          >
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- Existing strategies grid with coming soon overlay -->
-  <div class="relative">
-    <ng-container *ngIf="combinedData$ | async as data">
-      <ng-container *ngIf="addLiquidityPreview | async"></ng-container>
-      <ng-container *ngIf="swapPreview | async"></ng-container>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [ngClass]="{'filter blur-sm': isComingSoon}">
-        <div *ngFor="let strategy of data.strategies" class="bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-full">
-          <div class="p-6 flex-grow">
-            <div class="flex justify-between items-start mb-4">
-              <h2 class="text-xl font-semibold text-yellow-500">{{ strategy.name }}</h2>
-              <div class="text-right">
-                <span class="text-sm text-gray-400">Total Rewards</span>
-                <p class="text-lg font-bold text-green-400">
-                  {{ strategy.totalRewards.value | number:'1.2-2' }}% {{ strategy.totalRewards.type }}
-                </p>
-              </div>
-            </div>
+  <!--     <!-1- New APY Filter -1-> -->
+  <!--     <div> -->
+  <!--       <label class="block text-sm font-medium text-gray-300 mb-2">APY</label> -->
+  <!--       <div class="flex items-center"> -->
+  <!--         <select -->
+  <!--           [(ngModel)]="apyFilter.condition" -->
+  <!--           (ngModelChange)="updateFilters()" -->
+  <!--           class="mr-2 bg-gray-700 border border-gray-600 rounded text-white p-2" -->
+  <!--         > -->
+  <!--           <option value="above">Above</option> -->
+  <!--           <option value="below">Below</option> -->
+  <!--         </select> -->
+  <!--         <input -->
+  <!--           type="number" -->
+  <!--           [(ngModel)]="apyFilter.value" -->
+  <!--           (ngModelChange)="updateFilters()" -->
+  <!--           placeholder="Enter APY %" -->
+  <!--           class="w-full bg-gray-700 border border-gray-600 rounded text-white p-2" -->
+  <!--         > -->
+  <!--       </div> -->
+  <!--     </div> -->
+  <!--   </div> -->
+  <!-- </div> -->
+  <!-- <!-1- Existing strategies grid with coming soon overlay -1-> -->
+  <!-- <div class="relative"> -->
+  <!--   <ng-container *ngIf="combinedData$ | async as data"> -->
+  <!--     <ng-container *ngIf="addLiquidityPreview | async"></ng-container> -->
+  <!--     <ng-container *ngIf="swapPreview | async"></ng-container> -->
+  <!--     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [ngClass]="{'filter blur-sm': isComingSoon}"> -->
+  <!--       <div *ngFor="let strategy of data.strategies" class="bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-full"> -->
+  <!--         <div class="p-6 flex-grow"> -->
+  <!--           <div class="flex justify-between items-start mb-4"> -->
+  <!--             <h2 class="text-xl font-semibold text-yellow-500">{{ strategy.name }}</h2> -->
+  <!--             <div class="text-right"> -->
+  <!--               <span class="text-sm text-gray-400">Total Rewards</span> -->
+  <!--               <p class="text-lg font-bold text-green-400"> -->
+  <!--                 {{ strategy.totalRewards.value | number:'1.2-2' }}% {{ strategy.totalRewards.type }} -->
+  <!--               </p> -->
+  <!--             </div> -->
+  <!--           </div> -->
 
-            <!-- Dapps Utilized Section -->
-            <div class="mb-4">
-              <h3 class="text-sm font-semibold text-white mb-2">Dapps Utilized:</h3>
-              <div class="flex flex-wrap gap-2">
-                <div *ngFor="let dapp of strategy.dappsUtilized" class="flex items-center bg-gray-700 px-2 py-1 rounded-full">
-                  <img [src]="dapp.icon" [alt]="dapp.label" class="w-4 h-4 mr-1">
-                  <span class="text-blue-400 text-xs">{{ dapp.label }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="flex flex-wrap items-center justify-start gap-2 mb-4">
-              <ng-container *ngFor="let step of strategy.steps; let last = last">
-                <div class="flex flex-col items-center w-20">
-                  <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center mb-2 overflow-hidden">
-                    <img [src]="step.icon" [alt]="step.label" class="w-full h-full object-cover">
-                  </div>
-                  <span class="text-xs text-gray-400 text-center">{{ step.label }}</span>
-                </div>
-                <svg *ngIf="!last" class="w-8 h-8 text-gray-600 self-center mb-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </ng-container>
-            </div>
-            <p class="text-gray-400 mb-4">{{ strategy.description }}</p>
-            <div class="mb-4">
-              <h3 class="text-sm font-semibold text-white mb-2">Required Assets:</h3>
-              <div class="flex flex-wrap gap-2">
-                <span *ngFor="let asset of strategy.requiredAssets" class="bg-gray-700 text-yellow-500 px-2 py-1 rounded-full text-xs">
-                  {{ asset.symbol }}
-                </span>
-              </div>
-            </div>
+  <!--           <!-1- Dapps Utilized Section -1-> -->
+  <!--           <div class="mb-4"> -->
+  <!--             <h3 class="text-sm font-semibold text-white mb-2">Dapps Utilized:</h3> -->
+  <!--             <div class="flex flex-wrap gap-2"> -->
+  <!--               <div *ngFor="let dapp of strategy.dappsUtilized" class="flex items-center bg-gray-700 px-2 py-1 rounded-full"> -->
+  <!--                 <img [src]="dapp.icon" [alt]="dapp.label" class="w-4 h-4 mr-1"> -->
+  <!--                 <span class="text-blue-400 text-xs">{{ dapp.label }}</span> -->
+  <!--               </div> -->
+  <!--             </div> -->
+  <!--           </div> -->
+  <!--           <div class="flex flex-wrap items-center justify-start gap-2 mb-4"> -->
+  <!--             <ng-container *ngFor="let step of strategy.steps; let last = last"> -->
+  <!--               <div class="flex flex-col items-center w-20"> -->
+  <!--                 <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center mb-2 overflow-hidden"> -->
+  <!--                   <img [src]="step.icon" [alt]="step.label" class="w-full h-full object-cover"> -->
+  <!--                 </div> -->
+  <!--                 <span class="text-xs text-gray-400 text-center">{{ step.label }}</span> -->
+  <!--               </div> -->
+  <!--               <svg *ngIf="!last" class="w-8 h-8 text-gray-600 self-center mb-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> -->
+  <!--                 <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> -->
+  <!--               </svg> -->
+  <!--             </ng-container> -->
+  <!--           </div> -->
+  <!--           <p class="text-gray-400 mb-4">{{ strategy.description }}</p> -->
+  <!--           <div class="mb-4"> -->
+  <!--             <h3 class="text-sm font-semibold text-white mb-2">Required Assets:</h3> -->
+  <!--             <div class="flex flex-wrap gap-2"> -->
+  <!--               <span *ngFor="let asset of strategy.requiredAssets" class="bg-gray-700 text-yellow-500 px-2 py-1 rounded-full text-xs"> -->
+  <!--                 {{ asset.symbol }} -->
+  <!--               </span> -->
+  <!--             </div> -->
+  <!--           </div> -->
 
-            <!-- Conditionally render the reward tokens section -->
-            <ng-container *ngIf="strategy.rewardTokens && strategy.rewardTokens.length > 0">
-              <div class="mb-4">
-                <h3 class="text-sm font-semibold text-white mb-2">Reward Tokens:</h3>
-                <div class="flex flex-wrap gap-2">
-                  <span *ngFor="let token of strategy.rewardTokens" class="bg-gray-700 text-green-500 px-2 py-1 rounded-full text-xs">
-                    {{ token }}
-                  </span>
-                </div>
-              </div>
-            </ng-container>
+  <!--           <!-1- Conditionally render the reward tokens section -1-> -->
+  <!--           <ng-container *ngIf="strategy.rewardTokens && strategy.rewardTokens.length > 0"> -->
+  <!--             <div class="mb-4"> -->
+  <!--               <h3 class="text-sm font-semibold text-white mb-2">Reward Tokens:</h3> -->
+  <!--               <div class="flex flex-wrap gap-2"> -->
+  <!--                 <span *ngFor="let token of strategy.rewardTokens" class="bg-gray-700 text-green-500 px-2 py-1 rounded-full text-xs"> -->
+  <!--                   {{ token }} -->
+  <!--                 </span> -->
+  <!--               </div> -->
+  <!--             </div> -->
+  <!--           </ng-container> -->
 
-            <!-- Conditionally render the rewards APY breakdown section -->
-            <ng-container *ngIf="strategy.rewardsBreakdown && strategy.rewardsBreakdown.length > 0">
-              <div class="mb-4">
-                <h3 class="text-sm font-semibold text-white mb-2">Rewards APY Breakdown:</h3>
-                <div class="grid grid-cols-2 gap-2">
-                  <div *ngFor="let reward of strategy.rewardsBreakdown" class="bg-gray-700 rounded p-2 flex justify-between items-center flex-wrap">
-                    <span class="text-yellow-500">{{ reward.token }}</span>
-                    <span class="text-green-400">{{ reward.apy | number:'1.2-2' }}%</span>
-                  </div>
-                </div>
-              </div>
-            </ng-container>
+  <!--           <!-1- Conditionally render the rewards APY breakdown section -1-> -->
+  <!--           <ng-container *ngIf="strategy.rewardsBreakdown && strategy.rewardsBreakdown.length > 0"> -->
+  <!--             <div class="mb-4"> -->
+  <!--               <h3 class="text-sm font-semibold text-white mb-2">Rewards APY Breakdown:</h3> -->
+  <!--               <div class="grid grid-cols-2 gap-2"> -->
+  <!--                 <div *ngFor="let reward of strategy.rewardsBreakdown" class="bg-gray-700 rounded p-2 flex justify-between items-center flex-wrap"> -->
+  <!--                   <span class="text-yellow-500">{{ reward.token }}</span> -->
+  <!--                   <span class="text-green-400">{{ reward.apy | number:'1.2-2' }}%</span> -->
+  <!--                 </div> -->
+  <!--               </div> -->
+  <!--             </div> -->
+  <!--           </ng-container> -->
 
-          </div>
+  <!--         </div> -->
 
-          <!-- Execute Strategy Button -->
-          <div class="p-6 pt-0">
-            <button (click)="openExecuteModal(strategy)" class="w-full bg-yellow-500 text-gray-900 py-2 px-4 rounded hover:bg-yellow-600 transition duration-300">
-              Execute Strategy
-            </button>
-          </div>
-        </div>
-      </div>
-      <div *ngIf="isComingSoon" class="absolute inset-0 flex items-center justify-center">
-        <h2 class="text-4xl font-bold text-yellow-500 bg-gray-900 bg-opacity-70 px-6 py-3 rounded-lg">Coming Soon!</h2>
-      </div>
+  <!--         <!-1- Execute Strategy Button -1-> -->
+  <!--         <div class="p-6 pt-0"> -->
+  <!--           <button (click)="openExecuteModal(strategy)" class="w-full bg-yellow-500 text-gray-900 py-2 px-4 rounded hover:bg-yellow-600 transition duration-300"> -->
+  <!--             Execute Strategy -->
+  <!--           </button> -->
+  <!--         </div> -->
+  <!--       </div> -->
+  <!--     </div> -->
+  <!--     <div *ngIf="isComingSoon" class="absolute inset-0 flex items-center justify-center"> -->
+  <!--       <h2 class="text-4xl font-bold text-yellow-500 bg-gray-900 bg-opacity-70 px-6 py-3 rounded-lg">Coming Soon!</h2> -->
+  <!--     </div> -->
 
+  <!--   </ng-container> -->
+  <!-- </div> -->
       <!-- Execute Strategy Modal -->
+    <ng-container *ngIf="combinedData$ | async as data">
       <div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-gray-800 rounded-lg w-full max-w-4xl overflow-y-auto max-h-[90vh]">
           <div class="p-6">
@@ -617,6 +623,5 @@
           </div>
         </div>
       </div>
-    </ng-container>
-  </div>
+      </ng-container>
 </div>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { StrategyV2 } from '../strategies.service';
 
 @Component({
@@ -10,4 +10,10 @@ import { StrategyV2 } from '../strategies.service';
 })
 export class StrategyCardComponent {
   @Input() strategies!: StrategyV2[] | null;
+
+  @Output() strategySelected = new EventEmitter<StrategyV2>();
+
+  handleSelectStrategy(strategy: StrategyV2) {
+    this.strategySelected.emit(strategy);
+  }
 }
