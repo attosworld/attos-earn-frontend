@@ -16,7 +16,7 @@ import {
 } from '@angular/cdk/scrolling';
 import { PoolItemComponent } from '../pool-item/pool-item.component';
 import { PoolService, Pool } from '../pool.service';
-import { BehaviorSubject, combineLatest, Observable, of, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, of, Subject } from 'rxjs';
 import {
   map,
   finalize,
@@ -26,6 +26,9 @@ import {
   catchError,
   share,
   takeUntil,
+  distinctUntilChanged,
+  filter,
+  shareReplay,
   startWith,
 } from 'rxjs/operators';
 import Fuse from 'fuse.js';
@@ -195,8 +198,57 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     tap(() => console.log('Filters updated'))
   );
 
-  selectedPool: Pool | null = null;
+  private selectedPoolSubject = new BehaviorSubject<Pool | null>(null);
+  selectedPool$ = this.selectedPoolSubject.asObservable();
   showModal = false;
+
+  private inputChangeSubject = new Subject<void>();
+
+  addLiquidityPreview$ = combineLatest([
+    this.selectedPool$.pipe(
+      filter(pool => pool !== null),
+      distinctUntilChanged((prev, curr) => prev?.component === curr?.component)
+    ),
+    this.inputChangeSubject.pipe(
+      debounceTime(300), // 300ms debounce
+      startWith(undefined) // Initial emission
+    ),
+  ]).pipe(
+    switchMap(([pool]) => {
+      if (!pool) return of(null);
+
+      const { lowerTick, upperTick } = this.ociswapService.calculateTickBounds(
+        pool.current_price,
+        this.minValue,
+        this.maxValue,
+        60
+      );
+
+      return this.ociswapService
+        .getOciswapAddLiquidityPreview(
+          pool.component,
+          this.xAmount,
+          '',
+          lowerTick.toString(),
+          upperTick.toString()
+        )
+        .pipe(
+          tap(data => {
+            if (data) {
+              this.xAmount = data.x_amount.token;
+              this.yAmount = data.y_amount.token;
+            }
+          }),
+          catchError(() => {
+            this.inputErrors[pool?.right_token || ''] =
+              'An error occurred while fetching add liquidity preview.';
+            return of(null);
+          })
+        );
+    }),
+    shareReplay(1)
+  );
+
   minValue = -90;
   maxValue = 900;
 
@@ -211,8 +263,6 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   txButtonStatus = this.radixConnectService.getButtonStatus();
 
   transactionResult?: Observable<TransactionStatus | undefined> = of(undefined);
-
-  addLiquidityPreview: Observable<AddLiquidityPreview | null> = of(null);
 
   pools$ = this.poolService.getPools().pipe(
     finalize(() => {
@@ -318,43 +368,57 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
   portfolioService = inject(PortfolioService);
 
-  // portfolioItems$: Observable<PortfolioItem[]> = of([
-  //   {
-  //     poolName: 'EARLY/DFP2',
-  //     leftAlt: 'EARLY',
-  //     rightAlt: 'DFP2',
-  //     leftIcon:
-  //       'https://arweave.net/uXCQ9YVGkEijn7PS2wdkXqwkU_YrdgpNtQPH2Y1-Qcs',
-  //     rightIcon:
-  //       'https://radix.defiplaza.net/assets/img/babylon/defiplaza-icon.png',
-  //     provider: 'Defiplaza',
-  //     invested: '127.4211858192467183',
-  //     currentValue: '129.94913788710330066',
-  //     investedXrd: '20190.430593910679881',
-  //     currentValueXrd: '20590.995385727911186',
-  //     pnl: '2.52795206785658236',
-  //     pnlPercentage: '1.98393387379286199990',
-  //     closeManifest:
-  //       'CALL_METHOD\n  Address("account_rdx12962a8y6penj8wudzyddp07r6l4uccvaxyet2pqptkx96ylk5n770v")\n  "withdraw"\n  Address("resource_rdx1tkc7hdmwhgza24nes4z0yf2ljc2fedvg2h7el2fzdxfgw0f2wq7pwz")\n  Decimal("723.493677887522574816")\n;\nTAKE_ALL_FROM_WORKTOP\n  Address("resource_rdx1tkc7hdmwhgza24nes4z0yf2ljc2fedvg2h7el2fzdxfgw0f2wq7pwz")\n  Bucket("surge_lp")\n;\nCALL_METHOD\n  Address("component_rdx1cpr3gvk0r3nauc24kt0y0w5cpvjcxe54z07nu26z83qk2tgeangmdl")\n  "remove_liquidity"\n  Bucket("surge_lp")\n  true\n;\nCALL_METHOD\n  Address("account_rdx12962a8y6penj8wudzyddp07r6l4uccvaxyet2pqptkx96ylk5n770v")\n  "deposit_batch"\n  Expression("ENTIRE_WORKTOP")\n;',
-  //   },
-  //   {
-  //     poolName: 'ILIS/DFP2',
-  //     leftAlt: 'ILIS',
-  //     rightAlt: 'DFP2',
-  //     leftIcon: 'https://ilikeitstable.com/images/lplogo.png',
-  //     rightIcon:
-  //       'https://radix.defiplaza.net/assets/img/babylon/defiplaza-icon.png',
-  //     provider: 'Defiplaza',
-  //     invested: '265.60041043504271809',
-  //     currentValue: '265.19629200026255863',
-  //     investedXrd: '42085.518339234540139',
-  //     currentValueXrd: '42021.484048887226644',
-  //     pnl: '-0.40411843478015946',
-  //     pnlPercentage: '-0.15215279001949952813',
-  //     closeManifest:
-  //       'CALL_METHOD\n  Address("account_rdx12962a8y6penj8wudzyddp07r6l4uccvaxyet2pqptkx96ylk5n770v")\n  "withdraw"\n  Address("resource_rdx1t4z3dn6u57kj069wru4tkmdrx8njz2d9a5rlfsphs87cyuaj9tufv0")\n  Decimal("2361.061214041296133865")\n;\nTAKE_ALL_FROM_WORKTOP\n  Address("resource_rdx1t4z3dn6u57kj069wru4tkmdrx8njz2d9a5rlfsphs87cyuaj9tufv0")\n  Bucket("surge_lp")\n;\nCALL_METHOD\n  Address("component_rdx1cz9akawaf6d2qefds33c5py9w3fjpgp2qnaddtlcxm06m060wl2j68")\n  "remove_liquidity"\n  Bucket("surge_lp")\n  false\n;\nCALL_METHOD\n  Address("account_rdx12962a8y6penj8wudzyddp07r6l4uccvaxyet2pqptkx96ylk5n770v")\n  "deposit_batch"\n  Expression("ENTIRE_WORKTOP")\n;',
-  //   },
-  // ] as PortfolioItem[]);
+  selectedChartType: ChartType = 'volume';
+  tokenValueData$: Observable<Record<string, number>> | undefined;
+
+  XRD = 'resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd';
+
+  balances$: Observable<Balances | undefined> = this.radixConnectService
+    .getWalletData()
+    .pipe(
+      startWith({
+        account: '',
+        fungibles: [],
+        nonFungibles: [],
+      } as Balances)
+    );
+
+  openDepositModal(pool: Pool, balances: Balances | undefined) {
+    this.selectedPoolSubject.next(pool);
+    this.showModal = true;
+    this.xAmount = '';
+    this.yAmount = '';
+    this.inputErrors = {};
+    this.updateMaxAmounts(balances);
+    this.selectedChartType = 'volume'; // Default to volume chart
+    this.poolModalSelectedView = 'details';
+
+    // Fetch the seven-day volume data
+    this.sevenDayVolume$ = this.poolService
+      .getPoolVolumePerDay(pool.component, pool.type)
+      .pipe(map(volumeData => volumeData.volume_per_day));
+
+    const tokenForNews =
+      pool.left_token === this.XRD && pool.type === 'ociswap'
+        ? pool.right_token
+        : pool.left_token;
+
+    this.news = this.newsService.getNews(tokenForNews);
+
+    // Fetch the token value data for LP performance chart
+    this.tokenValueData$ = this.poolService.getPoolPerformance(
+      pool.left_token,
+      pool.side
+    );
+  }
+
+  closeModal() {
+    this.showModal = false;
+    this.selectedPoolSubject.next(null);
+    this.xAmount = '';
+    this.yAmount = '';
+    this.inputErrors = {};
+  }
 
   ngOnDestroy() {
     this.destroy$.next();
@@ -549,101 +613,21 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   }
 
   private updateAmount() {
-    if (this.selectedPool) {
-      const { lowerTick, upperTick } = this.ociswapService.calculateTickBounds(
-        this.selectedPool.current_price,
-        this.minValue,
-        this.maxValue,
-        60
-      );
-      this.addLiquidityPreview = this.ociswapService
-        .getOciswapAddLiquidityPreview(
-          this.selectedPool.component,
-          this.xAmount,
-          '',
-          lowerTick.toString(),
-          upperTick.toString()
-        )
-        .pipe(
-          tap(data => {
-            if (data) {
-              this.xAmount = data.x_amount.token;
-              this.yAmount = data.y_amount.token;
-            }
-          }),
-          catchError(() => {
-            this.inputErrors[this.selectedPool?.right_token || ''] =
-              'An error occurred while fetching add liquidity preview.';
-            return of(null);
-          })
-        );
-    }
-  }
-
-  selectedChartType: ChartType = 'volume';
-  tokenValueData$: Observable<Record<string, number>> | undefined;
-
-  XRD = 'resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd';
-
-  balances$: Observable<Balances | undefined> = this.radixConnectService
-    .getWalletData()
-    .pipe(
-      startWith({
-        account: '',
-        fungibles: [],
-        nonFungibles: [],
-      } as Balances)
-    );
-
-  openDepositModal(pool: Pool, balances: Balances | undefined) {
-    this.selectedPool = pool;
-    this.showModal = true;
-    this.xAmount = '';
-    this.yAmount = '';
-    this.inputErrors = {};
-    this.updateMaxAmounts(balances);
-    this.selectedChartType = 'volume'; // Default to volume chart
-    this.poolModalSelectedView = 'details';
-
-    // Fetch the seven-day volume data
-    this.sevenDayVolume$ = this.poolService
-      .getPoolVolumePerDay(pool.component, pool.type)
-      .pipe(map(volumeData => volumeData.volume_per_day));
-
-    const tokenForNews =
-      pool.left_token === this.XRD && pool.type === 'ociswap'
-        ? pool.right_token
-        : pool.left_token;
-
-    this.news = this.newsService.getNews(tokenForNews);
-
-    // Fetch the token value data for LP performance chart
-    this.tokenValueData$ = this.poolService.getPoolPerformance(
-      pool.left_token,
-      pool.side
-    );
-  }
-
-  closeModal() {
-    this.showModal = false;
-    this.selectedPool = null;
-    this.xAmount = '';
-    this.yAmount = '';
-    this.inputErrors = {};
+    this.inputChangeSubject.next();
   }
 
   updateMaxAmounts(walletData: Balances | undefined) {
-    if (this.selectedPool) {
-      if (walletData && this.selectedPool) {
-        this.maxAmounts[this.selectedPool.left_token] =
+    const selectedPool = this.selectedPoolSubject.getValue();
+
+    if (selectedPool) {
+      if (walletData) {
+        this.maxAmounts[selectedPool.left_token] =
           walletData.fungibles.find(
-            f =>
-              f.resourceInfo.resourceAddress === this.selectedPool?.left_token
+            f => f.resourceInfo.resourceAddress === selectedPool.left_token
           )?.balance || '0';
-        this.maxAmounts[this.selectedPool.right_token] =
+        this.maxAmounts[selectedPool.right_token] =
           walletData.fungibles.find(
-            f =>
-              f.resourceInfo.resourceAddress === this.selectedPool?.right_token
+            f => f.resourceInfo.resourceAddress === selectedPool.right_token
           )?.balance || '0';
       }
     }
@@ -651,51 +635,53 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
   setMaxBalance(resourceAddress: string) {
     const maxAmount = this.maxAmounts[resourceAddress];
-    if (this.selectedPool) {
-      if (resourceAddress === this.selectedPool.left_token) {
+    const selectedPool = this.selectedPoolSubject.getValue();
+    if (selectedPool) {
+      if (resourceAddress === selectedPool.left_token) {
         this.xAmount = maxAmount;
         this.yAmount =
-          this.selectedPool?.type === 'defiplaza'
+          selectedPool?.type === 'defiplaza'
             ? new Decimal(this.xAmount)
-                .mul(this.selectedPool.xRatio || 0)
+                .mul(selectedPool.xRatio || 0)
                 .toFixed(18)
             : new Decimal(this.xAmount)
-                .mul(this.selectedPool?.current_price || 0)
+                .mul(selectedPool?.current_price || 0)
                 .toFixed(18);
-      } else if (resourceAddress === this.selectedPool.right_token) {
+      } else if (resourceAddress === selectedPool.right_token) {
         this.yAmount = maxAmount;
         this.xAmount =
-          this.selectedPool?.type === 'defiplaza'
+          selectedPool?.type === 'defiplaza'
             ? new Decimal(this.yAmount)
-                .div(this.selectedPool.yRatio || 0)
+                .div(selectedPool.yRatio || 0)
                 .toFixed(18)
             : new Decimal(this.yAmount)
                 .div(
-                  new Decimal(this.selectedPool?.current_price || 0).plus(
-                    new Decimal(this.selectedPool?.current_price || 0).times(
-                      0.5
-                    )
+                  new Decimal(selectedPool?.current_price || 0).plus(
+                    new Decimal(selectedPool?.current_price || 0).times(0.5)
                   )
                 )
                 .toFixed(18);
       }
+      if (selectedPool?.type === 'ociswap') {
+        this.updateAmount();
+      }
     }
 
-    if (this.selectedPool?.left_alt) {
-      this.validateInput(this.selectedPool?.left_token || '');
+    if (selectedPool?.left_alt) {
+      this.validateInput(selectedPool?.left_token || '');
     }
-    if (this.selectedPool?.right_alt) {
-      this.validateInput(this.selectedPool?.right_token || '');
+    if (selectedPool?.right_alt) {
+      this.validateInput(selectedPool?.right_token || '');
     }
-    console.log(this.inputErrors);
   }
 
   updateBalance(resourceAddress: string, event: Event) {
     const value = (event.target as HTMLInputElement).value;
-    if (this.selectedPool) {
-      if (resourceAddress === this.selectedPool.left_token) {
+    const selectedPool = this.selectedPoolSubject.getValue();
+    if (selectedPool) {
+      if (resourceAddress === selectedPool.left_token) {
         this.xAmount = value;
-      } else if (resourceAddress === this.selectedPool.right_token) {
+      } else if (resourceAddress === selectedPool.right_token) {
         this.yAmount = value;
       }
     }
@@ -703,12 +689,11 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   }
 
   validateInput(resourceAddress: string) {
-    if (!this.selectedPool) return;
+    const selectedPool = this.selectedPoolSubject.getValue();
+    if (!selectedPool) return;
 
     const value =
-      resourceAddress === this.selectedPool.left_token
-        ? this.xAmount
-        : this.yAmount;
+      resourceAddress === selectedPool.left_token ? this.xAmount : this.yAmount;
     const maxAmount = this.maxAmounts[resourceAddress];
 
     if (parseFloat(value) > parseFloat(maxAmount)) {
@@ -726,14 +711,14 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   deposit() {
     if (
       this.hasInputErrors() ||
-      (this.selectedPool?.left_alt && !this.xAmount) ||
-      (this.selectedPool?.right_alt && !this.yAmount) ||
-      !this.selectedPool
+      (this.selectedPoolSubject.getValue()?.left_alt && !this.xAmount) ||
+      (this.selectedPoolSubject.getValue()?.right_alt && !this.yAmount) ||
+      !this.selectedPoolSubject.getValue()
     ) {
       return;
     }
 
-    const selectedPool = this.selectedPool;
+    const selectedPool = this.selectedPoolSubject.getValue();
 
     const bounds =
       selectedPool?.sub_type === 'precision'
@@ -817,46 +802,56 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   updateXAmount(xAmount: string, ratio: string | null | undefined) {
     this.xAmount = xAmount || '0';
 
-    if (this.selectedPool?.sub_type !== 'single') {
+    const selectedPool = this.selectedPoolSubject.getValue();
+    if (selectedPool?.sub_type !== 'single') {
       this.yAmount =
-        this.selectedPool?.type === 'defiplaza'
+        selectedPool?.type === 'defiplaza'
           ? new Decimal(this.xAmount).mul(ratio || 0).toFixed(18)
           : new Decimal(this.xAmount)
-              .mul(this.selectedPool?.current_price || 0)
+              .mul(selectedPool?.current_price || 0)
               .toString();
     }
 
-    if (this.selectedPool?.left_alt) {
-      this.validateInput(this.selectedPool?.left_token || '');
+    if (selectedPool?.left_alt) {
+      this.validateInput(selectedPool?.left_token || '');
     }
 
-    if (this.selectedPool?.right_alt) {
-      this.validateInput(this.selectedPool?.right_token || '');
+    if (selectedPool?.right_alt) {
+      this.validateInput(selectedPool?.right_token || '');
+    }
+
+    if (selectedPool?.type === 'ociswap') {
+      this.updateAmount();
     }
   }
 
   updateYAmount(yAmount: string, ratio: string | null | undefined) {
     this.yAmount = yAmount || '0';
 
-    if (this.selectedPool?.sub_type !== 'single') {
+    const selectedPool = this.selectedPoolSubject.getValue();
+    if (selectedPool?.sub_type !== 'single') {
       this.xAmount =
-        this.selectedPool?.type === 'defiplaza'
+        selectedPool?.type === 'defiplaza'
           ? new Decimal(this.yAmount).mul(ratio || 0).toFixed(18)
           : new Decimal(this.yAmount)
               .div(
-                new Decimal(this.selectedPool?.current_price || 0).plus(
-                  new Decimal(this.selectedPool?.current_price || 0).times(0.5)
+                new Decimal(selectedPool?.current_price || 0).plus(
+                  new Decimal(selectedPool?.current_price || 0).times(0.5)
                 )
               )
               .toString();
     }
 
-    if (this.selectedPool?.left_alt) {
-      this.validateInput(this.selectedPool?.left_token || '');
+    if (selectedPool?.left_alt) {
+      this.validateInput(selectedPool?.left_token || '');
     }
 
-    if (this.selectedPool?.right_alt) {
-      this.validateInput(this.selectedPool?.right_token || '');
+    if (selectedPool?.right_alt) {
+      this.validateInput(selectedPool?.right_token || '');
+    }
+
+    if (selectedPool?.type === 'ociswap') {
+      this.updateAmount();
     }
   }
 
