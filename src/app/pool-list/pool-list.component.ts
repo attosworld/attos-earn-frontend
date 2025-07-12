@@ -583,7 +583,11 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     );
     return (
       selectedTags.length === 0 ||
-      selectedTags.some(tag => pool.tags?.includes(tag))
+      selectedTags.some(tag =>
+        tag === 'gamefi'
+          ? pool.tags?.includes(tag) || pool.tags?.includes('game')
+          : pool.tags?.includes(tag)
+      )
     );
   }
 
