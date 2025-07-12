@@ -160,12 +160,14 @@ export class StrategiesService {
     account: string,
     componentOrResourceAddress: string,
     amount: number,
-    strategyType: string
+    strategyType: string,
+    provider: string
   ): Observable<ExecuteStrategyResponse> {
     let params = new HttpParams()
       .set('account', account)
       .set('amount', amount)
-      .set('strategy_type', strategyType);
+      .set('strategy_type', strategyType)
+      .set('provider', provider);
 
     if (componentOrResourceAddress.startsWith('component_')) {
       params = params.set('component', componentOrResourceAddress);

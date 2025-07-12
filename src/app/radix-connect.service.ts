@@ -79,6 +79,8 @@ export class RadixConnectService {
 
   accountBalanceCache$ = new BehaviorSubject<Record<string, Balances>>({});
 
+  isLoadingBalances = false;
+
   router = inject(Router);
 
   constructor() {
@@ -185,6 +187,7 @@ export class RadixConnectService {
         }
       }),
       switchMap(([data]) => {
+        this.isLoadingBalances = true;
         const account = this.selectedAccount$.getValue();
         if (!data.accounts.length || !account) {
           return of({
@@ -213,7 +216,11 @@ export class RadixConnectService {
         });
       }),
       tap(data => {
-        if (data && !this.accountBalanceCache$.getValue()[data.account]) {
+        if (
+          data &&
+          !this.accountBalanceCache$.getValue()[data.account] &&
+          !this.isLoadingBalances
+        ) {
           this.accountBalanceCache$.next({
             ...this.accountBalanceCache$.getValue(),
             [data.account]: data as Balances,
@@ -290,16 +297,7 @@ export class RadixConnectService {
               {} as TokenMetadata
             );
 
-            const flags: {
-              mintable: boolean;
-              burnable: boolean;
-              withdrawable: boolean;
-              depositable: boolean;
-              totalMinted: string;
-              totalSupply: string;
-              totalBurned: string;
-              divisibility: number;
-            } = {} as {
+            const flags = {} as {
               mintable: boolean;
               burnable: boolean;
               withdrawable: boolean;

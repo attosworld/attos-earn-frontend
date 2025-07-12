@@ -116,8 +116,9 @@
       [strategies]="lendingStrategies$ | async"
       [isCollapsed]="collapsedSections.lending"
       [category]="'lending'"
-      (collapseToggle)="toggleStrategySection('lending')"
       [tvl]="lendingTotalTvl$ | async"
+      (collapseToggle)="toggleStrategySection('lending')"
+      (executeStrategy)="openExecuteModal($event)"
       ></app-yield-list>
     <app-yield-list
       [strategies]="stakingStrategies$ | async"
@@ -131,8 +132,8 @@
       [strategies]="topLiquidationStrategies$ | async"
       [isCollapsed]="collapsedSections.liquidation"
       [category]="'liquidation'"
-      (collapseToggle)="toggleStrategySection('liquidation')"
       [tvl]="liquidationTotalTvl$ | async"
+      (collapseToggle)="toggleStrategySection('liquidation')"
       (executeStrategy)="openExecuteModal($event)"
       ></app-yield-list>
   </div>
@@ -379,6 +380,77 @@
               </div>
             </ng-container>
 
+            <!-- Lending-specific information -->
+            <ng-container *ngIf="isLendingStrategy(selectedStrategy)">
+              <div class="mb-6 bg-gray-750 p-4 rounded-lg">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Lending Details
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+                  <div class="flex justify-between">
+                    <span>Total Deposited:</span>
+                    <span class="font-semibold text-white">{{ selectedStrategy.deposited | currency }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Total Loaned:</span>
+                    <span class="font-semibold text-white">{{ selectedStrategy.loaned | currency }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Bonus Type:</span>
+                    <span class="font-semibold text-white">{{ selectedStrategy.bonus_type }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>APY:</span>
+                    <span class="font-semibold text-green-400">{{ selectedStrategy.bonus_value | number:'1.2-2' }}%</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Provider:</span>
+                    <span class="font-semibold text-purple-400">{{ selectedStrategy.provider || 'Unknown' }}</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Lending-specific fields -->
+            <ng-container *ngIf="isLendingStrategy(selectedStrategy)">
+              <div class="mb-6">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Lending Options
+                </h3>
+
+                <div class="bg-gray-750 p-4 rounded-lg text-gray-300">
+                  <p class="mb-4">
+                    By depositing your assets into this lending pool, you'll earn interest at a rate of
+                    <span class="text-green-400 font-bold">{{ selectedStrategy.bonus_value | number:'1.2-2' }}%</span>
+                    per year. Interest accrues continuously and can be withdrawn along with your principal at any time.
+                  </p>
+
+                  <div class="flex items-center mb-4">
+                    <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Note: Interest rates may fluctuate based on market demand and supply conditions.</span>
+                  </div>
+
+                  <div class="mt-4 bg-gray-700 p-3 rounded-lg">
+                    <h4 class="text-sm font-semibold text-white mb-2">How Lending Rewards Work</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-sm">
+                      <li>Your deposited assets are added to the lending pool</li>
+                      <li>Borrowers pay interest to access funds from the pool</li>
+                      <li>Interest payments are distributed to lenders proportionally</li>
+                      <li>Your share of interest is based on your percentage of the total pool</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
             <!-- Required Assets -->
             <div class="mb-6">
               <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
@@ -419,7 +491,7 @@
               <div class="mb-6">
                 <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
                   <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
                   Staking Options
                 </h3>
