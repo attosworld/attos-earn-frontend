@@ -883,19 +883,6 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  private userHasPosition(
-    pool: Pool,
-    portfolioItems: PortfolioItem[]
-  ): boolean {
-    // Implement this method to check if the user has a position in the given pool
-    // You can use the portfolioItems$ observable to check this
-    if (portfolioItems.some(item => item.component === pool.component)) {
-      console.log(portfolioItems.some(item => item.component === pool.name));
-    }
-    return portfolioItems.some(item => item.component === pool.component);
-    // return portfolioItems.some(item => item.poolName === pool.name);
-  }
-
   getPoolVolume(pool: Pool): Observable<Record<string, number>> {
     return this.poolService
       .getPoolVolumePerDay(pool.component, pool.type)
