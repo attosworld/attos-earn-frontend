@@ -105,6 +105,8 @@ export class AppComponent implements OnInit {
 
   updatBaseBalances$ = new BehaviorSubject<undefined>(undefined);
 
+  txButtonStatus = this.radixConnect.getButtonStatus();
+
   baseBalances = combineLatest([
     this.radixConnect.getWalletData(),
     this.updatBaseBalances$.asObservable(),
@@ -134,7 +136,7 @@ export class AppComponent implements OnInit {
   isLoadingQuote: boolean | null = null;
 
   astrolescentService = inject(AstrolescentService);
-  topupStatus: Observable<string> = of('');
+  topupStatus: Observable<TransactionStatus> = of();
 
   ngOnInit() {
     this.checkScreenSize();
@@ -215,8 +217,9 @@ export class AppComponent implements OnInit {
         this.radixConnect
           .sendTransaction(manifest)
           ?.map(f => f.status)
-          .mapErr(() => TransactionStatus.Rejected)
-          .unwrapOr(TransactionStatus.Rejected) || TransactionStatus.Rejected
+          .mapErr(() => of(TransactionStatus.Rejected))
+          .unwrapOr(TransactionStatus.Rejected) ||
+          of(TransactionStatus.Rejected)
       ).pipe(
         tap(res => {
           if (res === TransactionStatus.CommittedSuccess) {
