@@ -25,25 +25,47 @@ export class LpPerformanceChartComponent implements OnChanges {
 
   // Configuration
   yAxisPadding = 0.1; // 10% padding above and below data range
+  selectedRange = 90; // Default to 90 days
+  dateRanges = [7, 30, 60, 90]; // Available date ranges
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['tokenValueData'] && this.tokenValueData) {
-      // Sort the data by date
-      const sortedEntries = Object.entries(this.tokenValueData).sort(
+      this.updateChartData();
+    }
+  }
+
+  selectRange(range: number) {
+    this.selectedRange = range;
+    this.updateChartData();
+  }
+
+  updateChartData() {
+    if (!this.tokenValueData) return;
+
+    // Filter data based on the selected range
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - this.selectedRange);
+
+    const filteredData = Object.entries(this.tokenValueData)
+      .filter(([date]) => {
+        const currentDate = new Date(date);
+        return currentDate >= startDate && currentDate <= endDate;
+      })
+      .sort(
         ([dateA], [dateB]) =>
           new Date(dateA).getTime() - new Date(dateB).getTime()
       );
 
-      // Extract sorted values and dates
-      this.chartValues = sortedEntries.map(([_, value]) => value);
-      this.chartDates = sortedEntries.map(([date]) => new Date(date));
+    // Extract sorted values and dates
+    this.chartValues = filteredData.map(([_, value]) => value);
+    this.chartDates = filteredData.map(([date]) => new Date(date));
 
-      // Calculate min and max values for scaling
-      this.calculateYAxisRange();
+    // Calculate min and max values for scaling
+    this.calculateYAxisRange();
 
-      // Generate the SVG points for the line
-      this.generateChartPoints();
-    }
+    // Generate the SVG points for the line
+    this.generateChartPoints();
   }
 
   calculateYAxisRange() {

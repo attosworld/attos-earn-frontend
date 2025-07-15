@@ -350,6 +350,24 @@
     <div class="md:flex lg:flex">
       <!-- Sidebar - visible only on large devices -->
       <div class="hidden lg:block w-64 mr-6">
+        <!-- Filter by Pool Provider -->
+        <div class="rounded-lg p-4 mt-4">
+          <h3 class="text-lg font-semibold mb-4 text-yellow-500">Filter by Provider</h3>
+          <div class="space-y-2">
+            <button
+              *ngFor="let type of ['defiplaza', 'ociswap']"
+              (click)="togglePoolProvider(type)"
+              class="w-full py-2 px-4 rounded-md text-left transition-colors duration-200 ease-in-out"
+              [class.bg-yellow-500]="poolTypeProvider[type]"
+              [class.text-gray-900]="poolTypeProvider[type]"
+              [class.bg-gray-700]="!poolTypeProvider[type]"
+              [class.text-white]="!poolTypeProvider[type]"
+              [class.hover:bg-yellow-600]="!poolTypeProvider[type]"
+              >
+              {{ type | titlecase }}
+            </button>
+          </div>
+        </div>
         <div class="rounded-lg p-4">
           <h3 class="text-lg font-semibold mb-4 text-yellow-500">Filter by Tags</h3>
           <div class="space-y-2">

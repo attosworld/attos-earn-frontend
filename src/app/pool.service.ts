@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
 
@@ -58,10 +58,19 @@ export class PoolService {
 
   getPoolPerformance(
     baseToken: string,
-    type: 'base' | 'quote' | undefined
+    type: 'base' | 'quote' | string | undefined,
+    component?: string
   ): Observable<Record<string, number>> {
-    return this.http.get<Record<string, number>>(
-      `${this.apiUrl}/performance?base_token=${baseToken}&type=${type ? type : ''}`
-    );
+    let params = new HttpParams()
+      .set('base_token', baseToken)
+      .set('type', type ? type : '');
+
+    if (component) {
+      params = params.set('component', component);
+    }
+
+    return this.http.get<Record<string, number>>(`${this.apiUrl}/performance`, {
+      params,
+    });
   }
 }

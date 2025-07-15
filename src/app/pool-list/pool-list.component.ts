@@ -107,7 +107,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
   poolModalSelectedView: 'details' | 'news' = 'details';
 
-  lpPerformanceEnabled = false;
+  lpPerformanceEnabled = true;
 
   sevenDayVolume$: Observable<Record<string, number>> | undefined;
 
@@ -138,6 +138,11 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     precision: false,
     flex: false,
     basic: false,
+  };
+
+  poolTypeProvider: Record<string, boolean> = {
+    defiplaza: true,
+    ociswap: true,
   };
 
   closingItems: Record<string, boolean> = {};
@@ -405,7 +410,8 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     // Fetch the token value data for LP performance chart
     this.tokenValueData$ = this.poolService.getPoolPerformance(
       pool.left_token,
-      pool.side
+      pool.side || pool.type,
+      pool.component
     );
   }
 
@@ -564,8 +570,14 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
       );
       const matchesTags = this.applyTagFilters(pool);
       const matchesPoolTypes = this.applyPoolTypeFilters(pool);
+      const matchesPoolProvider = this.applyPoolProviderFilters(pool);
       return (
-        tvlMatch && bonusMatch && volumeMatch && matchesTags && matchesPoolTypes
+        tvlMatch &&
+        bonusMatch &&
+        volumeMatch &&
+        matchesTags &&
+        matchesPoolTypes &&
+        matchesPoolProvider
       );
     });
   }
@@ -598,6 +610,13 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     return selectedTypes.length === 0 || selectedTypes.includes(pool.sub_type);
   }
 
+  private applyPoolProviderFilters(pool: Pool): boolean {
+    const selectedTypes = Object.keys(this.poolTypeProvider).filter(
+      type => this.poolTypeProvider[type]
+    );
+    return selectedTypes.length === 0 || selectedTypes.includes(pool.type);
+  }
+
   applyFilters(): void {
     this.filtersSubject.next({
       tvl: this.tvlFilter,
@@ -613,6 +632,11 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
   togglePoolType(poolType: string) {
     this.poolTypeFilters[poolType] = !this.poolTypeFilters[poolType];
+    this.applyFilters();
+  }
+
+  togglePoolProvider(poolType: string) {
+    this.poolTypeProvider[poolType] = !this.poolTypeProvider[poolType];
     this.applyFilters();
   }
 
