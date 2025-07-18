@@ -862,6 +862,7 @@
               <app-chart-toggle
                 [selectedType]="selectedChartType"
                 [lpPerformanceEnabled]="lpPerformanceEnabled"
+                [liquidityEnabled]="liquidityEnabled"
                 (typeChange)="selectedChartType = $event">
               </app-chart-toggle>
 
@@ -871,6 +872,9 @@
               </ng-container>
               <ng-container *ngIf="selectedChartType === 'performance' && lpPerformanceEnabled">
                 <app-lp-performance-chart [tokenValueData]="tokenValueData$ | async"></app-lp-performance-chart>
+              </ng-container>
+              <ng-container *ngIf="selectedChartType === 'liquidity' && liquidityEnabled">
+                <app-liquidity-chart *ngIf="liquidityValueData$ | async as liquidityValueData" [liquidityData]="liquidityValueData" [previewData]="previewData"></app-liquidity-chart>
               </ng-container>
               <div class="flex justify-end mb-2">
                 <div class="bg-gray-700 rounded-lg overflow-hidden flex">
@@ -961,12 +965,16 @@
 
                 <ng-container *ngIf="selectedPool?.sub_type === 'precision'">
                   <ng-container *ngIf="addLiquidityPreview$ | async"></ng-container>
+                  <ng-container *ngIf="poolPrice$ | async as poolPrice">
                   <app-precision-pool
-                    [currentPrice]="selectedPool?.current_price"
-                    [symbol]="selectedPool?.left_alt"
-                    (minValueChange)="updateMinValue($event)"
-                    (maxValueChange)="updateMaxValue($event)"
+                    [currentPrice]="poolPrice.currentPrice"
+                    [precisionPrice]="poolPrice.precisionPrice"
+                    [symbol]="selectedPool?.left_alt === 'XRD' ? selectedPool?.right_alt : selectedPool?.left_alt"
+                    (minValueChange)="updateMinValue($event, selectedPool.sub_type)"
+                    (maxValueChange)="updateMaxValue($event, selectedPool.sub_type)"
+                    (pricePreviewData)="updatePreviewData($event)"
                     ></app-precision-pool>
+                  </ng-container>
                 </ng-container>
               </div>
 

@@ -15,8 +15,15 @@ import {
   CdkVirtualScrollViewport,
 } from '@angular/cdk/scrolling';
 import { PoolItemComponent } from '../pool-item/pool-item.component';
-import { PoolService, Pool } from '../pool.service';
-import { BehaviorSubject, Observable, combineLatest, of, Subject } from 'rxjs';
+import { PoolService, Pool, PoolLiquidity } from '../pool.service';
+import {
+  BehaviorSubject,
+  Observable,
+  combineLatest,
+  of,
+  Subject,
+  ReplaySubject,
+} from 'rxjs';
 import {
   map,
   finalize,
@@ -28,8 +35,8 @@ import {
   takeUntil,
   distinctUntilChanged,
   filter,
-  shareReplay,
   startWith,
+  takeLast,
 } from 'rxjs/operators';
 import Fuse from 'fuse.js';
 import { PrecisionPoolComponent } from '../precision-pool/precision-pool.component';
@@ -50,6 +57,7 @@ import {
 } from '../chart-toggle/chart-toggle.component';
 import { LpPerformanceChartComponent } from '../lp-performance-chart/lp-performance-chart.component';
 import { NewsService, TokenNews } from '../news.service';
+import { LiquidityChartComponent } from '../liquidity-chart/liquidity-chart.component';
 
 type SortColumn = 'tvl' | 'bonus_7d' | 'volume_7d' | 'bonus_name' | null;
 type SortDirection = 'asc' | 'desc' | 'none';
@@ -94,6 +102,7 @@ export type TagFilters = Record<string, boolean>;
     ShortenAddressPipe,
     VolumeChartComponent,
     LpPerformanceChartComponent,
+    LiquidityChartComponent,
     ChartToggleComponent,
   ],
   providers: [PoolService],
@@ -199,8 +208,20 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
   filters$ = this.filtersSubject.asObservable().pipe(takeUntil(this.destroy$));
 
+  private precisionPriceSubject = new BehaviorSubject<string>('');
+
+  poolPrice$ = this.precisionPriceSubject.asObservable().pipe(
+    switchMap(component => {
+      if (!component) return of(null);
+
+      return this.ociswapService.getPrecisionPrice(component);
+    })
+  );
+
   private selectedPoolSubject = new BehaviorSubject<Pool | null>(null);
+
   selectedPool$ = this.selectedPoolSubject.asObservable();
+
   showModal = false;
 
   private inputChangeSubject = new Subject<void>();
@@ -214,15 +235,16 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
       debounceTime(300), // 300ms debounce
       startWith(undefined) // Initial emission
     ),
+    this.poolPrice$,
   ]).pipe(
-    switchMap(([pool]) => {
-      if (!pool) return of(null);
+    switchMap(([pool, , poolPrice]) => {
+      if (!pool || !this.xAmount || !this.yAmount || !poolPrice)
+        return of(null);
 
       const { lowerTick, upperTick } = this.ociswapService.calculateTickBounds(
-        pool.current_price,
+        poolPrice.precisionPrice,
         this.minValue,
-        this.maxValue,
-        60
+        this.maxValue
       );
 
       return this.ociswapService
@@ -235,7 +257,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
         )
         .pipe(
           tap(data => {
-            if (data) {
+            if (data && data.x_amount && data.y_amount) {
               this.xAmount = data.x_amount.token;
               this.yAmount = data.y_amount.token;
             }
@@ -246,8 +268,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
             return of(null);
           })
         );
-    }),
-    shareReplay(1)
+    })
   );
 
   minValue = -90;
@@ -385,7 +406,13 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   XRD = 'resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd';
   DFP2 = 'resource_rdx1t5ywq4c6nd2lxkemkv4uzt8v7x7smjcguzq5sgafwtasa6luq7fclq';
 
+  liquidityValueData$: Observable<PoolLiquidity> | undefined;
+  liquidityEnabled = false;
+  previewData!: { highPrice: number; lowPrice: number };
+
   openDepositModal(pool: Pool, balances: Balances | undefined) {
+    console.log('openDepositModal');
+    this.precisionPriceSubject.next(pool.component);
     this.selectedPoolSubject.next(pool);
     this.showModal = true;
     this.xAmount = '';
@@ -394,6 +421,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     this.updateMaxAmounts(balances);
     this.selectedChartType = 'volume'; // Default to volume chart
     this.poolModalSelectedView = 'details';
+    this.liquidityEnabled = pool.sub_type === 'precision';
 
     // Fetch the seven-day volume data
     this.sevenDayVolume$ = this.poolService
@@ -411,6 +439,10 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     this.tokenValueData$ = this.poolService.getPoolPerformance(
       pool.left_token,
       pool.side || pool.type,
+      pool.component
+    );
+
+    this.liquidityValueData$ = this.poolService.getPoolLiquidity(
       pool.component
     );
   }
@@ -640,16 +672,30 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     this.applyFilters();
   }
 
-  updateMinValue(minValue: number) {
+  updateMinValue(minValue: number, poolSubType?: string) {
     this.minValue = minValue;
 
     this.updateAmount();
+
+    if (poolSubType) {
+      this.updateDepositModalTab();
+    }
   }
 
-  updateMaxValue(maxValue: number) {
+  updateMaxValue(maxValue: number, poolSubType?: string) {
     this.maxValue = maxValue;
 
     this.updateAmount();
+
+    if (poolSubType) {
+      this.updateDepositModalTab();
+    }
+  }
+
+  private updateDepositModalTab() {
+    if (this.selectedChartType !== 'liquidity') {
+      this.selectedChartType = 'liquidity';
+    }
   }
 
   private updateAmount() {
@@ -763,10 +809,9 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     const bounds =
       selectedPool?.sub_type === 'precision'
         ? this.ociswapService.calculateTickBounds(
-            selectedPool.current_price,
+            selectedPool.precision_price,
             this.minValue,
-            this.maxValue,
-            60
+            this.maxValue
           )
         : null;
 
@@ -939,5 +984,25 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
   togglePoolModalDetails(tab: 'details' | 'news') {
     this.poolModalSelectedView = tab;
+  }
+
+  updatePreviewData({
+    currentPrice,
+    minValue,
+    maxValue,
+  }: {
+    currentPrice: number;
+    minValue: number;
+    maxValue: number;
+  }) {
+    const lowPrice = this.ociswapService.adjustPriceByPercentage(
+      currentPrice,
+      minValue
+    );
+    const highPrice = this.ociswapService.adjustPriceByPercentage(
+      currentPrice,
+      maxValue
+    );
+    this.previewData = { lowPrice, highPrice };
   }
 }

@@ -30,6 +30,8 @@
     "@calamari-radix/gateway-ez-mode": "^1.6.1",
     "@radixdlt/radix-dapp-toolkit": "^2.2.1",
     "@tailwindcss/postcss": "^4.0.17",
+    "bech32-buffer": "^0.2.1",
+    "chart.js": "^4.5.0",
     "decimal.js": "^10.5.0",
     "fuse.js": "^7.1.0",
     "postcss": "^8.5.3",

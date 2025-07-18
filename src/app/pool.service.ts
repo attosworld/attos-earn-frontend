@@ -19,6 +19,7 @@ export interface Pool {
   volume_24h: number;
   bonus_name: string;
   current_price: number;
+  precision_price: number;
   left_alt?: string;
   left_icon?: string;
   right_alt?: string;
@@ -33,6 +34,15 @@ export interface Pool {
   boosted: boolean;
   incentivised_lp_docs: string;
   tags: string[];
+}
+
+export interface PoolLiquidity {
+  liquidityPoints: {
+    price: number;
+    x_amount: string;
+    y_amount: string;
+  }[];
+  price: number;
 }
 
 @Injectable({
@@ -70,6 +80,14 @@ export class PoolService {
     }
 
     return this.http.get<Record<string, number>>(`${this.apiUrl}/performance`, {
+      params,
+    });
+  }
+
+  getPoolLiquidity(component: string): Observable<PoolLiquidity> {
+    const params = new HttpParams().set('component', component);
+
+    return this.http.get<PoolLiquidity>(`${this.apiUrl}/liquidity`, {
       params,
     });
   }

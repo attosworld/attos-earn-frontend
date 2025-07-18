@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  OnInit,
+  OnChanges,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { NumberFormatPipe } from '../number-format.pipe';
@@ -11,9 +18,10 @@ type RangeTypes = 'wide' | 'concentrated' | 'bold' | 'manual';
   templateUrl: './precision-pool.component.html',
   styleUrl: './precision-pool.component.css',
 })
-export class PrecisionPoolComponent implements OnInit {
+export class PrecisionPoolComponent implements OnInit, OnChanges {
   @Input() symbol?: string = '';
-  @Input() currentPrice?: string | number = '';
+  @Input() currentPrice: number | null = 0;
+  @Input() precisionPrice: number | null = 0;
   @Output() minValueChange = new EventEmitter<number>();
   @Output() maxValueChange = new EventEmitter<number>();
 
@@ -28,7 +36,18 @@ export class PrecisionPoolComponent implements OnInit {
 
   ranges: RangeTypes[] = ['wide', 'concentrated', 'bold', 'manual'];
 
+  @Output()
+  pricePreviewData = new EventEmitter<{
+    currentPrice: number;
+    minValue: number;
+    maxValue: number;
+  }>();
+
   ngOnInit() {
+    this.calculatePriceRange();
+  }
+
+  ngOnChanges() {
     this.calculatePriceRange();
   }
 
@@ -79,9 +98,16 @@ export class PrecisionPoolComponent implements OnInit {
   }
 
   calculatePriceRange() {
-    if (this.currentPrice) {
+    console.log(this.currentPrice, this.precisionPrice);
+    if (this.currentPrice && this.precisionPrice) {
       this.lowPrice = +this.currentPrice * (1 + this.minValue / 100);
       this.highPrice = +this.currentPrice * (1 + this.maxValue / 100);
+
+      this.pricePreviewData.emit({
+        currentPrice: this.precisionPrice,
+        minValue: this.minValue,
+        maxValue: this.maxValue,
+      });
     }
   }
 }

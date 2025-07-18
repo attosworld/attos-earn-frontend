@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, catchError, map } from 'rxjs';
 import Decimal from 'decimal.js';
+import { decode } from 'bech32-buffer';
+
+Decimal.set({ precision: 50 });
 
 export interface TokenAmount {
   token: string;
@@ -39,6 +42,98 @@ export interface SwapPreview {
   swaps: Swap[];
 }
 
+export interface TimeFrames {
+  '1h': string;
+  '24h': string;
+  '7d': string;
+}
+
+export type TimeFramesWithTotal = TimeFrames & {
+  total: string;
+};
+
+export type TimeFramesWithNow = TimeFrames & {
+  now: string;
+};
+
+export interface TokenInfo {
+  address: string;
+  icon_url: string;
+  name: string;
+  slug: string;
+  symbol: string;
+}
+
+export interface FeeInfo {
+  token: TimeFramesWithTotal;
+  usd: TimeFramesWithTotal;
+  xrd: TimeFramesWithTotal;
+}
+
+export interface LiquidityInfo {
+  token: TimeFramesWithNow;
+  usd: TimeFramesWithNow;
+  xrd: TimeFramesWithNow;
+}
+
+export interface PriceInfo {
+  token: TimeFramesWithNow;
+  usd: TimeFramesWithNow;
+  xrd: TimeFramesWithNow;
+}
+
+export interface TotalValueLocked {
+  token: TimeFramesWithNow;
+  usd: TimeFramesWithNow;
+  xrd: TimeFramesWithNow;
+}
+
+export interface VolumeInfo {
+  '1h': string;
+  '24h': string;
+  '7d': string;
+  total: string;
+}
+
+export interface TokenData {
+  fee: FeeInfo;
+  liquidity: LiquidityInfo;
+  price: PriceInfo;
+  token: TokenInfo;
+  total_value_locked: TotalValueLocked;
+  volume: VolumeInfo;
+}
+
+export interface OciswapPool {
+  address: string;
+  apr: TimeFrames;
+  base_token: string;
+  blueprint_name: string;
+  created_at: string;
+  fee: {
+    usd: TimeFramesWithTotal;
+    xrd: TimeFramesWithTotal;
+  };
+  fee_rate: string;
+  liquidity: LiquidityInfo;
+  lp_token_address: string;
+  name: string;
+  pool_type: string;
+  rank: number;
+  slug: string;
+  total_value_locked: {
+    usd: TimeFramesWithNow;
+    xrd: TimeFramesWithNow;
+  };
+  version: string;
+  volume: {
+    usd: TimeFramesWithTotal;
+    xrd: TimeFramesWithTotal;
+  };
+  x: TokenData;
+  y: TokenData;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -47,6 +142,31 @@ export class OciswapService {
   private swapPreviewUrl = 'https://api.ociswap.com/preview/swap';
 
   constructor(private http: HttpClient) {}
+
+  XRD = 'resource_rdx1tknxxxxxxxxxradxrdxxxxxxxxx009923554798xxxxxxxxxradxrd';
+
+  getPrecisionPrice(
+    poolAddress: string
+  ): Observable<{ precisionPrice: number; currentPrice: number } | null> {
+    return this.http
+      .get<OciswapPool>(`https://api.ociswap.com/pools/${poolAddress}`)
+      .pipe(
+        map(pool => {
+          const precisionPrice =
+            this.bech32ToHex(pool.x.token.address) >
+            this.bech32ToHex(pool.y.token.address)
+              ? +pool.y.price.xrd.now / +pool.x.price.xrd.now
+              : +pool.x.price.xrd.now / +pool.y.price.xrd.now;
+
+          const currentPrice =
+            pool.x.token.address === this.XRD
+              ? +pool.y.price.xrd.now
+              : +pool.x.price.xrd.now;
+
+          return { precisionPrice, currentPrice };
+        })
+      );
+  }
 
   getOciswapSwapPreview(
     inputAddress: string,
@@ -93,69 +213,52 @@ export class OciswapService {
       );
   }
 
-  calculateTickBounds(
-    currentPrice: number | string | Decimal,
-    lowerPricePercentage: number,
-    upperPricePercentage: number,
-    tickSpacing: number
-  ): {
-    lowerTick: Decimal;
-    upperTick: Decimal;
-    lowerPrice: Decimal;
-    upperPrice: Decimal;
-  } {
-    const { lowerPrice, upperPrice } = this.calculatePriceBounds(
-      currentPrice,
-      lowerPricePercentage,
-      upperPricePercentage
-    );
-
-    const lowerTick = this.priceToTick(lowerPrice);
-    const upperTick = this.priceToTick(upperPrice);
-
-    // Align to tick spacing
-    const alignedLowerTick = this.alignTickToSpacing(lowerTick, tickSpacing);
-    const alignedUpperTick = this.alignTickToSpacing(upperTick, tickSpacing);
-
-    return {
-      lowerTick: alignedLowerTick,
-      upperTick: alignedUpperTick,
-      lowerPrice: this.tickToPrice(alignedLowerTick),
-      upperPrice: this.tickToPrice(alignedUpperTick),
-    };
-  }
-
-  calculatePriceBounds(
-    currentPrice: number | string | Decimal,
-    lowerPricePercentage: number,
-    upperPricePercentage: number
-  ): { lowerPrice: Decimal; upperPrice: Decimal } {
-    const decimalPrice = new Decimal(currentPrice);
-    const lowerPrice = decimalPrice.mul(
-      new Decimal(1).plus(new Decimal(lowerPricePercentage).div(100))
-    );
-    const upperPrice = decimalPrice.mul(
-      new Decimal(1).plus(new Decimal(upperPricePercentage).div(100))
-    );
-    return { lowerPrice, upperPrice };
-  }
-
-  priceToTick(price: number | string | Decimal): number {
-    const decimalPrice = new Decimal(price);
-    const logBase = new Decimal(1.0001);
-    const result = decimalPrice.ln().div(logBase.ln()).floor();
-    return result.toNumber();
-  }
-
-  tickToPrice(tick: Decimal): Decimal {
-    const decimalTick = new Decimal(tick);
-    const base = new Decimal(1.0001);
-    return base.pow(decimalTick);
-  }
-
   alignTickToSpacing(tick: number, tickSpacing: number): Decimal {
     return new Decimal(
       new Decimal(tick).div(tickSpacing).times(tickSpacing)
     ).floor();
+  }
+
+  /**
+   * Convert price to tick using logarithmic calculation
+   */
+  priceToTick(price: number): string {
+    const logConstant = new Decimal(
+      '0.0000999950003333083353331666809511310635'
+    );
+    return new Decimal(price).log(Math.E).dividedBy(logConstant).toFixed(0);
+  }
+
+  /**
+   * Calculate price with percentage adjustment
+   */
+  adjustPriceByPercentage(price: number, percentage: number): number {
+    return price * (1 + percentage / 100);
+  }
+
+  /**
+   * Calculate tick bounds for a price range with percentage adjustments
+   */
+  calculateTickBounds(
+    basePrice: number,
+    lowerPercentage: number,
+    upperPercentage: number
+  ) {
+    const lowerPrice = this.adjustPriceByPercentage(basePrice, lowerPercentage);
+    const upperPrice = this.adjustPriceByPercentage(basePrice, upperPercentage);
+
+    return {
+      lowerTick: this.priceToTick(lowerPrice),
+      upperTick: this.priceToTick(upperPrice),
+      lowerPrice,
+      upperPrice,
+    };
+  }
+
+  bech32ToHex(address: string) {
+    return decode(address).data.reduce((hex, byte) => {
+      let hexByte = byte.toString(16);
+      return hexByte.length === 1 && (hexByte = '0' + hexByte), hex + hexByte;
+    }, '');
   }
 }

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 
-export type ChartType = 'volume' | 'performance';
+export type ChartType = 'volume' | 'performance' | 'liquidity';
 
 @Component({
   selector: 'app-chart-toggle',
@@ -11,6 +11,7 @@ export type ChartType = 'volume' | 'performance';
 })
 export class ChartToggleComponent {
   @Input() selectedType: ChartType = 'volume';
+  @Input() liquidityEnabled = false;
   @Input() lpPerformanceEnabled!: boolean;
   @Output() typeChange = new EventEmitter<ChartType>();
 

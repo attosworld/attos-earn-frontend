@@ -748,10 +748,9 @@ export class StrategiesComponent {
       this.selectedStrategy?.component
     ) {
       const { lowerTick, upperTick } = this.ociswapService.calculateTickBounds(
-        this.selectedStrategy.currentPrice,
+        +this.selectedStrategy.currentPrice,
         this.minValue,
-        this.maxValue,
-        60
+        this.maxValue
       );
       this.addLiquidityPreview = this.ociswapService
         .getOciswapAddLiquidityPreview(

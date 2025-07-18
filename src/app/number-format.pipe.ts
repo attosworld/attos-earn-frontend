@@ -5,7 +5,7 @@ import { Pipe, PipeTransform } from '@angular/core';
   standalone: true,
 })
 export class NumberFormatPipe implements PipeTransform {
-  transform(value?: number | string): string {
+  transform(value?: number | string | null): string {
     if (!value) return '0';
 
     const num = typeof value === 'string' ? parseFloat(value) : value;

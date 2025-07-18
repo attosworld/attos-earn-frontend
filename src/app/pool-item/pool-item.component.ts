@@ -9,7 +9,6 @@ import { LargeNumberFormatPipe } from '../large-number-format.pipe';
   imports: [
     PoolIconPairComponent,
     CurrencyPipe,
-    DecimalPipe,
     LargeNumberFormatPipe,
     CommonModule,
   ],
