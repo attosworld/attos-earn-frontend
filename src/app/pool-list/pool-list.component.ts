@@ -16,14 +16,7 @@ import {
 } from '@angular/cdk/scrolling';
 import { PoolItemComponent } from '../pool-item/pool-item.component';
 import { PoolService, Pool, PoolLiquidity } from '../pool.service';
-import {
-  BehaviorSubject,
-  Observable,
-  combineLatest,
-  of,
-  Subject,
-  ReplaySubject,
-} from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, of, Subject } from 'rxjs';
 import {
   map,
   finalize,
@@ -36,7 +29,6 @@ import {
   distinctUntilChanged,
   filter,
   startWith,
-  takeLast,
 } from 'rxjs/operators';
 import Fuse from 'fuse.js';
 import { PrecisionPoolComponent } from '../precision-pool/precision-pool.component';
@@ -58,6 +50,7 @@ import {
 import { LpPerformanceChartComponent } from '../lp-performance-chart/lp-performance-chart.component';
 import { NewsService, TokenNews } from '../news.service';
 import { LiquidityChartComponent } from '../liquidity-chart/liquidity-chart.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 type SortColumn = 'tvl' | 'bonus_7d' | 'volume_7d' | 'bonus_name' | null;
 type SortDirection = 'asc' | 'desc' | 'none';
@@ -114,6 +107,10 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('dummyItem') dummyItem!: ElementRef;
 
+  private router = inject(Router);
+
+  private route = inject(ActivatedRoute);
+
   poolModalSelectedView: 'details' | 'news' = 'details';
 
   lpPerformanceEnabled = true;
@@ -131,7 +128,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   newsService = inject(NewsService);
 
   tagFilters: TagFilters = {
-    'bridged token': false,
+    wrapped: false,
     stablecoin: false,
     dex: false,
     defi: false,
@@ -409,6 +406,12 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   liquidityValueData$: Observable<PoolLiquidity> | undefined;
   liquidityEnabled = false;
   previewData!: { highPrice: number; lowPrice: number };
+  urlSync: any;
+
+  constructor() {
+    this.initializeFromUrl();
+    this.setupUrlSync();
+  }
 
   openDepositModal(pool: Pool, balances: Balances | undefined) {
     console.log('openDepositModal');
@@ -794,7 +797,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     return Object.keys(this.inputErrors).length > 0;
   }
 
-  deposit() {
+  deposit(precisionPrice?: number) {
     if (
       this.hasInputErrors() ||
       (this.selectedPoolSubject.getValue()?.left_alt && !this.xAmount) ||
@@ -807,9 +810,9 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     const selectedPool = this.selectedPoolSubject.getValue();
 
     const bounds =
-      selectedPool?.sub_type === 'precision'
+      selectedPool?.sub_type === 'precision' && precisionPrice
         ? this.ociswapService.calculateTickBounds(
-            selectedPool.precision_price,
+            precisionPrice,
             this.minValue,
             this.maxValue
           )
@@ -1004,5 +1007,221 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
       maxValue
     );
     this.previewData = { lowPrice, highPrice };
+  }
+
+  private initializeFromUrl(): void {
+    const params = this.route.snapshot.queryParams;
+
+    // Initialize search term
+    if (params['search']) {
+      this.searchTerm = params['search'];
+      this.searchSubject.next(this.searchTerm);
+    }
+
+    // Initialize selected tab
+    if (params['tab'] && this.isValidPoolType(params['tab'])) {
+      this.selectedTabSubject.next(params['tab'] as PoolType);
+    }
+
+    // Initialize sort
+    if (params['sortColumn'] && params['sortDirection']) {
+      const column = this.isValidSortColumn(params['sortColumn'])
+        ? (params['sortColumn'] as SortColumn)
+        : null;
+      const direction = this.isValidSortDirection(params['sortDirection'])
+        ? (params['sortDirection'] as SortDirection)
+        : 'none';
+      this.sortSubject.next({ column, direction });
+    }
+
+    // Initialize numeric filters
+    if (params['tvlCondition'] && params['tvlValue']) {
+      this.tvlFilter = {
+        condition: params['tvlCondition'] as 'above' | 'below',
+        value: parseFloat(params['tvlValue']),
+      };
+    }
+
+    if (params['bonusCondition'] && params['bonusValue']) {
+      this.bonusFilter = {
+        condition: params['bonusCondition'] as 'above' | 'below',
+        value: parseFloat(params['bonusValue']),
+      };
+    }
+
+    if (params['volumeCondition'] && params['volumeValue']) {
+      this.volumeFilter = {
+        condition: params['volumeCondition'] as 'above' | 'below',
+        value: parseFloat(params['volumeValue']),
+      };
+    }
+
+    // Initialize tag filters
+    Object.keys(this.tagFilters).forEach(tag => {
+      if (params[`tag_${tag.replace(/\s+/g, '_')}`] === 'true') {
+        this.tagFilters[tag] = true;
+      }
+    });
+
+    // Initialize pool type filters
+    Object.keys(this.poolTypeFilters).forEach(type => {
+      if (params[`poolType_${type}`] === 'true') {
+        this.poolTypeFilters[type] = true;
+      }
+    });
+
+    // Initialize pool provider filters
+    Object.keys(this.poolTypeProvider).forEach(provider => {
+      if (params[`provider_${provider}`] === 'false') {
+        this.poolTypeProvider[provider] = false;
+      }
+    });
+
+    // Update filters subject with initialized values
+    this.filtersSubject.next({
+      tvl: this.tvlFilter,
+      bonus: this.bonusFilter,
+      volume: this.volumeFilter,
+    });
+  }
+
+  resetFilters() {
+    // Reset all filter states
+    this.searchTerm = '';
+    this.searchSubject.next('');
+    this.selectedTabSubject.next('all');
+    this.sortSubject.next({ column: null, direction: 'none' });
+
+    this.tvlFilter = { condition: 'above', value: null };
+    this.bonusFilter = { condition: 'above', value: null };
+    this.volumeFilter = { condition: 'above', value: null };
+
+    Object.keys(this.tagFilters).forEach(tag => {
+      this.tagFilters[tag] = false;
+    });
+
+    Object.keys(this.poolTypeFilters).forEach(type => {
+      this.poolTypeFilters[type] = false;
+    });
+
+    Object.keys(this.poolTypeProvider).forEach(provider => {
+      this.poolTypeProvider[provider] = true;
+    });
+
+    this.filtersSubject.next({
+      tvl: this.tvlFilter,
+      bonus: this.bonusFilter,
+      volume: this.volumeFilter,
+    });
+
+    // Clear URL parameters
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {},
+      replaceUrl: true,
+    });
+  }
+
+  private setupUrlSync(): void {
+    // Sync all filter changes to URL
+    this.urlSync = combineLatest([
+      this.search$,
+      this.selectedTab$,
+      this.sort$,
+      this.filters$,
+    ])
+      .pipe(
+        debounceTime(300), // Debounce to avoid too many URL updates
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.updateUrl();
+      });
+  }
+
+  private updateUrl(): void {
+    const queryParams: Record<string, string> = {};
+
+    // Add search term
+    if (this.searchTerm) {
+      queryParams['search'] = this.searchTerm;
+    }
+
+    // Add selected tab
+    const currentTab = this.selectedTabSubject.value;
+    if (currentTab !== 'all') {
+      queryParams['tab'] = currentTab;
+    }
+
+    // Add sort parameters
+    const currentSort = this.sortSubject.value;
+    if (currentSort.column && currentSort.direction !== 'none') {
+      queryParams['sortColumn'] = currentSort.column;
+      queryParams['sortDirection'] = currentSort.direction;
+    }
+
+    // Add numeric filters
+    if (this.tvlFilter.value !== null) {
+      queryParams['tvlCondition'] = this.tvlFilter.condition;
+      queryParams['tvlValue'] = `${this.tvlFilter.value}`;
+    }
+
+    if (this.bonusFilter.value !== null) {
+      queryParams['bonusCondition'] = this.bonusFilter.condition;
+      queryParams['bonusValue'] = `${this.bonusFilter.value}`;
+    }
+
+    if (this.volumeFilter.value !== null) {
+      queryParams['volumeCondition'] = `${this.volumeFilter.condition}`;
+      queryParams['volumeValue'] = `${this.volumeFilter.value}`;
+    }
+
+    // Add tag filters (only active ones)
+    Object.entries(this.tagFilters).forEach(([tag, isActive]) => {
+      if (isActive) {
+        queryParams[`tag_${tag.replace(/\s+/g, '_')}`] = 'true';
+      }
+    });
+
+    // Add pool type filters (only active ones)
+    Object.entries(this.poolTypeFilters).forEach(([type, isActive]) => {
+      if (isActive) {
+        queryParams[`poolType_${type}`] = 'true';
+      }
+    });
+
+    // Add pool provider filters (only inactive ones, since default is true)
+    Object.entries(this.poolTypeProvider).forEach(([provider, isActive]) => {
+      if (!isActive) {
+        queryParams[`provider_${provider}`] = 'false';
+      }
+    });
+
+    // Update URL without triggering navigation
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams,
+      queryParamsHandling: 'replace',
+      replaceUrl: true,
+    });
+  }
+
+  private isValidPoolType(type: string): boolean {
+    return [
+      'all',
+      'double',
+      'single',
+      'boosted',
+      'my_pools',
+      'owned_tokens',
+    ].includes(type);
+  }
+
+  private isValidSortColumn(column: string): boolean {
+    return ['tvl', 'bonus_7d', 'volume_7d', 'bonus_name'].includes(column);
+  }
+
+  private isValidSortDirection(direction: string): boolean {
+    return ['asc', 'desc', 'none'].includes(direction);
   }
 }

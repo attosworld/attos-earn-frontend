@@ -98,7 +98,6 @@ export class PrecisionPoolComponent implements OnInit, OnChanges {
   }
 
   calculatePriceRange() {
-    console.log(this.currentPrice, this.precisionPrice);
     if (this.currentPrice && this.precisionPrice) {
       this.lowPrice = +this.currentPrice * (1 + this.minValue / 100);
       this.highPrice = +this.currentPrice * (1 + this.maxValue / 100);
