@@ -53,7 +53,7 @@ export class LiquidityChartComponent
   }
 
   ngOnChanges(): void {
-    if (this.previewData) {
+    if (this.previewData && this.chart?.data.datasets.length >= 3) {
       this.chart.data.datasets[3].data =
         this.liquidityData?.liquidityPoints.map(point =>
           point.price >= (this.previewData?.lowPrice ?? 0) &&
@@ -85,6 +85,12 @@ export class LiquidityChartComponent
         new Decimal(lp.x_amount).add(lp.y_amount).toNumber()
       ) ?? [])
     );
+
+    const currentPriceIndex = this.liquidityData?.liquidityPoints.findIndex(
+      point =>
+        point.price >= (this.liquidityData?.price || 0) ? this.maxPoint : 0
+    );
+
     const datasets: ChartDataset[] = [
       {
         label: 'X Amount',
@@ -109,8 +115,8 @@ export class LiquidityChartComponent
       {
         label: 'Current Price',
         data:
-          this.liquidityData?.liquidityPoints.map(point =>
-            point.price === this.liquidityData?.price ? this.maxPoint : 0
+          this.liquidityData?.liquidityPoints.map((_, i) =>
+            i === currentPriceIndex ? this.maxPoint : 0
           ) ?? [],
         borderColor: 'rgba(255, 99, 132, 1)',
         backgroundColor: 'rgba(255, 99, 132, 0.5)',

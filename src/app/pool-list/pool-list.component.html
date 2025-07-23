@@ -972,7 +972,7 @@
                     [symbol]="selectedPool?.left_alt === 'XRD' ? selectedPool?.right_alt : selectedPool?.left_alt"
                     (minValueChange)="updateMinValue($event, selectedPool.sub_type)"
                     (maxValueChange)="updateMaxValue($event, selectedPool.sub_type)"
-                    (pricePreviewData)="updatePreviewData($event)"
+                    (pricePreviewData)="updatePreviewData($event, selectedPool)"
                     ></app-precision-pool>
                   </ng-container>
                 </ng-container>

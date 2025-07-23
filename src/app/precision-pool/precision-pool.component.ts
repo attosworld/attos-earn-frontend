@@ -103,7 +103,7 @@ export class PrecisionPoolComponent implements OnInit, OnChanges {
       this.highPrice = +this.currentPrice * (1 + this.maxValue / 100);
 
       this.pricePreviewData.emit({
-        currentPrice: this.precisionPrice,
+        currentPrice: this.currentPrice,
         minValue: this.minValue,
         maxValue: this.maxValue,
       });

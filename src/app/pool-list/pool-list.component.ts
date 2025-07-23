@@ -989,15 +989,18 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     this.poolModalSelectedView = tab;
   }
 
-  updatePreviewData({
-    currentPrice,
-    minValue,
-    maxValue,
-  }: {
-    currentPrice: number;
-    minValue: number;
-    maxValue: number;
-  }) {
+  updatePreviewData(
+    {
+      currentPrice,
+      minValue,
+      maxValue,
+    }: {
+      currentPrice: number;
+      minValue: number;
+      maxValue: number;
+    },
+    selectedPool: Pool
+  ) {
     const lowPrice = this.ociswapService.adjustPriceByPercentage(
       currentPrice,
       minValue
@@ -1006,7 +1009,10 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
       currentPrice,
       maxValue
     );
-    this.previewData = { lowPrice, highPrice };
+    this.previewData = {
+      lowPrice,
+      highPrice,
+    };
   }
 
   private initializeFromUrl(): void {
