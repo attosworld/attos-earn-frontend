@@ -80,6 +80,31 @@
     >
   </div>
 
+
+        <div class="mb-4 border-b border-gray-700 overflow-x-auto scroll-auto">
+          <div class="flex whitespace-nowrap min-w-max">
+            <ng-container *ngIf="selectedTab$ | async as selectedTab">
+              <button
+                class="py-2 px-3 sm:px-4 mr-1 sm:mr-2 focus:outline-none whitespace-nowrap hover:bg-gray-800 cursor-pointer text-sm sm:text-base"
+                [class.text-yellow-500]="selectedTab === 'lp'"
+                [class.border-b-2]="selectedTab === 'lp'"
+                [class.border-yellow-500]="selectedTab === 'lp'"
+                (click)="selectTab('lp')"
+                >
+                Liquidity Pools
+              </button>
+              <button
+                class="py-2 px-3 sm:px-4 mr-1 sm:mr-2 focus:outline-none whitespace-nowrap hover:bg-gray-800 cursor-pointer text-sm sm:text-base"
+                [class.text-yellow-500]="selectedTab === 'strategy'"
+                [class.border-b-2]="selectedTab === 'strategy'"
+                [class.border-yellow-500]="selectedTab === 'strategy'"
+                (click)="selectTab('strategy')"
+                >
+                Strategy
+              </button>
+            </ng-container>
+          </div>
+        </div>
   <!-- Portfolio table -->
   <div class="overflow-x-auto">
     <table class="w-full">

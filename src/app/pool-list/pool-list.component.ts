@@ -333,7 +333,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
       return combineLatest(
         accounts.map(account =>
-          this.portfolioService.getPortfolioItems(account.address)
+          this.portfolioService.getPortfolioItems(account.address, 'lp')
         )
       ).pipe(
         map(itemArrays => itemArrays.flat()),

@@ -34,7 +34,24 @@ export class PortfolioService {
 
   constructor(private http: HttpClient) {}
 
-  getPortfolioItems(account: string): Observable<PortfolioItem[]> {
-    return this.http.get<PortfolioItem[]>(`${this.apiUrl}?address=${account}`);
+  getPortfolioItems(
+    account: string,
+    type: 'lp' | 'strategy' | undefined
+  ): Observable<PortfolioItem[]> {
+    return this.http.get<PortfolioItem[]>(
+      `${this.apiUrl}?address=${account}&type=${type}`
+    );
+  }
+
+  getLPPositions(account: string): Observable<PortfolioItem[]> {
+    return this.http.get<PortfolioItem[]>(
+      `${this.apiUrl}?address=${account}&type=lp`
+    );
+  }
+
+  getStrategyPositions(account: string): Observable<PortfolioItem[]> {
+    return this.http.get<PortfolioItem[]>(
+      `${this.apiUrl}?address=${account}&type=strategy`
+    );
   }
 }

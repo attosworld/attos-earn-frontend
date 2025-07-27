@@ -10,6 +10,7 @@ import {
   switchMap,
   tap,
   share,
+  startWith,
 } from 'rxjs/operators';
 import Fuse from 'fuse.js';
 import { PoolIconPairComponent } from '../pool-icon-pair/pool-icon-pair.component';
@@ -27,6 +28,8 @@ type PortfolioFilterableColumns = keyof Omit<
   | 'borrowCurrency'
   | 'tx'
 >;
+
+type PortfolioItemType = 'lp' | 'strategy';
 
 @Component({
   selector: 'app-portfolio',
@@ -75,6 +78,10 @@ export class PortfolioComponent implements OnInit {
 
   portfolioService = inject(PortfolioService);
 
+  private selectedTabSubject = new BehaviorSubject<PortfolioItemType>('lp');
+
+  selectedTab$ = this.selectedTabSubject.asObservable();
+
   faqs = [
     {
       question: "Why can't I close my strategy sometimes?",
@@ -104,10 +111,13 @@ export class PortfolioComponent implements OnInit {
   ];
 
   ngOnInit() {
-    this.portfolioItems$ = (
-      this.radixConnectService.getAccounts() || of([])
-    ).pipe(
-      switchMap(accounts => {
+    this.portfolioItems$ = combineLatest({
+      accounts: this.radixConnectService.getAccounts() || of([]),
+      tab: this.selectedTab$,
+    }).pipe(
+      switchMap(({ accounts, tab }) => {
+        this.isLoading = true;
+
         if (!accounts || !accounts.length) {
           return of([]).pipe(
             finalize(() => (this.isLoading = false)),
@@ -117,9 +127,10 @@ export class PortfolioComponent implements OnInit {
 
         return combineLatest(
           accounts.map(account =>
-            this.portfolioService.getPortfolioItems(account.address)
+            this.portfolioService.getPortfolioItems(account.address, tab)
           )
         ).pipe(
+          startWith([]),
           map(itemArrays => itemArrays.flat()),
           tap(items => {
             this.allPortfolioItems = items;
@@ -219,6 +230,10 @@ export class PortfolioComponent implements OnInit {
   // Add this method to your class
   toggleFaqSection() {
     this.isFaqSectionOpen = !this.isFaqSectionOpen;
+  }
+
+  selectTab(tab: PortfolioItemType) {
+    this.selectedTabSubject.next(tab);
   }
 
   private searchPortfolioItems(
