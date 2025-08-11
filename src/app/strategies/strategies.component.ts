@@ -21,6 +21,7 @@ import {
   catchError,
   debounceTime,
   share,
+  finalize,
 } from 'rxjs';
 import { RadixConnectService } from '../radix-connect.service';
 import { TransactionStatus } from '@radixdlt/radix-dapp-toolkit';
@@ -34,10 +35,13 @@ import {
 import Decimal from 'decimal.js';
 import Fuse from 'fuse.js';
 import { PoolDetailsComponent } from '../pool-details/pool-details.component';
-import { PoolService } from '../pool.service';
+import { Pool, PoolService } from '../pool.service';
 import { VolumeChartComponent } from '../volume-chart/volume-chart.component';
 import { YieldListComponent } from '../yield-list/yield-list.component';
 import { StrategyCardComponent } from '../strategy-card/strategy-card.component';
+import { PortfolioItem, PortfolioService } from '../portfolio.service';
+import { PoolIconPairComponent } from '../pool-icon-pair/pool-icon-pair.component';
+import { ShortenAddressPipe } from '../shorten-address.pipe';
 
 interface StrategyFilters {
   requiredAssets: string[];
@@ -62,6 +66,8 @@ interface ApyFilter {
     VolumeChartComponent,
     YieldListComponent,
     StrategyCardComponent,
+    PoolIconPairComponent,
+    ShortenAddressPipe,
   ],
   templateUrl: './strategies.component.html',
   styleUrls: ['./strategies.component.css'],
@@ -102,6 +108,7 @@ export class StrategiesComponent {
   maxVolume = 0;
   lastSevenDays: Date[] = [];
 
+  closingItems: Record<string, boolean> = {};
   faqs = [
     {
       question: 'What is a DeFi strategy?',
@@ -129,9 +136,42 @@ export class StrategiesComponent {
     },
   ];
 
+  isPortfolioLoading = true;
+
   private strategiesService = inject(StrategiesService);
   private radixConnectService = inject(RadixConnectService);
   private poolService = inject(PoolService);
+
+  private portfolioService = inject(PortfolioService);
+
+  portfolioPools: Observable<
+    (Pool & {
+      volume_chart: Observable<Record<string, number>>;
+    })[]
+  > = of([]);
+
+  portfolioItems$ = (this.radixConnectService.getAccounts() || of([])).pipe(
+    switchMap(accounts => {
+      this.isPortfolioLoading = true;
+
+      if (!accounts || !accounts.length) {
+        return of(undefined).pipe(
+          finalize(() => (this.isPortfolioLoading = false)),
+          share()
+        );
+      }
+
+      return combineLatest(
+        accounts.map(account =>
+          this.portfolioService.getPortfolioItems(account.address, 'strategy')
+        )
+      ).pipe(
+        map(itemArrays => itemArrays.flat()),
+        finalize(() => (this.isPortfolioLoading = false))
+      );
+    }),
+    share()
+  );
 
   strategiesV2$ = this.strategiesService.getStrategiesV2().pipe(share());
 
@@ -864,5 +904,21 @@ export class StrategiesComponent {
     input: Strategy | StrategyV2 | null
   ): input is LendingStrategy {
     return 'loaned' in (input || {});
+  }
+
+  async closeStrategy(item: PortfolioItem) {
+    this.closingItems[item.poolName] = true;
+    try {
+      const response = await this.radixConnectService.sendTransaction(
+        item.closeManifest
+      );
+      if (response?.isOk()) {
+        this.transactionResult = of(response.value.status);
+      } else {
+        this.transactionResult = of(TransactionStatus.Rejected);
+      }
+    } finally {
+      this.closingItems[item.poolName] = false;
+    }
   }
 }
