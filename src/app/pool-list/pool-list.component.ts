@@ -16,7 +16,14 @@ import {
 } from '@angular/cdk/scrolling';
 import { PoolItemComponent } from '../pool-item/pool-item.component';
 import { PoolService, Pool, PoolLiquidity } from '../pool.service';
-import { BehaviorSubject, Observable, combineLatest, of, Subject } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  combineLatest,
+  of,
+  Subject,
+  Subscription,
+} from 'rxjs';
 import {
   map,
   finalize,
@@ -406,7 +413,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   liquidityValueData$: Observable<PoolLiquidity> | undefined;
   liquidityEnabled = false;
   previewData!: { highPrice: number; lowPrice: number };
-  urlSync: any;
+  urlSync!: Subscription;
 
   constructor() {
     this.initializeFromUrl();
@@ -440,7 +447,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
 
     // Fetch the token value data for LP performance chart
     this.tokenValueData$ = this.poolService.getPoolPerformance(
-      pool.left_token,
+      tokenForNews,
       pool.side || pool.type,
       pool.component
     );

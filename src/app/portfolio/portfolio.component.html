@@ -172,35 +172,28 @@
             </td>
             <td class="py-2 px-4 block md:table-cell md:text-right">
               <span class="inline-block md:hidden font-medium mr-2">Invested:</span>
-              {{ item.invested | currency }}
-              <div>~{{ item.investedXrd | currency:'':'':'1.2-2' }} XRD</div>
+              <div>{{ item.invested | currency }} ~{{ item.investedXrd | currency:'':'':'1.2-2' }} XRD</div>
               <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
                 Collateral: {{ item.loanAmount | currency:'':'':'1.2-2' }} {{ item.loanCurrency }}
               </div>
             </td>
             <td class="py-2 px-4 block md:table-cell md:text-right">
               <span class="inline-block md:hidden font-medium mr-2">Current Value:</span>
-              <div>{{ item.currentValue | currency }}</div>
-              <div>~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD</div>
+              <div>{{ item.currentValue | currency }} ~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD</div>
               <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
                 Borrowed: {{ item.borrowAmount | currency:'':'':'1.2-2' }} {{ item.borrowCurrency }}
               </div>
             </td>
             <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
-              <span class="inline-block md:hidden font-medium mr-2">PnL:</span>
-              {{ item.pnl | currency }}
-            </td>
-            <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnlPercentage > 0, 'text-red-500': +item.pnlPercentage < 0}">
-              <span class="inline-block md:hidden font-medium mr-2">PnL %:</span>
-              {{ item.pnlPercentage | number:'1.2-2' }}%
+              <span class="inline-block md:hidden font-medium mr-2">Profit/Loss:</span>
+              {{ item.pnl | currency }} ({{ item.pnlPercentage | number:'1.2-2' }}%)
             </td>
             <td class="py-2 px-4 block md:table-cell md:text-right">
               <span class="inline-block md:hidden font-medium mr-2">Provider:</span>
               {{ item.provider }}
             </td>
             <td class="py-2 px-4 block md:table-cell">
-              <div class="flex justify-end">
-                <span class="inline-block md:hidden font-medium mr-2">Actions:</span>
+              <div class="flex place-self-start">
                 <button
                   *ngIf="item.strategy"
                   (click)="closeStrategy(item)"
