@@ -119,8 +119,9 @@
       <div *ngIf="isPortfolioLoading" class="flex justify-center items-center h-32">
         <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
       </div>
-  <ng-container *ngIf="portfolioItems$ | async as items">
-    <div class="border-gray-700 md:border-0 md:bg-gray-800 rounded-lg hidden md:p-4 md:block mb-8">
+  <div *ngIf="portfolioItems$ | async as items" class="mt-4">
+      <h3 class="text-lg font-semibold text-white mb-2">Strategy Portfolio</h3>
+    <div class="border-gray-700 border-1 rounded-lg hidden md:p-4 md:block mb-8">
 
       <div class="block text-lg font-bold border-b-1 border-b-gray-700 md:hidden">LP Positions</div>
 
@@ -240,7 +241,7 @@
         </tbody>
       </table>
     </div>
-  </ng-container>
+  </div>
     <app-yield-list
       [strategies]="lendingStrategies$ | async"
       [isCollapsed]="collapsedSections.lending"

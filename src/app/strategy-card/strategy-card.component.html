@@ -1,7 +1,7 @@
 <div class="space-x-3 md:space-x-0 mb-2 flex md:block overflow-y-auto">
   <ng-container *ngIf="strategies">
     <div *ngFor="let strategy of strategies"
-      class="border-gray-700 border-1 md:bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer flex-grow min-w-80 md:min-w-auto min-h-33 md:min-h-auto md:mb-2 content-center"
+      class="border-gray-700 border-1 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer flex-grow min-w-80 md:min-w-auto min-h-33 md:min-h-auto md:mb-2 content-center"
       (click)="handleSelectStrategy(strategy)"
       >
       <div class="flex items-center justify-between">

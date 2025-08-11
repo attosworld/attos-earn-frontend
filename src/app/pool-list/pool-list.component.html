@@ -17,7 +17,7 @@
           <div class="space-y-3">
             <ng-container *ngIf="featuredPools$ | async as featured">
               <div *ngFor="let pool of featured.deepestLiquidity"
-                class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
+                class=" border-gray-700 border-1 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
                 (click)="openDepositModal(pool, balances)">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
@@ -55,7 +55,7 @@
           <div class="space-y-3">
             <ng-container *ngIf="featuredPools$ | async as featured">
               <div *ngFor="let pool of featured.highestVolume"
-                class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
+                class=" border-gray-700 border-1 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
                 (click)="openDepositModal(pool, balances)">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
@@ -93,7 +93,7 @@
           <div class="space-y-3">
             <ng-container *ngIf="featuredPools$ | async as featured">
               <div *ngFor="let pool of featured.bestBonus"
-                class="bg-gray-700 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
+                class=" border-gray-700 border-1 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer"
                 (click)="openDepositModal(pool, balances)">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
@@ -239,8 +239,9 @@
       </div>
     </div>
 
-    <ng-container *ngIf="portfolioItems$ | async as items">
-      <div class="border-gray-700 md:border-0 md:bg-gray-800 rounded-lg hidden md:p-4 md:block mb-8">
+    <div *ngIf="portfolioItems$ | async as items" class="pl-4 pr-4">
+      <h3 class="text-lg font-semibold text-white mb-2">Liquidity Pools Portfolio</h3>
+      <div class="border-1 border-gray-700 rounded-lg hidden md:p-4 md:block mb-8">
         <!-- Spinner for portfolio items -->
         <div *ngIf="isPortfolioLoading" class="flex justify-center items-center h-32">
           <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
@@ -489,7 +490,7 @@
           </div>
         </div>
       </div>
-    </ng-container>
+    </div>
 
     <!-- Search bar -->
     <div class="mb-4">
