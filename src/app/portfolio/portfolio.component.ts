@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, combineLatest, of } from 'rxjs';
 import {
   map,
   shareReplay,
@@ -136,8 +136,9 @@ export class PortfolioComponent implements OnInit {
             this.allPortfolioItems = items;
             this.calculateTotals(items);
           }),
-          finalize(() => (this.isLoading = false)),
-          share()
+          finalize(() => {
+            this.isLoading = false;
+          })
         );
       })
     );
