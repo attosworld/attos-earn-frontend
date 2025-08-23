@@ -34,6 +34,7 @@ export interface Pool {
   boosted: boolean;
   incentivised_lp_docs: string;
   tags: string[];
+  radix_incentivised?: boolean;
 }
 
 export interface PoolLiquidity {

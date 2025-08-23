@@ -143,6 +143,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     meme: false,
     lending: false,
     gamefi: false,
+    incentives: false,
   };
 
   poolTypeFilters: Record<string, boolean> = {

@@ -239,7 +239,7 @@
       </div>
     </div>
 
-    <div *ngIf="portfolioItems$ | async as items" class="pl-4 pr-4">
+    <div *ngIf="portfolioItems$ | async as items" class="pl-4 pr-4 md:block hidden">
       <h3 class="text-lg font-semibold text-white mb-2">Liquidity Pools Portfolio</h3>
       <div class="border-1 border-gray-700 rounded-lg hidden md:p-4 md:block mb-8">
         <!-- Spinner for portfolio items -->
@@ -589,7 +589,7 @@
           <h3 class="text-lg font-semibold mb-4 text-yellow-500">Filter by Tags</h3>
           <div class="space-y-2">
             <button
-              *ngFor="let tag of ['dex','defi', 'lending', 'wrapped', 'stablecoin' ,'dao', 'meme', 'gamefi']"
+              *ngFor="let tag of ['incentives', 'dex','defi', 'lending', 'wrapped', 'stablecoin' ,'dao', 'meme', 'gamefi']"
               (click)="toggleTag(tag)"
               class="w-full py-2 px-4 rounded-md text-left transition-colors duration-200 ease-in-out"
               [class.bg-yellow-500]="tagFilters[tag]"
@@ -598,8 +598,24 @@
               [class.bg-gray-700]="!tagFilters[tag]"
               [class.text-white]="!tagFilters[tag]"
               [class.hover:bg-yellow-600]="!tagFilters[tag]"
+              [class.flex]="tag === 'incentives'"
               >
-              {{ tag | uppercase }}
+              <div class="flex items-center">
+                <span *ngIf="tag === 'incentives'" class="mr-1">
+                  <img style="image-rendering:pixelated;" class="w-6 h-6 rounded-full" src="/radix-incentivised-icon.png">
+                </span>
+                {{ tag | uppercase }}
+              </div>
+              <a *ngIf="tag === 'incentives'"
+                href="https://incentives.radixdlt.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="ml-2 text-gray-400 hover:text-white transition-colors"
+                (click)="$event.stopPropagation()">
+                <svg class="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </a>
             </button>
           </div>
         </div>
