@@ -601,8 +601,8 @@
               [class.flex]="tag === 'incentives'"
               >
               <div class="flex items-center">
-                <span *ngIf="tag === 'incentives'" class="mr-1">
-                  <img style="image-rendering:pixelated;" class="w-6 h-6 rounded-full" src="/radix-incentivised-icon.png">
+                <span *ngIf="tag === 'incentives'" class="mr-1 mb-1" style="font-family:Upheaval TT" [class.text-yellow-500]="!tagFilters[tag]" [class.text-slate-800]="tagFilters[tag]">
+                  AP+
                 </span>
                 {{ tag | uppercase }}
               </div>
