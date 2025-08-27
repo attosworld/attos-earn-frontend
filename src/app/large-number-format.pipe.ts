@@ -46,16 +46,16 @@ export class LargeNumberFormatPipe implements PipeTransform {
     const absNum = Math.abs(num);
     const sign = num < 0 ? '-' : '';
 
-    if (absNum < 10000) {
+    if (absNum < 1000000) {
       return sign + this.formatDecimal(absNum);
     }
 
     const exponent = Math.min(
-      Math.floor(Math.log10(absNum) / 3),
+      Math.floor(Math.log10(absNum) / 3) - 1,
       LargeNumberFormatPipe.abbreviations.length - 1
     );
-    const scaledNum = absNum / Math.pow(1000, exponent);
-    const abbreviation = LargeNumberFormatPipe.abbreviations[exponent];
+    const scaledNum = absNum / Math.pow(1000, exponent + 1);
+    const abbreviation = LargeNumberFormatPipe.abbreviations[exponent + 1];
 
     return sign + scaledNum.toFixed(2) + abbreviation;
   }
