@@ -32,7 +32,8 @@
             "scripts": [],
             "allowedCommonJsDependencies": [
               "@calamari-radix/gateway-ez-mode",
-              "@radixdlt/radix-dapp-toolkit"
+              "@radixdlt/radix-dapp-toolkit",
+              "bech32-buffer"
             ]
           },
           "configurations": {
@@ -40,8 +41,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1.17MB",
-                  "maximumError": "1.50MB"
+                  "maximumWarning": "1.60MB",
+                  "maximumError": "1.75MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -67,8 +68,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1.17MB",
-                  "maximumError": "1.50MB"
+                  "maximumWarning": "1.50MB",
+                  "maximumError": "1.75MB"
                 },
                 {
                   "type": "anyComponentStyle",
