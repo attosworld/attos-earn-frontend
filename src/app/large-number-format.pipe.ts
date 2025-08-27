@@ -50,12 +50,13 @@ export class LargeNumberFormatPipe implements PipeTransform {
       return sign + this.formatDecimal(absNum);
     }
 
-    const exponent = Math.min(
-      Math.floor(Math.log10(absNum) / 3) - 1,
+    const tier = Math.floor(Math.log10(absNum) / 3);
+    const abbreviationIndex = Math.min(
+      tier - 1,
       LargeNumberFormatPipe.abbreviations.length - 1
     );
-    const scaledNum = absNum / Math.pow(1000, exponent + 1);
-    const abbreviation = LargeNumberFormatPipe.abbreviations[exponent + 1];
+    const scaledNum = absNum / Math.pow(1000, tier);
+    const abbreviation = LargeNumberFormatPipe.abbreviations[abbreviationIndex];
 
     return sign + scaledNum.toFixed(2) + abbreviation;
   }
