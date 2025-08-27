@@ -14,6 +14,7 @@ import {
   map,
   Observable,
   of,
+  share,
   Subject,
   switchMap,
   tap,
@@ -229,7 +230,8 @@ export class RadixConnectService {
             [data.account]: data as Balances,
           });
         }
-      })
+      }),
+      share()
     );
   }
 
