@@ -208,7 +208,6 @@ export class RadixConnectService {
             .pipe(map(balances => balances[address]));
         }
 
-        console.log('triggered refresh');
         return forkJoin({
           account: of(address),
           fungibles: from(

@@ -7,6 +7,7 @@ import {
   inject,
   ChangeDetectorRef,
   OnDestroy,
+  AfterContentChecked,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -109,7 +110,7 @@ export type TagFilters = Record<string, boolean>;
   templateUrl: './pool-list.component.html',
   styleUrls: ['./pool-list.component.css'],
 })
-export class PoolListComponent implements AfterViewInit, OnDestroy {
+export class PoolListComponent implements OnDestroy, AfterContentChecked {
   @ViewChild(CdkVirtualScrollViewport) viewport!: CdkVirtualScrollViewport;
 
   @ViewChild('dummyItem') dummyItem!: ElementRef;
@@ -190,6 +191,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   showBonusInfo = false;
 
   itemSize = 60; // Estimated height of each pool item
+  itemSizeUpdated = false;
 
   isMobile!: boolean;
 
@@ -294,7 +296,6 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   pools$ = this.poolService.getPools().pipe(
     finalize(() => {
       this.isLoading = false;
-      setTimeout(() => this.updateItemSize(), 32);
     }),
     share()
   );
@@ -573,7 +574,7 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  ngAfterViewInit() {
+  ngAfterContentChecked() {
     this.updateItemSize();
     this.cdRef.detectChanges();
   }
@@ -595,11 +596,12 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   }
 
   updateItemSize() {
-    if (this.dummyItem) {
+    if (this.dummyItem && !this.itemSizeUpdated) {
       this.itemSize = this.dummyItem.nativeElement.offsetHeight;
       if (this.viewport) {
         this.viewport.checkViewportSize();
       }
+      this.itemSizeUpdated = true;
     }
   }
 
