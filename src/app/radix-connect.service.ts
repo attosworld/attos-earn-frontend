@@ -77,6 +77,8 @@ export class RadixConnectService {
     undefined
   );
 
+  refresh$ = new BehaviorSubject<boolean>(true);
+
   accountBalanceCache$ = new BehaviorSubject<Record<string, Balances>>({});
 
   isLoadingBalances = false;
@@ -176,6 +178,7 @@ export class RadixConnectService {
       this.rdt?.walletApi.walletData$,
       this.accountBalanceCache$,
       this.selectedAccount$,
+      this.refresh$,
     ]).pipe(
       tap(([data]) => {
         if (data.accounts.length) {
@@ -186,7 +189,7 @@ export class RadixConnectService {
           }
         }
       }),
-      switchMap(([data]) => {
+      switchMap(([data, , , refresh]) => {
         this.isLoadingBalances = true;
         const account = this.selectedAccount$.getValue();
         if (!data.accounts.length || !account) {
@@ -199,12 +202,13 @@ export class RadixConnectService {
 
         const address = account.address;
 
-        if (this.accountBalanceCache$.getValue()[address]) {
+        if (this.accountBalanceCache$.getValue()[address] && !refresh) {
           return this.accountBalanceCache$
             .asObservable()
             .pipe(map(balances => balances[address]));
         }
 
+        console.log('triggered refresh');
         return forkJoin({
           account: of(address),
           fungibles: from(
@@ -258,9 +262,16 @@ export class RadixConnectService {
   }
 
   sendTransaction(transactionManifest: string) {
-    return this.rdt?.walletApi.sendTransaction({
-      transactionManifest,
-    });
+    return this.rdt?.walletApi
+      .sendTransaction({
+        transactionManifest,
+      })
+      .map(res => {
+        // if (res.status === 'CommittedSuccess') {
+        this.refresh$.next(true);
+        // }
+        return res;
+      });
   }
 
   getTokenDetails(tokenAddresses: string[]): Observable<ResourceRoleAndInfo[]> {

@@ -876,6 +876,12 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
             return this.radixConnectService
               .sendTransaction(manifest)
               ?.map(f => f.status)
+              .map(status => {
+                if (status === TransactionStatus.CommittedSuccess) {
+                  this.portfolioService.refresh();
+                }
+                return status;
+              })
               .mapErr(() => TransactionStatus.Rejected);
           }),
           map(tx => {
@@ -952,18 +958,21 @@ export class PoolListComponent implements AfterViewInit, OnDestroy {
   }
 
   async closeStrategy(item: PortfolioItem) {
-    this.closingItems[item.poolName] = true;
+    this.closingItems[item.closeManifest] = true;
     try {
       const response = await this.radixConnectService.sendTransaction(
         item.closeManifest
       );
       if (response?.isOk()) {
         this.transactionResult = of(response.value.status);
+        if (response.value.status === TransactionStatus.CommittedSuccess) {
+          this.portfolioService.refresh();
+        }
       } else {
         this.transactionResult = of(TransactionStatus.Rejected);
       }
     } finally {
-      this.closingItems[item.poolName] = false;
+      this.closingItems[item.closeManifest] = false;
     }
   }
 

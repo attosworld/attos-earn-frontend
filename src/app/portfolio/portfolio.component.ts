@@ -215,7 +215,14 @@ export class PortfolioComponent implements OnInit {
         item.closeManifest
       );
       if (response?.isOk()) {
+        if (response.value.status === TransactionStatus.CommittedSuccess) {
+          this.portfolioService.refresh();
+        }
         this.transactionResult = of(response.value.status);
+
+        if (response.value.status === TransactionStatus.CommittedSuccess) {
+          this.portfolioService.refresh();
+        }
       } else {
         this.transactionResult = of(TransactionStatus.Rejected);
       }

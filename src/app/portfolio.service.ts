@@ -47,6 +47,11 @@ export class PortfolioService {
 
   constructor(private http: HttpClient) {}
 
+  refresh() {
+    this.lpPositionsSubject.next(new Map());
+    this.strategyPositionsSubject.next(new Map());
+  }
+
   getPortfolioItems(
     account: string,
     type: 'lp' | 'strategy' | undefined
