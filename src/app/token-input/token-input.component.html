@@ -9,15 +9,17 @@
       class="flex-grow bg-gray-700 text-white px-3 py-2 rounded-l"
       [class.border-red-500]="error"
       [placeholder]="maxAmount ? 'Max: ' + maxAmount : ''"
-    >
+      >
     <button
       (click)="setMaxBalance()"
       class="bg-gray-600 text-white px-3 py-2 rounded-r hover:bg-gray-500 transition duration-300"
-    >
+      >
       Max
     </button>
   </div>
-  <p *ngIf="error" class="text-red-500 text-xs mt-1">
-    {{ error }}
-  </p>
+  @if (error) {
+    <p class="text-red-500 text-xs mt-1">
+      {{ error }}
+    </p>
+  }
 </div>

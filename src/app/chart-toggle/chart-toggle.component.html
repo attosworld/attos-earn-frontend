@@ -9,25 +9,27 @@
       (click)="selectChart('volume')">
       Volume
     </button>
-    <button
-      *ngIf="liquidityEnabled"
-      class="px-3 py-1 text-sm transition-colors duration-200"
-      [class.bg-yellow-500]="selectedType === 'liquidity'"
-      [class.text-gray-900]="selectedType === 'liquidity'"
-      [class.bg-gray-700]="selectedType !== 'liquidity'"
-      [class.text-white]="selectedType !== 'liquidity'"
-      (click)="selectChart('liquidity')">
-      Liquidity
-    </button>
-    <button
-      *ngIf="lpPerformanceEnabled"
-      class="px-3 py-1 text-sm transition-colors duration-200"
-      [class.bg-yellow-500]="selectedType === 'performance'"
-      [class.text-gray-900]="selectedType === 'performance'"
-      [class.bg-gray-700]="selectedType !== 'performance'"
-      [class.text-white]="selectedType !== 'performance'"
-      (click)="selectChart('performance')">
-      Performance
-    </button>
+    @if (liquidityEnabled) {
+      <button
+        class="px-3 py-1 text-sm transition-colors duration-200"
+        [class.bg-yellow-500]="selectedType === 'liquidity'"
+        [class.text-gray-900]="selectedType === 'liquidity'"
+        [class.bg-gray-700]="selectedType !== 'liquidity'"
+        [class.text-white]="selectedType !== 'liquidity'"
+        (click)="selectChart('liquidity')">
+        Liquidity
+      </button>
+    }
+    @if (lpPerformanceEnabled) {
+      <button
+        class="px-3 py-1 text-sm transition-colors duration-200"
+        [class.bg-yellow-500]="selectedType === 'performance'"
+        [class.text-gray-900]="selectedType === 'performance'"
+        [class.bg-gray-700]="selectedType !== 'performance'"
+        [class.text-white]="selectedType !== 'performance'"
+        (click)="selectChart('performance')">
+        Performance
+      </button>
+    }
   </div>
 </div>

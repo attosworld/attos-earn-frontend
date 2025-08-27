@@ -1,15 +1,16 @@
-<ng-container *ngIf="tokenValueData; else noData">
+@if (tokenValueData) {
   <div class="mb-6">
     <h3 class="text-lg font-semibold mb-2">Liquidity Pool Performance</h3>
     <!-- Date range selector -->
     <div class="mb-4 flex space-x-2">
-      <button
-        *ngFor="let range of dateRanges"
-        (click)="selectRange(range)"
-        [class.bg-yellow-500]="selectedRange === range"
-        class="px-3 py-1 text-sm transition-colors duration-200 bg-gray-700 text-white rounded hover:bg-gray-600">
-        {{ range }} Days
-      </button>
+      @for (range of dateRanges; track range) {
+        <button
+          (click)="selectRange(range)"
+          [class.bg-yellow-500]="selectedRange === range"
+          class="px-3 py-1 text-sm transition-colors duration-200 bg-gray-700 text-white rounded hover:bg-gray-600">
+          {{ range }} Days
+        </button>
+      }
     </div>
     <div class="bg-gray-700 p-4 rounded-lg">
       <div class="flex">
@@ -21,7 +22,6 @@
           <span>{{ getYAxisValue(0.25) | number:'1.0-0' }} XRD</span>
           <span>{{ minYAxisValue | number:'1.0-0' }} XRD</span>
         </div>
-
         <!-- Chart area -->
         <div class="flex-grow">
           <div class="relative h-40">
@@ -30,37 +30,37 @@
             <div class="absolute inset-0 h-1/4 border-b border-gray-600 border-opacity-50"></div>
             <div class="absolute inset-0 h-2/4 border-b border-gray-600 border-opacity-50"></div>
             <div class="absolute inset-0 h-3/4 border-b border-gray-600 border-opacity-50"></div>
-
             <!-- Chart line -->
             <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <polyline
-                *ngIf="chartValues.length > 0"
-                [attr.points]="chartPoints"
-                fill="none"
-                stroke="#FBBF24"
-                stroke-width="1"
-              />
-              <ng-container *ngFor="let value of chartValues; let i = index">
-                <circle
-                  [attr.cx]="getPointX(i)"
-                  [attr.cy]="getPointY(value)"
-                  r="0.25"
-                  fill="#FBBF20"
-                />
-              </ng-container>
+              @if (chartValues.length > 0) {
+                <polyline
+                  [attr.points]="chartPoints"
+                  fill="none"
+                  stroke="#FBBF24"
+                  stroke-width="1"
+                  />
+              }
+              @for (value of chartValues; track value; let i = $index) {
+                <ng-container>
+                  <circle
+                    [attr.cx]="getPointX(i)"
+                    [attr.cy]="getPointY(value)"
+                    r="0.25"
+                    fill="#FBBF20"
+                    />
+                </ng-container>
+              }
             </svg>
           </div>
-
           <!-- X-axis dates -->
           <div class="flex justify-between mt-2 text-xs text-gray-400">
             <!-- Show only a subset of dates to avoid overcrowding -->
-            <ng-container *ngFor="let date of getDisplayDates(); let i = index">
+            @for (date of getDisplayDates(); track date; let i = $index) {
               <span>{{ date | date:'MMM d' }}</span>
-            </ng-container>
+            }
           </div>
         </div>
       </div>
-
       <!-- Tooltip or value indicator -->
       <div class="mt-4 flex justify-between text-sm">
         <div class="text-gray-400">
@@ -74,20 +74,19 @@
         <div class="text-gray-400">
           <span>Change: </span>
           <span [class.text-green-400]="getPercentChange() > 0"
-                [class.text-red-400]="getPercentChange() < 0"
-                class="font-medium">
+            [class.text-red-400]="getPercentChange() < 0"
+            class="font-medium">
             {{ getPercentChange() > 0 ? '+' : '' }}{{ getPercentChange().toFixed(2) }}%
           </span>
         </div>
       </div>
     </div>
   </div>
-</ng-container>
-<ng-template #noData>
+} @else {
   <div class="mb-6">
     <h3 class="text-lg font-semibold mb-2">Liquidity Pool Performance</h3>
     <div class="bg-gray-700 p-4 rounded-lg text-center text-gray-400 min-h-58 flex items-center justify-center">
       <p>No data available for this pool type</p>
     </div>
   </div>
-</ng-template>
+}

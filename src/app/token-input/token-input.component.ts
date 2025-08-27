@@ -1,11 +1,11 @@
-import { CommonModule } from '@angular/common';
+
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-token-input',
   templateUrl: './token-input.component.html',
   styleUrls: ['./token-input.component.css'],
-  imports: [CommonModule],
+  imports: [],
 })
 export class TokenInputComponent {
   @Input() tokenSymbol = '';
