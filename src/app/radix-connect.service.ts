@@ -14,7 +14,6 @@ import {
   map,
   Observable,
   of,
-  share,
   Subject,
   switchMap,
   tap,
@@ -209,6 +208,7 @@ export class RadixConnectService {
             .pipe(map(balances => balances[address]));
         }
 
+        console.log('triggered new fuckn thing');
         return forkJoin({
           account: of(address),
           fungibles: from(

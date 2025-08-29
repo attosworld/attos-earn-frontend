@@ -26,6 +26,7 @@ export interface Strategy {
   buyingSymbol?: string;
   poolInfo?: Pool;
   lendingPriceUsd: number;
+  incentivised?: boolean;
 }
 
 export interface StrategyStats {
@@ -49,6 +50,7 @@ export interface BaseStrategy {
   provider: 'Root Finance' | 'Weft Finance' | 'Flux' | string;
   requiredAssets: { resource_address: string; symbol: string }[];
   rewardTokens: string[];
+  incentivised?: boolean;
 }
 
 export interface LendingStrategy extends BaseStrategy {

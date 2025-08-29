@@ -44,7 +44,11 @@
                   <img [src]="strategy.icon_url" [alt]="strategy.name" class="w-8 h-8 mr-3 rounded-full">
                 }
                 <div>
-                  <h3 class="text-yellow-500 font-medium">{{ strategy.name }}</h3>
+                  <h3 class="text-yellow-500 font-medium">{{ strategy.name }}
+                    <span *ngIf="strategy.incentivised" class="mr-1 mb-1" style="font-family:Upheaval TT" [class.text-yellow-500]="strategy.incentivised">
+                      AP+
+                    </span>
+                  </h3>
                   <h4 class="font-medium">{{ strategy.symbol }}</h4>
                 </div>
               </div>
@@ -136,17 +140,6 @@
                 >
                 Execute
               </button>
-              <a
-                [href]="strategy.info_url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="bg-gray-600 text-white py-1 px-3 rounded text-sm hover:bg-gray-500 transition duration-300 flex items-center justify-center flex-1"
-                >
-                Info
-                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                </svg>
-              </a>
             </div>
           </div>
         }
