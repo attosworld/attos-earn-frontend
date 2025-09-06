@@ -111,7 +111,11 @@
                 @if (strategy.icon_url) {
                   <img [src]="strategy.icon_url" [alt]="strategy.name" class="w-8 h-8 mr-2 rounded-full">
                 }
-                <h3 class="text-yellow-500 font-medium">{{ strategy.name }}</h3>
+                <h3 class="text-yellow-500 font-medium">{{ strategy.symbol }}
+                    <span *ngIf="strategy.incentivised" class="mr-1 mb-1" style="font-family:Upheaval TT" [class.text-yellow-500]="strategy.incentivised">
+                      AP+
+                    </span>
+                </h3>
               </div>
               <span class="text-blue-400">{{ strategy.strategy_type }}</span>
             </div>
