@@ -416,6 +416,7 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
   liquidityEnabled = false;
   previewData!: { highPrice: number; lowPrice: number };
   urlSync!: Subscription;
+  showMobileFilters!: boolean;
 
   constructor() {
     this.initializeFromUrl();
@@ -1248,5 +1249,10 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
 
   private isValidSortDirection(direction: string): boolean {
     return ['asc', 'desc', 'none'].includes(direction);
+  }
+
+  // Add these methods to your component class
+  toggleMobileFilters() {
+    this.showMobileFilters = !this.showMobileFilters;
   }
 }

@@ -560,6 +560,109 @@
         </div>
       </div>
     </div>
+<div class="lg:hidden mb-4">
+  <button
+    (click)="toggleMobileFilters()"
+    class="w-full flex justify-between items-center p-3 bg-gray-800 rounded-lg text-white mb-2"
+  >
+    <span class="text-lg font-semibold">Filters</span>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-5 w-5 transition-transform duration-300"
+      [ngClass]="{'rotate-180': showMobileFilters}"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+
+  <div
+    class="bg-gray-800 rounded-lg overflow-hidden transition-all duration-300"
+    [ngClass]="{'max-h-0 opacity-0 hidden': !showMobileFilters, 'max-h-[800px] p-4': showMobileFilters}"
+  >
+    <!-- Filter by Provider -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3 text-yellow-500">Provider</h3>
+      <div class="flex flex-wrap gap-2">
+        <button
+          *ngFor="let type of ['defiplaza', 'ociswap']"
+          (click)="togglePoolProvider(type)"
+          class="py-2 px-4 rounded-md text-sm transition-colors duration-200 ease-in-out"
+          [class.bg-yellow-500]="poolTypeProvider[type]"
+          [class.text-gray-900]="poolTypeProvider[type]"
+          [class.bg-gray-700]="!poolTypeProvider[type]"
+          [class.text-white]="!poolTypeProvider[type]"
+          [class.hover:bg-yellow-600]="!poolTypeProvider[type]"
+        >
+          {{ type | titlecase }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter by Tags -->
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold mb-3 text-yellow-500">Tags</h3>
+      <div class="flex flex-wrap gap-2">
+        <button
+          *ngFor="let tag of ['incentives', 'dex','defi', 'lending', 'wrapped', 'stablecoin' ,'dao', 'meme', 'gamefi']"
+          (click)="toggleTag(tag)"
+          class="py-2 px-4 rounded-md text-sm transition-colors duration-200 ease-in-out flex items-center"
+          [class.bg-yellow-500]="tagFilters[tag]"
+          [class.text-gray-900]="tagFilters[tag]"
+          [class.bg-gray-700]="!tagFilters[tag]"
+          [class.text-white]="!tagFilters[tag]"
+          [class.hover:bg-yellow-600]="!tagFilters[tag]"
+        >
+          <span *ngIf="tag === 'incentives'" class="mr-1" style="font-family:Upheaval TT" [class.text-yellow-500]="!tagFilters[tag]" [class.text-slate-800]="tagFilters[tag]">
+            AP+
+          </span>
+          {{ tag | uppercase }}
+          <a *ngIf="tag === 'incentives'"
+            href="https://incentives.radixdlt.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="ml-2 text-gray-400 hover:text-white transition-colors"
+            (click)="$event.stopPropagation()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+          </a>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filter by Pool Type -->
+    <div class="mb-4">
+      <h3 class="text-lg font-semibold mb-3 text-yellow-500">Pool Type</h3>
+      <div class="flex flex-wrap gap-2">
+        <button
+          *ngFor="let type of ['double', 'single', 'precision', 'flex', 'basic']"
+          (click)="togglePoolType(type)"
+          class="py-2 px-4 rounded-md text-sm transition-colors duration-200 ease-in-out"
+          [class.bg-yellow-500]="poolTypeFilters[type]"
+          [class.text-gray-900]="poolTypeFilters[type]"
+          [class.bg-gray-700]="!poolTypeFilters[type]"
+          [class.text-white]="!poolTypeFilters[type]"
+          [class.hover:bg-yellow-600]="!poolTypeFilters[type]"
+        >
+          {{ type | titlecase }}
+        </button>
+      </div>
+    </div>
+
+    <!-- <!-1- Clear Filters Button -1-> -->
+    <!-- <div class="pt-3 border-t border-gray-700"> -->
+    <!--   <button -->
+    <!--     (click)="clearAllFilters()" -->
+    <!--     class="w-full py-2 px-4 bg-gray-600 text-white rounded-md hover:bg-gray-500 transition-colors duration-200" -->
+    <!--   > -->
+    <!--     Clear All Filters -->
+    <!--   </button> -->
+    <!-- </div> -->
+  </div>
+</div>
 
     <!-- Sub-menu tabs -->
 
