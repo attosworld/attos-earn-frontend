@@ -9,7 +9,14 @@
         class="mr-2"
       ></app-pool-icon-pair>
       <div>
-        <div class="font-medium text-sm">{{ pool.name }}</div>
+        <div class="font-medium text-sm">{{ pool.name }}
+
+          @if (pool.tags.includes('incentives')) {
+            <span class="mr-1 mb-1 text-yellow-500" style="font-family:Upheaval TT">
+              AP+
+            </span>
+          }
+        </div>
         <div class="text-yellow-500 text-sm">{{ pool.bonus_24h || 0 | largeNumberFormat }}% 24h</div>
       </div>
     </div>
