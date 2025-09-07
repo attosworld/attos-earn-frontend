@@ -1,0 +1,153 @@
+@if (strategies) {
+  <div class="rounded-lg shadow-lg overflow-hidden mb-4">
+    <button
+      (click)="toggleStrategySection()"
+      class="w-full flex justify-between items-center p-3 bg-gray-700 text-white hover:bg-gray-650 transition-colors duration-200"
+      >
+      <h3 class="text-lg font-semibold text-blue-400">{{ strategies[0].strategy_type }} Strategies</h3>
+      <div class="flex items-center">
+        <span class="mr-3 text-sm text-white px-2 py-1 rounded-full">
+          {{ tvl | currency }}
+        </span>
+        <svg
+          [ngClass]="{'rotate-180': !isCollapsed}"
+          class="w-5 h-5 transition-transform duration-200"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+    </button>
+    <div [hidden]="isCollapsed">
+      <!-- Desktop view for Lending strategies -->
+      <div class="hidden md:block">
+        <!-- Table header -->
+        <div class="grid grid-cols-8 gap-4 p-4 bg-gray-750 text-gray-300 font-semibold text-sm">
+          <div class="col-span-2">Strategy</div>
+          <div class="text-center">Type</div>
+          <div class="text-center">Provider</div>
+          <div class="text-center">Deposited</div>
+          <div class="text-center">Bonus Type</div>
+          <div class="text-center">Bonus</div>
+          <div class="text-center">Actions</div>
+        </div>
+        <!-- Table body for Lending strategies -->
+        <div class="divide-y divide-gray-700">
+          @for (strategy of strategies; track strategy) {
+            <div
+              class="grid grid-cols-8 gap-4 p-4 items-center hover:bg-gray-750 transition-colors duration-200">
+              <!-- Strategy name and icon -->
+              <div class="col-span-2 flex items-center">
+                @if (strategy.icon_url) {
+                  <img [src]="strategy.icon_url" [alt]="strategy.name" class="w-8 h-8 mr-3 rounded-full">
+                }
+                <div>
+                  <h3 class="text-yellow-500 font-medium">{{ strategy.name }}
+                    <span *ngIf="strategy.incentivised" class="mr-1 mb-1" style="font-family:Upheaval TT" [class.text-yellow-500]="strategy.incentivised">
+                      AP+
+                    </span>
+                  </h3>
+                  <h4 class="font-medium">{{ strategy.symbol }}</h4>
+                </div>
+              </div>
+              <!-- Strategy type -->
+              <div class="text-center">
+                {{ strategy.strategy_type }}
+              </div>
+              <!-- Provider -->
+              <div class="text-center">
+                {{ strategy.provider || 'Unknown' }}
+              </div>
+              <!-- Deposited -->
+              @if (strategy.strategy_type === 'Lending' || strategy.strategy_type === 'Liquidation') {
+                <div class="text-center text-white font-medium">
+                  {{ strategy.deposited | currency }}
+                </div>
+              }
+              <!-- Deposited -->
+              @if (strategy.strategy_type === 'Staking') {
+                <div class="text-center text-white font-medium">
+                  {{ strategy.total_stake | currency }}
+                </div>
+              }
+              <!-- Bonus Type -->
+              <div class="text-center text-white">
+                {{ strategy.bonus_type }}
+              </div>
+              <!-- Bonus value -->
+              <div class="text-center text-green-400 font-bold">
+                {{ strategy.bonus_value | number:'1.2-2' }}%
+              </div>
+              <!-- Actions -->
+              <div class="text-center flex justify-center space-x-2">
+                <button
+                  class="bg-yellow-500 text-gray-900 py-1 px-3 rounded text-sm hover:bg-yellow-600 transition duration-300"
+                  (click)="executeStrategyV2(strategy)"
+                  >
+                  Execute
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+        <!-- Empty state for Lending -->
+        @if (strategies.length === 0) {
+          <div class="p-8 text-center text-gray-400">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <p>No lending strategies found matching your criteria.</p>
+          </div>
+        }
+      </div>
+      <!-- Mobile view for Lending strategies -->
+      <div class="md:hidden space-y-4 p-4">
+        @for (strategy of strategies; track strategy) {
+          <div class="bg-gray-750 rounded-lg shadow-lg p-4">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex items-center">
+                @if (strategy.icon_url) {
+                  <img [src]="strategy.icon_url" [alt]="strategy.name" class="w-8 h-8 mr-2 rounded-full">
+                }
+                <h3 class="text-yellow-500 font-medium">{{ strategy.symbol }}
+                    <span *ngIf="strategy.incentivised" class="mr-1 mb-1" style="font-family:Upheaval TT" [class.text-yellow-500]="strategy.incentivised">
+                      AP+
+                    </span>
+                </h3>
+              </div>
+              <span class="text-blue-400">{{ strategy.strategy_type }}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 mb-3 text-sm">
+              <div class="text-gray-400">Symbol:</div>
+              <div class="text-blue-400">{{ strategy.symbol }}</div>
+              <div class="text-gray-400">Provider:</div>
+              <div class="text-purple-400">{{ strategy.provider || 'Unknown' }}</div>
+              @if (strategy.strategy_type === 'Lending' || strategy.strategy_type === 'Liquidation') {
+                <div class="text-gray-400">Deposited:</div>
+                <div class="text-white">{{ strategy.deposited| currency }}</div>
+              }
+              @if (strategy.strategy_type === 'Staking') {
+                <div class="text-gray-400">Total Stake:</div>
+                <div class="text-white">{{ strategy.total_stake | currency }}</div>
+              }
+              <div class="text-gray-400">Bonus Type:</div>
+              <div class="text-white">{{ strategy.bonus_type }}</div>
+              <div class="text-gray-400">Bonus:</div>
+              <div class="text-green-400 font-bold">{{ strategy.bonus_value | number:'1.2-2' }}%</div>
+            </div>
+            <div class="flex justify-between mt-4">
+              <button
+                class="bg-yellow-500 text-gray-900 py-1 px-3 rounded text-sm hover:bg-yellow-600 transition duration-300 flex-1 mr-2"
+                (click)="executeStrategyV2(strategy)"
+                >
+                Execute
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

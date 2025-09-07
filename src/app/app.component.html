@@ -1,93 +1,516 @@
-<nav class="bg-gray-800 p-4 relative">
-  <div class="container mx-auto flex flex-wrap items-center justify-between">
-    <a href="/" class="flex items-center text-white text-xl font-bold">
-      <img src="attos-earn-logo.png" alt="Attos Earn Logo" class="h-12 w-auto mr-2">
-      <span class="animate-title page-title text-2xl">Attos Earn</span>
-    </a>
-    <div class="flex items-center">
-      <div *ngIf="isMobile" class="lg:hidden mr-4">
-        <radix-connect-button />
+@if (!isDiscordVerifyRoute()) {
+  <nav class="bg-gray-800 p-1 fixed w-full md:relative z-50">
+    <div class="container mx-auto flex items-center justify-between mb-2">
+      <a routerLink="/" class="flex items-center text-white text-xl font-bold">
+        <img src="attos-earn-logo.png" alt="Attos Earn Logo" class="h-10 w-auto mr-2">
+        <span class="animate-title page-title text-3xl">Attos Earn</span>
+      </a>
+      <div class="flex items-center space-x-2 sm:space-x-4">
+        <ul class="hidden lg:flex items-center space-x-4 text-sm text-white">
+          <li>
+            <a class="relative px-1 py-1 hover:text-yellow-500 transition-colors duration-200"
+              routerLink="/pools"
+              [class.text-yellow-500]="isActive('/pools')">
+              Pools
+              <span class="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-500 transform origin-center transition-all duration-300"
+              [ngClass]="isActive('/pools') ? 'scale-x-100' : 'scale-x-0 hover:scale-x-100'"></span>
+            </a>
+          </li>
+          <li>
+            <a class="relative px-1 py-1 hover:text-yellow-500 transition-colors duration-200"
+              routerLink="/strategies"
+              [class.text-yellow-500]="isActive('/strategies')">
+              Strategies
+              <span class="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-500 transform origin-center transition-all duration-300"
+              [ngClass]="isActive('/strategies') ? 'scale-x-100' : 'scale-x-0 hover:scale-x-100'"></span>
+            </a>
+          </li>
+          <li>
+            <a class="relative px-1 py-1 hover:text-yellow-500 transition-colors duration-200"
+              routerLink="/portfolio"
+              [class.text-yellow-500]="isActive('/portfolio')">
+              Portfolio
+              <span class="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-500 transform origin-center transition-all duration-300"
+              [ngClass]="isActive('/portfolio') ? 'scale-x-100' : 'scale-x-0 hover:scale-x-100'"></span>
+            </a>
+          </li>
+        </ul>
+        <div class="hidden md:block mr-4">
+          @if (baseBalances | async; as balances) {
+            <div class="bg-gray-700 flex rounded-lg p-2">
+              <div class="text-yellow-500 text-sm font-semibold pr-2">Balances:</div>
+              <div class="flex items-center space-x-4">
+                <div class="flex items-center">
+                  <img src="https://assets.radixdlt.com/icons/icon-xrd.png" alt="XRD" class="w-5 h-5 mr-2">
+                  <div>
+                    <div class="text-white text-sm font-medium">{{ balances.XRD.balance | number:'1.0-2' }}</div>
+                  </div>
+                  <a href="https://astrl.trade/bridge" target="_blank" rel="noopener noreferrer"
+                    class="ml-2 text-yellow-500 hover:text-yellow-400 transition-colors duration-200 bg-gray-900 rounded-sm"
+                    title="Fund XRD via Astrolescent Bridge">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                  </a>
+                </div>
+                <div class="flex items-center">
+                  <img src="https://radix.defiplaza.net/assets/img/babylon/defiplaza-icon.png" alt="DFP2" class="w-5 h-5 mr-2">
+                  <div>
+                    <div class="text-white text-sm font-medium">{{ balances.DFP2.balance | number:'1.0-2' }}</div>
+                  </div>
+                  <button (click)="openDFP2SwapModal()"
+                    class="ml-2 text-yellow-500 hover:text-yellow-400 transition-colors duration-200 bg-gray-900 rounded-sm"
+                    title="Fund DFP2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+        @if (selectedAccount$ | async; as selectedAccount) {
+          <div class="relative md:block hidden">
+            <button (click)="toggleAccountDropdown()" class="flex items-center bg-gray-700 rounded-lg px-2 sm:px-3 py-1 text-sm text-white h-9">
+              <span class="w-2 h-2 bg-green-500 rounded-full mr-1 sm:mr-2"></span>
+              <span class="font-mono hidden xs:inline">{{ shortenAddress(selectedAccount.address) }}</span>
+              <span class="font-mono xs:hidden">{{ ultraShortenAddress(selectedAccount.address) }}</span>
+              <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            @if (isAccountDropdownOpen) {
+              <div class="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg z-20">
+                <div class="py-1">
+                  @if (accounts$ | async; as accounts) {
+                    @for (account of accounts; track account) {
+                      <a
+                        (click)="selectAccount(account)"
+                        class="block px-4 py-2 text-sm text-white hover:bg-gray-700 cursor-pointer">
+                        {{ shortenAddress(account.address) }}
+                        @if ((selectedAccount$ | async)?.address === account.address) {
+                          <span
+                            class="ml-2 text-xs bg-yellow-500 text-gray-900 px-2 py-0.5 rounded-full">
+                            Active
+                          </span>
+                        }
+                      </a>
+                    }
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+        <radix-connect-button class="connect-button" />
+        <button class="text-white hidden lg:hidden" (click)="toggleMenu()">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+          </svg>
+        </button>
       </div>
-      <button class="text-white lg:hidden" (click)="toggleMenu()">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-        </svg>
-      </button>
     </div>
-    <div class="w-full lg:flex lg:items-center lg:w-auto lg:relative absolute left-0 right-0 top-full bg-gray-800 lg:bg-transparent z-50 transition-all duration-300 ease-in-out lg:overflow-visible lg:max-h-full lg:opacity-100"
-         [ngClass]="{'max-h-0 opacity-0 overflow-hidden': !isMenuOpen, 'max-h-96 opacity-100': isMenuOpen}">
-      <ul class="lg:flex items-center justify-between text-base text-white pt-4 lg:pt-0 transition-opacity duration-200 ease-in-out"
-          [ngClass]="{'opacity-0': !isMenuOpen, 'opacity-100 delay-100': isMenuOpen, 'lg:opacity-100': true}">
-        <li class="relative group">
-          <a class="lg:p-4 py-3 px-4 block transition-all duration-300 hover:text-yellow-500 text-center" routerLink="/pools" routerLinkActive="text-yellow-500" [routerLinkActiveOptions]="{exact: true}">
+    <!-- Mobile menu -->
+    <div class="lg:hidden" [ngClass]="{'hidden': !isMenuOpen}">
+      <ul class="pt-2 pb-3 space-y-1">
+        <li>
+          <a class="block relative px-3 py-2 text-base font-medium text-white hover:bg-gray-700"
+            routerLink="/pools"
+            [class.border-l-4]="isActive('/pools')"
+            [class.border-yellow-500]="isActive('/pools')"
+            [class.pl-2]="isActive('/pools')">
             Pools
-            <span class="absolute bottom-0 left-1/4 w-1/2 h-0.5 bg-yellow-500 transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100" [ngClass]="{'scale-x-100': isActive('/pools')}"></span>
           </a>
         </li>
-        <li class="relative group">
-          <a class="lg:p-4 py-3 px-4 block transition-all duration-300 hover:text-yellow-500 text-center" routerLink="/strategies" routerLinkActive="text-yellow-500">
+        <li>
+          <a class="block relative px-3 py-2 text-base font-medium text-white hover:bg-gray-700"
+            routerLink="/strategies"
+            [class.border-l-4]="isActive('/strategies')"
+            [class.border-yellow-500]="isActive('/strategies')"
+            [class.pl-2]="isActive('/strategies')">
             Strategies
-            <span class="absolute bottom-0 left-1/4 w-1/2 h-0.5 bg-yellow-500 transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100" [ngClass]="{'scale-x-100': isActive('/strategies')}"></span>
           </a>
         </li>
-        <li class="relative group">
-          <a class="lg:p-4 py-3 px-4 block transition-all duration-300 hover:text-yellow-500 text-center" routerLink="/portfolio" routerLinkActive="text-yellow-500">
+        <li>
+          <a class="block relative px-3 py-2 text-base font-medium text-white hover:bg-gray-700"
+            routerLink="/portfolio"
+            [class.border-l-4]="isActive('/portfolio')"
+            [class.border-yellow-500]="isActive('/portfolio')"
+            [class.pl-2]="isActive('/portfolio')">
             Portfolio
-            <span class="absolute bottom-0 left-1/4 w-1/2 h-0.5 bg-yellow-500 transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100" [ngClass]="{'scale-x-100': isActive('/portfolio')}"></span>
           </a>
         </li>
-        <li class="pl-2 hidden lg:block" *ngIf="!isMobile"><radix-connect-button /></li>
+        <!-- Mobile account switcher -->
+        <li class="px-3 py-2">
+          <div class="border-t border-gray-700 pt-2 mt-2">
+            <p class="text-sm text-gray-400 mb-2">Your Accounts</p>
+            @if (accounts$ | async; as accounts) {
+              @for (account of accounts; track account) {
+                <div
+                  (click)="selectAccount(account)"
+                  class="flex items-center py-2 px-2 rounded-md hover:bg-gray-700 cursor-pointer">
+                  <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                  <span class="font-mono text-sm">{{ shortenAddress(account.address) }}</span>
+                  @if ((selectedAccount$ | async)?.address === account.address) {
+                    <span
+                      class="ml-2 text-xs bg-yellow-500 text-gray-900 px-2 py-0.5 rounded-full">
+                      Active
+                    </span>
+                  }
+                </div>
+              }
+            }
+          </div>
+        </li>
+        <!-- Mobile balances -->
+        <li class="px-3 py-2">
+          <div class="border-t border-gray-700 pt-2 mt-2">
+            <p class="text-sm text-gray-400 mb-2">Your Balances</p>
+            @if (baseBalances | async; as balances) {
+              <div class="flex flex-col space-y-2">
+                <div class="flex items-center bg-gray-700 rounded-md p-2">
+                  <img src="https://assets.radixdlt.com/icons/icon-xrd.png" alt="XRD" class="w-5 h-5 mr-2">
+                  <div class="flex-grow">
+                    <div class="text-white text-sm font-medium">{{ balances.XRD.balance | number:'1.0-2' }} XRD</div>
+                  </div>
+                  <a href="https://astrl.trade/bridge" target="_blank" rel="noopener noreferrer"
+                    class="text-yellow-500 hover:text-yellow-400 transition-colors duration-200 p-1"
+                    title="Fund XRD via Astrolescent Bridge">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                  </a>
+                </div>
+                <div class="flex items-center bg-gray-700 rounded-md p-2">
+                  <img src="https://radix.defiplaza.net/assets/img/babylon/defiplaza-icon.png" alt="DFP2" class="w-5 h-5 mr-2">
+                  <div class="flex-grow">
+                    <div class="text-white text-sm font-medium">{{ balances.DFP2.balance | number:'1.0-2' }} DFP2</div>
+                  </div>
+                  <button (click)="openDFP2SwapModal()"
+                    class="text-yellow-500 hover:text-yellow-400 transition-colors duration-200 p-1"
+                    title="Swap XRD to DFP2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </li>
       </ul>
     </div>
+    @if (baseBalances | async; as balances) {
+      @if (selectedAccount$ | async; as selectedAccount) {
+        <div class="relative md:hidden flex justify-self-left mb-2">
+          <button (click)="toggleAccountDropdown()" class="flex items-center bg-gray-700 rounded-lg px-2 sm:px-3 py-1 text-sm text-white h-9 w-full">
+            <div class="flex-grow flex items-center">
+              <span class="w-2 h-2 bg-green-500 rounded-full mr-1 sm:mr-2"></span>
+              <span class="font-mono xs:inline">{{ selectedAccount.label }} ({{ shortenAddress(selectedAccount.address) }})</span>
+            </div>
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          @if (isAccountDropdownOpen) {
+            <div class="absolute left-0 top-7 mt-2 bg-gray-800 rounded-md shadow-lg z-20">
+              <div class="py-1">
+                @if (accounts$ | async; as accounts) {
+                  @for (account of accounts; track account) {
+                    <a
+                      (click)="selectAccount(account)"
+                      class="block px-4 py-2 text-sm text-white hover:bg-gray-700 cursor-pointer">
+                      {{ account.label }} ({{ shortenAddress(account.address) }})
+                      @if ((selectedAccount$ | async)?.address === account.address) {
+                        <span
+                          class="ml-2 text-xs bg-yellow-500 text-gray-900 px-2 py-0.5 rounded-full">
+                          Active
+                        </span>
+                      }
+                    </a>
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+      <div class="flex p-2 md:hidden border-t-slate-100 border-t-1">
+        <div class="text-yellow-500 text-sm font-semibold pr-2">Balances:</div>
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center">
+            <img src="https://assets.radixdlt.com/icons/icon-xrd.png" alt="XRD" class="w-5 h-5 mr-2">
+            <div>
+              <div class="text-white text-sm font-medium">{{ balances.XRD.balance | number:'1.0-2' }}</div>
+            </div>
+            <a href="https://astrl.trade/bridge" target="_blank" rel="noopener noreferrer"
+              class="ml-2 text-yellow-500 hover:text-yellow-400 transition-colors duration-200 bg-gray-900 rounded-sm"
+              title="Fund XRD via Astrolescent Bridge">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+            </a>
+          </div>
+          <div class="flex items-center">
+            <img src="https://radix.defiplaza.net/assets/img/babylon/defiplaza-icon.png" alt="DFP2" class="w-5 h-5 mr-2">
+            <div>
+              <div class="text-white text-sm font-medium">{{ balances.DFP2.balance | number:'1.0-2' }}</div>
+            </div>
+            <button (click)="openDFP2SwapModal()"
+              class="ml-2 text-yellow-500 hover:text-yellow-400 transition-colors duration-200 bg-gray-900 rounded-sm"
+              title="Fund DFP2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </nav>
+}
+<div class="h-34 md:h-0"></div>
+<div class="bg-[url('/radixbg.png')] bg-right bg-no-repeat bg-cover relative min-h-10 flex justify-between items-center text-white py-2 px-4">
+  <img src="/radixbanner.png" class="h-4"><p class="text-sm sm:block hidden font-medium absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pt-0.5">Earn $XRD by participating in the Radix network</p><a href="https://incentives.radixdlt.com" target="_blank" class="focus:ring-2 focus:ring-astro focus:ring-offset-2 cursor-pointer bg-white text-black border hover:bg-black hover:text-white tracking-astro font-optical-24-550 flex items-center justify-center rounded-full px-3 py-1 text-sm mt">Join now<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon" class="size-3"><path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"></path></svg></a>
+</div>
+@if (showBanner && !isDiscordVerifyRoute()) {
+<!-- Astrolescent Banner -->
+  <div class="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white md:py-3 md:px-4 relative overflow-hidden">
+    <div class="absolute inset-0 bg-pattern opacity-10"></div>
+    <div class="container mx-auto flex flex-col sm:flex-row items-center justify-between relative z-10">
+      <div class="flex p-1.5 md:p-0 md:block">
+      <div class="flex-grow flex items-center md:mb-3 sm:mb-0">
+        <div class="mr-3 animate-bounce">
+          <svg class="w-8 h-8 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
+        </div>
+        <div class="mr-4">
+          <p class="text-sm sm:text-base font-medium">
+            <span class="hidden md:block font-bold text-yellow-300">Supercharge</span><span class="hidden md:block">your Radix liquidity with</span>
+            <span class="hidden md:block font-bold text-yellow-300">Astrolescent's</span><span class="hidden md:block">cross-chain bridge!</span>
+            <span class="block md:hidden font-bold text-yellow-300">Bridge to Radix</span>
+          </p>
+          <a href="https://www.youtube.com/shorts/S7G80W-OT5U" target="_blank" rel="noopener noreferrer"
+            class="text-xs text-yellow-200 hover:text-yellow-300 underline mt-1 hidden md:inline-block">
+            Need help? Watch a quick guide
+          </a>
+        </div>
+      </div>
+      <div class="flex items-center">
+        <a href="https://astrl.trade/bridge" target="_blank" rel="noopener noreferrer"
+          class="group bg-white text-indigo-600 hover:bg-yellow-300 hover:text-indigo-700 transition-all duration-300 text-sm font-bold px-2 py-1 md:py-2 md:px-6 rounded-full shadow-md hover:shadow-lg transform hover:scale-105 mr-4">
+          Bridge<span class="hidden md:block"> Now</span>
+          <svg class="w-4 h-4 ml-2 inline-block transition-transform duration-300 transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+          </svg>
+        </a>
+        <button (click)="closeBanner()" class="text-white hover:text-yellow-300">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      </div>
+    </div>
   </div>
-</nav>
+}
 
+<style>
+  .bg-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+</style>
+
+@if (!isDiscordVerifyRoute()) {
+  <div class="md:hidden fixed bottom-3 left-0 right-0 bg-blue-950 bg-opacity-75 p-2 flex justify-center items-center h-12 space-x-4 z-50 w-9/10 mx-auto rounded-4xl shadow-xl">
+    <!-- DeFi Strategies -->
+    <a routerLink="/strategies" class="flex flex-col items-center text-white hover:text-yellow-500 transition-colors duration-300 p-2 rounded-xl bg-slate-900"
+      [ngClass]="{'text-yellow-500 bg-slate-950': isActive('/strategies')}">
+      <svg class="w-6 h-6" viewBox="0 0 48 48"><path d="M4.22 60.766V39.249"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.368" d="M2.403 43.091H24.13V24.648h20.05"/><circle cx="24.2" cy="24.857" r=".978" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.368"/><circle cx="2.534" cy="43.158" r=".978" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.368"/><circle cx="43.927" cy="24.476" r=".978" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.368"/><circle cx="24.063" cy="43.216" r=".978" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.368"/><circle cx="11.746" cy="31.77" r="9.958" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><text xml:space="preserve" x="5.951" y="38.619" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" font-size="19.665" style="text-align:start"><tspan x="5.951" y="38.619">$</tspan></text><circle cx="33.143" cy="13.457" r="9.599" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><circle cx="36.022" cy="13.485" r="9.599" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/><text xml:space="preserve" x="30.435" y="20.087" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" font-size="18.956" style="text-align:start"><tspan x="30.435" y="20.087">$</tspan></text></svg>
+    </a>
+    <!-- Pools (Larger and Centered) -->
+    <a routerLink="/pools" class="flex flex-col items-center text-white hover:text-yellow-500 transition-colors duration-300 p-2 rounded-xl bg-slate-900"
+      [ngClass]="{'text-yellow-500 bg-slate-950': isActive('/pools')}">
+      <svg class="w-6 h-6" viewBox="0 0 12.7 12.7" fill="currentColor" stroke="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5.45 2.073 4.8 3.633" /><path d="M7.164 12.124c.727-.337 1.16-.837 1.376-1.592.197-.684.036-1.537-.438-2.33-.126-.211-.494-.665-.816-1.01-.69-.735-.865-1.072-.866-1.664-.001-.544.227-.896.755-1.168.311-.16.422-.183.743-.156.719.06 1.312.518 1.829 1.411.518.895.817 1.9.817 2.749 0 .509-.212 1.313-.48 1.82-.538 1.018-1.815 1.894-3.009 2.065l-.266.039zm-2.48-.421c-.502-.213-.678-.337-1.047-.736-.69-.745-.951-1.534-.896-2.698.074-1.55.772-2.972 2.192-4.466.82-.863 1.04-1.138 1.273-1.6.228-.453.434-1.111.441-1.41.003-.127.031-.291.063-.365.036-.084.058.158.06.665.006 1.259-.13 1.719-.93 3.141-.47.834-.558 1.412-.328 2.15.161.52.43.921 1.098 1.645.805.872 1.035 1.554.8 2.371-.094.328-.182.46-.523.792-.277.27-.518.437-.742.516-.422.148-1.108.146-1.462-.005z" />
+      </svg>
+    </a>
+    <!-- Portfolio -->
+    <a routerLink="/portfolio" class="flex flex-col items-center text-white hover:text-yellow-500 transition-colors duration-300 p-2 rounded-xl bg-slate-900"
+      [ngClass]="{'text-yellow-500 bg-slate-950': isActive('/portfolio')}">
+      <svg class="w-6 h-6" viewBox="0 0 48 48" fill="currentColor">
+        <rect width="6.332" height="27.472" x="5.157" y="10.979" rx="1"/><rect width="6.332" height="22.264" x="12.536" y="16.179" rx="1"/><rect width="6.332" height="14.196" x="20.06" y="24.234" rx="1"/><rect width="38.604" height=".715" x="5.157" y="38.86" rx=".2"/><rect width=".97" height="8.119" x="39.166" y="10.877" rx=".2"/><rect width=".97" height="8.119" x="14.404" y="-43.711" rx=".2" transform="rotate(90)"/><rect width=".97" height="8.119" x="30.157" y="-43.523" rx=".2" transform="rotate(90)"/>
+      </svg>
+    </a>
+  </div>
+}
+
+<!-- Rest of your template -->
 <router-outlet></router-outlet>
 
-<footer class="bg-gray-800 text-white py-8 mt-auto">
-  <div class="container mx-auto px-4">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-      <div>
-        <h3 class="text-xl font-semibold mb-4 text-yellow-600">Attos Earn</h3>
-        <p>&copy; {{ currentYear }} Attos Earn. All rights reserved.</p>
+<div class="h-10 md:hidden"></div>
+
+@if (!isDiscordVerifyRoute()) {
+  <footer class="bg-gray-800 text-white py-8 mt-auto hidden md:block">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h3 class="text-xl font-semibold mb-4 text-yellow-600">Attos Earn</h3>
+          <p>&copy; {{ currentYear }} Attos Earn. All rights reserved.</p>
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold mb-4 text-yellow-600">Quick Links</h3>
+          <ul class="space-y-2">
+            <li><a routerLink="/privacy-policy" class="hover:text-yellow-500 transition-colors duration-300">Privacy Policy</a></li>
+            <li><a routerLink="/terms-and-conditions" class="hover:text-yellow-500 transition-colors duration-300">Terms and Conditions</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold mb-4 text-yellow-600">DEX Integrations</h3>
+          <ul class="space-y-2">
+            <li><a href="https://ociswap.com" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-500 transition-colors duration-300">Ociswap</a></li>
+            <li><a href="https://radix.defiplaza.net" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-500 transition-colors duration-300">Defiplaza</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-xl font-semibold mb-4 text-yellow-600">DEX Aggregators</h3>
+          <ul class="space-y-2">
+            <li><a href="https://astrolescent.com" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-500 transition-colors duration-300">Astrolescent</a></li>
+            <li><a href="https://8arms1goal.com" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-500 transition-colors duration-300">Calamari</a></li>
+          </ul>
+        </div>
       </div>
-      <div>
-        <h3 class="text-xl font-semibold mb-4 text-yellow-600">Quick Links</h3>
-        <ul class="space-y-2">
-          <li><a routerLink="/privacy-policy" class="hover:text-yellow-500 transition-colors duration-300">Privacy Policy</a></li>
-          <li><a routerLink="/terms-and-conditions" class="hover:text-yellow-500 transition-colors duration-300">Terms and Conditions</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3 class="text-xl font-semibold mb-4 text-yellow-600">DEX Integrations</h3>
-        <ul class="space-y-2">
-          <li><a href="https://ociswap.com" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-500 transition-colors duration-300">Ociswap</a></li>
-          <li><a href="https://radix.defiplaza.net" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-500 transition-colors duration-300">Defiplaza</a></li>
-        </ul>
-      </div>
-      <div>
-        <h3 class="text-xl font-semibold mb-4 text-yellow-600">DEX Aggregators</h3>
-        <ul class="space-y-2">
-          <li><a href="https://astrolescent.com" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-500 transition-colors duration-300">Astrolescent</a></li>
-          <li><a href="https://8arms1goal.com" target="_blank" rel="noopener noreferrer" class="hover:text-yellow-500 transition-colors duration-300">Calamari</a></li>
-        </ul>
+      <div class="mt-8 pt-8 border-t border-gray-700">
+        <div class="flex justify-center space-x-6">
+          <a href="#" class="text-gray-400 hover:text-yellow-500 transition-colors duration-300">
+            <span class="sr-only">X (formerly Twitter)</span>
+            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-yellow-500 transition-colors duration-300">
+            <span class="sr-only">GitHub</span>
+            <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+            </svg>
+          </a>
+        </div>
       </div>
     </div>
-    <div class="mt-8 pt-8 border-t border-gray-700">
-      <div class="flex justify-center space-x-6">
-        <a href="#" class="text-gray-400 hover:text-yellow-500 transition-colors duration-300">
-          <span class="sr-only">X (formerly Twitter)</span>
-          <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-          </svg>
-        </a>
-        <a href="#" class="text-gray-400 hover:text-yellow-500 transition-colors duration-300">
-          <span class="sr-only">GitHub</span>
-          <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
-          </svg>
-        </a>
+  </footer>
+}
+
+<!-- DFP2 Swap Modal -->
+@if (showSwapModal) {
+  <div class="fixed inset-0 bg-black opacity-97 flex items-center justify-center z-50 p-4">
+    <div class="bg-gray-800 rounded-lg w-full max-w-md overflow-y-auto max-h-[90vh]">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-yellow-500">Fund DFP2</h2>
+          <button (click)="closeSwapModal()" class="text-gray-400 hover:text-white">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-300 mb-2">Amount of XRD to swap</label>
+          <div class="relative">
+            <input
+              type="number"
+              [value]="swapAmount"
+              [max]="(baseBalances | async)?.XRD?.balance || 0"
+              (input)="updateSwapAmount($event)"
+              [min]="0"
+              placeholder="Enter amount"
+              class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white pr-16"
+              >
+            @if (baseBalances | async; as balances) {
+              <button
+                (click)="setMaxAmount(balances?.XRD?.balance || '0')"
+                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-2 py-1 rounded text-xs font-medium"
+                >
+                MAX
+              </button>
+            }
+          </div>
+          <div class="flex justify-between text-xs text-gray-400 mt-1">
+            <span>Enter an amount to see the quote</span>
+            @if (baseBalances | async; as balances) {
+              <span>Balance: {{ balances.XRD.balance | number:'1.0-6' }} XRD</span>
+            }
+          </div>
+        </div>
+        @if (swapError) {
+          <div class="mb-4 p-3 bg-red-900 text-white rounded">
+            {{ swapError }}
+          </div>
+        }
+        @if (isLoadingQuote) {
+          <div class="mb-6 bg-gray-700 p-4 rounded">
+            <div  class="text-center mb-3">
+              <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+          </div>
+        }
+        @if (!isLoadingQuote && (swapQuote$ | async); as swapQuote) {
+          <div class="mb-6 bg-gray-700 p-4 rounded text-sm">
+            @if (!isLoadingQuote) {
+              <div>
+                <div class="flex justify-between mb-2">
+                  <span class="text-gray-300">You pay:</span>
+                  <span class="font-medium">{{ swapAmount | number:'1.0-18' }} XRD</span>
+                </div>
+                <div class="flex justify-between mb-2">
+                  <span class="text-gray-300">You receive:</span>
+                  <span class="font-medium">{{ swapQuote.outputTokens | number:'1.0-6' }} DFP2</span>
+                </div>
+                <div class="flex justify-between mb-2">
+                  <span class="text-gray-300">Price impact:</span>
+                  <span class="font-medium" [ngClass]="{'text-red-500': swapQuote.priceImpact > 5}">
+                    {{ swapQuote.priceImpact | number:'1.2-2' }}%
+                  </span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-300">Rate:</span>
+                  <span class="font-medium">1 XRD = {{ swapQuote.outputTokens / +swapAmount | number:'1.0-6' }} DFP2</span>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="flex justify-end">
+            <button
+              (click)="closeSwapModal()"
+              class="bg-gray-700 text-white px-4 py-2 rounded mr-2 hover:bg-gray-600 transition duration-300"
+              >
+              Cancel
+            </button>
+            <button
+              (click)="executeSwap(swapQuote.manifest)"
+              class="bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 w-24 justify-items-center"
+              [disabled]="!swapQuote || isLoadingQuote"
+              >
+              @if (txButtonStatus | async; as tx) {
+                @if (tx === 'pending') {
+                  <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                } @else {
+                  Swap
+                }
+              } @else {
+                Swap
+              }
+            </button>
+          </div>
+        }
       </div>
     </div>
   </div>
-</footer>
+}

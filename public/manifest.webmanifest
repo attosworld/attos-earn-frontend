@@ -1,0 +1,61 @@
+{
+  "name": "Attos Earn",
+  "short_name": "Attos Earn",
+  "description": "Your comprehensive DeFi platform for aggregating liquidity pools, managing your portfolio, and maximizing yields across multiple protocols.",
+  "theme_color": "#1e2939",
+  "background_color": "#1e2939",
+  "display": "standalone",
+  "scope": "./",
+  "start_url": "./",
+  "categories": ["finance", "education"],
+  "icons": [
+    {
+      "src": "icons/attos-earn-logo-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/attos-earn-logo-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/attos-earn-logo-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/attos-earn-logo-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/attos-earn-logo-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/attos-earn-logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/attos-earn-logo-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/attos-earn-logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ]
+}

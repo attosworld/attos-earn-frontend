@@ -2,8 +2,18 @@
 /* You can add global styles to this file, and also import other style files */
 
 body {
+
+}
+
+body radix-connect-button.connect-button {
   --radix-connect-button-width: 40px;
-  --radix-connect-button-border-radius: 4px;
+  --radix-connect-button-border-radius: 20px;
+}
+
+body radix-connect-button.discord-connect-button {
+  --radix-connect-button-width: 380px;
+  --radix-connect-button-height: 48px;
+  --radix-connect-button-border-radius: 10px;
 }
 
 @font-face {

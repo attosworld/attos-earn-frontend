@@ -2,14 +2,14 @@
   <h1 class="text-2xl font-bold mb-4">Your Pools Portfolio</h1>
 
   <!-- Portfolio Summary -->
-  <div class="mb-8 bg-gray-800 rounded-lg p-6 shadow-lg">
+  <div class="mb-8 md:bg-gray-800 rounded-lg p-6 shadow-lg">
     <h2 class="text-xl font-semibold mb-4 text-yellow-500">Portfolio Summary</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-gray-700 rounded-lg p-4">
+      <div class="bg-gray-700 rounded-lg p-4 hidden md:block">
         <p class="text-sm text-gray-400 mb-1">Total Invested</p>
         <p class="text-2xl font-bold">{{ totalInvested | currency }}</p>
       </div>
-      <div class="bg-gray-700 rounded-lg p-4">
+      <div class="bg-gray-700 rounded-lg p-4 hidden md:block">
         <p class="text-sm text-gray-400 mb-1">Current Value</p>
         <p class="text-2xl font-bold">{{ totalCurrentValue | currency }}</p>
       </div>
@@ -22,6 +22,53 @@
     </div>
   </div>
 
+<!-- FAQ Section -->
+<div class="mb-8 hidden md:block">
+  <button
+    (click)="toggleFaqSection()"
+    class="w-full bg-gray-800 text-yellow-500 p-4 rounded-lg shadow-lg flex justify-between items-center hover:bg-gray-700 transition-colors duration-200"
+  >
+    <h2 class="text-xl font-semibold">Frequently Asked Questions</h2>
+    <svg
+      [ngClass]="{'rotate-180': isFaqSectionOpen}"
+      class="w-5 h-5 transition-transform duration-200"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+    </svg>
+  </button>
+
+  <div *ngIf="isFaqSectionOpen" class="mt-4 bg-gray-800 rounded-lg p-6 shadow-lg">
+    <div class="space-y-4">
+      <div *ngFor="let faq of faqs; let i = index" class="bg-gray-700 rounded-lg overflow-hidden">
+        <button
+          (click)="toggleFaq(i)"
+          class="w-full text-left p-4 flex justify-between items-center text-white hover:bg-gray-600 transition-colors duration-200"
+        >
+          <span class="text-lg font-medium">{{ faq.question }}</span>
+          <svg
+            [ngClass]="{'rotate-180': faq.isOpen}"
+            class="w-5 h-5 transition-transform duration-200"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        <div
+          *ngIf="faq.isOpen"
+          class="p-4 bg-gray-800 text-gray-300"
+          [innerHTML]="faq.answer"
+        >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
   <!-- Search bar -->
   <div class="mb-4">
     <input
@@ -33,6 +80,31 @@
     >
   </div>
 
+
+        <div class="mb-4 border-b border-gray-700 overflow-x-auto scroll-auto">
+          <div class="flex whitespace-nowrap min-w-max">
+            <ng-container *ngIf="selectedTab$ | async as selectedTab">
+              <button
+                class="py-2 px-3 sm:px-4 mr-1 sm:mr-2 focus:outline-none whitespace-nowrap hover:bg-gray-800 cursor-pointer text-sm sm:text-base"
+                [class.text-yellow-500]="selectedTab === 'lp'"
+                [class.border-b-2]="selectedTab === 'lp'"
+                [class.border-yellow-500]="selectedTab === 'lp'"
+                (click)="selectTab('lp')"
+                >
+                Liquidity Pools
+              </button>
+              <button
+                class="py-2 px-3 sm:px-4 mr-1 sm:mr-2 focus:outline-none whitespace-nowrap hover:bg-gray-800 cursor-pointer text-sm sm:text-base"
+                [class.text-yellow-500]="selectedTab === 'strategy'"
+                [class.border-b-2]="selectedTab === 'strategy'"
+                [class.border-yellow-500]="selectedTab === 'strategy'"
+                (click)="selectTab('strategy')"
+                >
+                Strategy
+              </button>
+            </ng-container>
+          </div>
+        </div>
   <!-- Portfolio table -->
   <div class="overflow-x-auto">
     <table class="w-full">
@@ -52,14 +124,8 @@
             </ng-container>
           </th>
           <th class="py-2 px-4 text-right cursor-pointer" (click)="sortPortfolioItems('pnl')">
-            PnL
+            Profit/Loss
             <ng-container *ngIf="(sort$ | async)?.column === 'pnl'">
-              {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
-            </ng-container>
-          </th>
-          <th class="py-2 px-4 text-right cursor-pointer" (click)="sortPortfolioItems('pnlPercentage')">
-            PnL %
-            <ng-container *ngIf="(sort$ | async)?.column === 'pnlPercentage'">
               {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
             </ng-container>
           </th>
@@ -69,6 +135,7 @@
               {{ (sort$ | async)?.direction === 'asc' ? '↑' : '↓' }}
             </ng-container>
           </th>
+          <th class="py-2 px-4 text-right">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -83,30 +150,76 @@
                   [rightAlt]="item.rightAlt"
                   class="mr-2"
                 ></app-pool-icon-pair>
-                <span>{{ item.poolName }}</span>
+              <span>{{ item.poolName  }}<ng-container *ngIf="item.tx"> (<a
+                  [href]="'https://radxplorer.com/transactions/' + item.tx"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-yellow-500 hover:underline"
+                  >{{ item.tx | shortenAddress }}
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>)
+                </ng-container>
+              </span>
               </div>
             </td>
             <td class="py-2 px-4 block md:table-cell md:text-right">
               <span class="inline-block md:hidden font-medium mr-2">Invested:</span>
-              {{ item.invested | currency }}
+              <div>{{ item.invested | currency }} ~{{ item.investedXrd | currency:'':'':'1.2-2' }} XRD</div>
+              <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
+                Collateral: {{ item.loanAmount | currency:'':'':'1.2-2' }} {{ item.loanCurrency }}
+              </div>
             </td>
             <td class="py-2 px-4 block md:table-cell md:text-right">
               <span class="inline-block md:hidden font-medium mr-2">Current Value:</span>
-              {{ item.currentValue | currency }}
+              <div>{{ item.currentValue | currency }} ~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD</div>
+              <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
+                Borrowed: {{ item.borrowAmount | currency:'':'':'1.2-2' }} {{ item.borrowCurrency }}
+              </div>
             </td>
-            <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': item.pnl > 0, 'text-red-500': item.pnl < 0}">
-              <span class="inline-block md:hidden font-medium mr-2">PnL:</span>
-              {{ item.pnl | currency }}
-            </td>
-            <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': item.pnlPercentage > 0, 'text-red-500': item.pnlPercentage < 0}">
-              <span class="inline-block md:hidden font-medium mr-2">PnL %:</span>
-              {{ item.pnlPercentage | number:'1.2-2' }}%
+            <td class="py-2 px-4 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
+              <span class="inline-block md:hidden font-medium mr-2">Profit/Loss:</span>
+              {{ item.pnl | currency }} ({{ item.pnlPercentage | number:'1.2-2' }}%)
             </td>
             <td class="py-2 px-4 block md:table-cell md:text-right">
               <span class="inline-block md:hidden font-medium mr-2">Provider:</span>
               {{ item.provider }}
             </td>
-          </tr>
+            <td class="py-2 px-4 block md:table-cell">
+              <div class="flex place-self-end">
+                <button
+                  *ngIf="item.strategy"
+                  (click)="closeStrategy(item)"
+                  class="bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24 ml-auto"
+                  [disabled]="closingItems[item.closeManifest]"
+                  >
+                  @if (closingItems[item.closeManifest]) {
+                  <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  } @else {
+                  <span>Close</span>
+                  }
+                </button>
+                <button
+                  *ngIf="!item.strategy"
+                  (click)="closeStrategy(item)"
+                  class="w-48 bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center ml-auto"
+                  [disabled]="closingItems[item.closeManifest]"
+                  >
+                  @if (closingItems[item.closeManifest]) {
+                  <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  } @else {
+                  <span>Remove Liquidity</span>
+                  }
+                </button>
+              </div>
+            </td>
         </ng-container>
       </tbody>
     </table>

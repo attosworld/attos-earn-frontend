@@ -2,98 +2,754 @@
   <h1 class="text-3xl font-bold text-white mb-8">DeFi Strategies</h1>
 
   <!-- New sections for benefits and risks -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-    <!-- Benefits section -->
-    <div class="bg-gray-800 rounded-lg p-6">
-      <h2 class="text-2xl font-semibold text-yellow-500 mb-4">Why Use DeFi Strategies?</h2>
-      <ul class="list-disc list-inside text-gray-300 space-y-2">
-        <li>Potential for higher yields compared to traditional finance</li>
-        <li>Access to a wide range of financial instruments and markets</li>
-        <li>Increased control and transparency over your investments</li>
-        <li>Opportunity to participate in innovative financial products</li>
-        <li>Ability to diversify your portfolio across multiple protocols</li>
-      </ul>
-    </div>
+  <!-- <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-4"> -->
+  <!--   <!-1- Benefits section -1-> -->
+  <!--   <div class="bg-gray-800 rounded-lg p-6"> -->
+  <!--     <h2 class="text-2xl font-semibold text-yellow-500 mb-4">Why Use DeFi Strategies?</h2> -->
+  <!--     <ul class="list-disc list-inside text-gray-300 space-y-2"> -->
+  <!--       <li>Potential for higher yields compared to traditional finance</li> -->
+  <!--       <li>Access to a wide range of financial instruments and markets</li> -->
+  <!--       <li>Increased control and transparency over your investments</li> -->
+  <!--       <li>Opportunity to participate in innovative financial products</li> -->
+  <!--       <li>Ability to diversify your portfolio across multiple protocols</li> -->
+  <!--     </ul> -->
+  <!--   </div> -->
 
-    <!-- Risks section -->
-    <div class="bg-gray-800 rounded-lg p-6">
-      <h2 class="text-2xl font-semibold text-red-500 mb-4">Risks of Complex DeFi Strategies</h2>
-      <ul class="list-disc list-inside text-gray-300 space-y-2">
-        <li>Smart contract vulnerabilities and potential exploits</li>
-        <li>High volatility in cryptocurrency markets</li>
-        <li>Impermanent loss in liquidity provision</li>
-        <li>Regulatory uncertainties in the DeFi space</li>
-        <li>Complexity of strategies may lead to user errors</li>
-        <li>Potential for significant financial losses</li>
-      </ul>
-    </div>
-  </div>
+  <!--   <!-1- Risks section -1-> -->
+  <!--   <div class="bg-gray-800 rounded-lg p-6"> -->
+  <!--     <h2 class="text-2xl font-semibold text-red-500 mb-4">Risks of Complex DeFi Strategies</h2> -->
+  <!--     <ul class="list-disc list-inside text-gray-300 space-y-2"> -->
+  <!--       <li>Smart contract vulnerabilities and potential exploits</li> -->
+  <!--       <li>High volatility in cryptocurrency markets</li> -->
+  <!--       <li>Impermanent loss in liquidity provision</li> -->
+  <!--       <li>Regulatory uncertainties in the DeFi space</li> -->
+  <!--       <li>Complexity of strategies may lead to user errors</li> -->
+  <!--       <li>Potential for significant financial losses</li> -->
+  <!--     </ul> -->
+  <!--   </div> -->
+  <!-- </div> -->
+  <div class="mb-8 hidden md:block">
+    <button
+      (click)="toggleFaqSection()"
+      class="w-full bg-gray-800 text-yellow-500 p-4 rounded-lg shadow-lg flex justify-between items-center hover:bg-gray-700 transition-colors duration-200"
+      >
+      <h2 class="text-xl font-semibold">Frequently Asked Questions</h2>
+      <svg
+        [ngClass]="{'rotate-180': isFaqSectionOpen}"
+        class="w-5 h-5 transition-transform duration-200"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        >
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+      </svg>
+    </button>
 
-  <!-- Existing strategies grid with coming soon overlay -->
-  <div class="relative">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [ngClass]="{'filter blur-sm': isComingSoon}">
-      <div *ngFor="let strategy of strategies" class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-        <div class="p-6">
-        <div class="flex justify-between items-start mb-4">
-          <h2 class="text-xl font-semibold text-yellow-500">{{ strategy.name }}</h2>
-          <div class="text-right">
-            <span class="text-sm text-gray-400">Total Rewards</span>
-            <p class="text-lg font-bold text-green-400">
-              {{ strategy.totalRewards.value | number:'1.2-2' }}% {{ strategy.totalRewards.type }}
-            </p>
-          </div>
-        </div>
-        <div class="flex flex-wrap items-center justify-start gap-2 mb-4">
-          <ng-container *ngFor="let step of strategy.steps; let last = last">
-            <div class="flex flex-col items-center w-20">
-              <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center mb-2">
-                <i class="fas fa-{{ step.icon }} text-yellow-500"></i>
-              </div>
-              <span class="text-xs text-gray-400 text-center">{{ step.label }}</span>
-            </div>
-            <svg *ngIf="!last" class="w-8 h-8 text-gray-600 self-center mb-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <div *ngIf="isFaqSectionOpen" class="mt-4 bg-gray-800 rounded-lg p-6 shadow-lg">
+      <div class="space-y-4">
+        <div *ngFor="let faq of faqs; let i = index" class="bg-gray-700 rounded-lg overflow-hidden">
+          <button
+            (click)="toggleFaq(i)"
+            class="w-full text-left p-4 flex justify-between items-center text-white hover:bg-gray-600 transition-colors duration-200"
+            >
+            <span class="text-lg font-medium">{{ faq.question }}</span>
+            <svg
+              [ngClass]="{'rotate-180': faq.isOpen}"
+              class="w-5 h-5 transition-transform duration-200"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
-          </ng-container>
-        </div>
-        <p class="text-gray-400 mb-4">{{ strategy.description }}</p>
-        <div class="mb-4">
-          <h3 class="text-sm font-semibold text-white mb-2">Required Assets:</h3>
-          <div class="flex flex-wrap gap-2">
-            <span *ngFor="let asset of strategy.requiredAssets" class="bg-gray-700 text-yellow-500 px-2 py-1 rounded-full text-xs">
-              {{ asset }}
-            </span>
+          </button>
+          <div
+            *ngIf="faq.isOpen"
+            class="p-4 bg-gray-800 text-gray-300"
+            >
+            <p>{{ faq.answer }}</p>
           </div>
         </div>
-        <!-- Add the new section for reward tokens -->
-        <div class="mb-4">
-          <h3 class="text-sm font-semibold text-white mb-2">Reward Tokens:</h3>
-          <div class="flex flex-wrap gap-2">
-            <span *ngFor="let token of strategy.rewardTokens" class="bg-gray-700 text-green-500 px-2 py-1 rounded-full text-xs">
-              {{ token }}
-            </span>
-          </div>
-        </div>
-
-        <!-- New section for rewards APY breakdown -->
-        <div class="mb-4">
-          <h3 class="text-sm font-semibold text-white mb-2">Rewards APY Breakdown:</h3>
-          <div class="grid grid-cols-2 gap-2">
-            <div *ngFor="let reward of strategy.rewardsBreakdown" class="bg-gray-700 rounded p-2 flex justify-between items-center">
-              <span class="text-yellow-500">{{ reward.token }}</span>
-              <span class="text-green-400">{{ reward.apy | number:'1.2-2' }}%</span>
-            </div>
-          </div>
-        </div>
-
-        <button (click)="executeStrategy(strategy.id)" class="w-full bg-yellow-500 text-gray-900 py-2 px-4 rounded hover:bg-yellow-600 transition duration-300">
-          Execute Strategy
-        </button>
       </div>
     </div>
   </div>
-  <div *ngIf="isComingSoon" class="absolute inset-0 flex items-center justify-center">
-    <h2 class="text-4xl font-bold text-yellow-500 bg-gray-900 bg-opacity-70 px-6 py-3 rounded-lg">Coming Soon!</h2>
+
+  <div>
+    <div class="block md:grid md:grid-cols-3 gap-6">
+      <div class="rounded-lg flex-grow">
+        <div class="flex items-center mb-4">
+          <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <h3 class="text-lg font-semibold text-yellow-400">Top Lending Yield</h3>
+        </div>
+        <app-strategy-card
+          [strategies]="topLendingStrategies$ | async"
+          (strategySelected)="openExecuteModal($event)"
+          ></app-strategy-card>
+      </div>
+      <div class="rounded-lg flex-grow">
+        <div class="flex items-center mb-4">
+          <!-- Updated Staking Icon -->
+          <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a10 10 0 100 20 10 10 0 000-20zM12 6v6l4 2"></path>
+          </svg>
+          <h3 class="text-lg font-semibold text-yellow-400">Top Staking Yield</h3>
+        </div>
+        <app-strategy-card
+          [strategies]="topStakingStrategies$ | async"
+          (strategySelected)="openExecuteModal($event)"
+          ></app-strategy-card>
+      </div>
+      <div class="rounded-lg flex-grow">
+        <div class="flex items-center mb-4">
+          <!-- Updated Liquidation Icon -->
+          <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <h3 class="text-lg font-semibold text-yellow-400">Top Liquidation Yield</h3>
+        </div>
+        <app-strategy-card
+          [strategies]="topLiquidationStrategies$ | async"
+          (strategySelected)="openExecuteModal($event)"
+          ></app-strategy-card>
+      </div>
+    </div>
+      <!-- Spinner for portfolio items -->
+      <div *ngIf="isPortfolioLoading" class="flex justify-center items-center h-32">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
+      </div>
+      <div *ngIf="portfolioItems$ | async as items" class="mt-4">
+        <h3 class="text-lg font-semibold text-white mb-2">Strategy Portfolio</h3>
+        <div class="border-gray-700 border-1 rounded-lg hidden md:p-4 md:block mb-8">
+
+          <div class="block text-lg font-bold border-b-1 border-b-gray-700 md:hidden">LP Positions</div>
+
+          <!-- Portfolio table (only show when not loading) -->
+          <table class="w-full">
+            <thead class="hidden md:table-header-group">
+              <tr class="text-sm font-medium text-gray-100 border-b border-gray-700">
+                <th class="py-2 px-4 text-left">Pool</th>
+                <th class="py-2 px-4 text-right cursor-pointer">
+                  Invested
+                </th>
+                <th class="py-2 px-4 text-right cursor-pointer">
+                  Current Value
+                </th>
+                <th class="py-2 px-4 text-right cursor-pointer" >
+                  Profit/Loss
+                </th>
+                <th class="py-2 px-4 text-right cursor-pointer" >
+                  Profit/Loss %
+                </th>
+                <th class="py-2 px-4 text-right cursor-pointer" >
+                  Provider
+                </th>
+                <th class="py-2 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <ng-container >
+                <tr *ngFor="let item of items" class="border-b border-gray-700 block md:table-row mb-4 md:mb-0 text-sm">
+                  <td class="py-2 px-1 block md:table-cell">
+                    <div class="flex items-center">
+                      <app-pool-icon-pair
+                        [leftIcon]="item.leftIcon"
+                        [rightIcon]="item.rightIcon"
+                        [leftAlt]="item.leftAlt"
+                        [rightAlt]="item.rightAlt"
+                        class="mr-2"
+                        ></app-pool-icon-pair>
+                      <span>{{ item.poolName  }}<ng-container *ngIf="item.tx"> (<a
+                        [href]="'https://radxplorer.com/transactions/' + item.tx"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-yellow-500 hover:underline"
+                        >{{ item.tx | shortenAddress }}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                          </a>)
+                        </ng-container>
+                      </span>
+                    </div>
+                  </td>
+                  <td class="py-2 px-1 md:table-cell md:text-right hidden">
+                    <span class="inline-block md:hidden font-medium mr-2">Invested:</span>
+                    <div>{{ item.invested | currency }}</div>
+                    <div>~{{ item.investedXrd | currency:'':'':'1.2-2' }} XRD</div>
+                    <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
+                      Collateral: {{ item.loanAmount | currency:'':'':'1.2-2' }} {{ item.loanCurrency }}
+                    </div>
+                  </td>
+                  <td class="py-1 px-1 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
+                    <span class="hidden md:hidden font-medium mr-2">Current Value:</span>
+                    <div [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">{{ item.currentValue | currency }} (
+                      ~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD)</div>
+                    <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
+                      Borrowed: {{ item.borrowAmount | currency:'':'':'1.2-2' }} {{ item.borrowCurrency }}
+                    </div>
+                  </td>
+                  <td class="py-1 px-1 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
+                    <span class="inline-block md:hidden font-medium mr-2">Profit/Loss:</span>
+                    {{ item.pnl | currency }} <span class="inline-block md:hidden">({{ item.pnlPercentage | number:'1.2-2' }}%)</span>
+                  </td>
+                  <td class="py-2 px-1 hidden md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnlPercentage > 0, 'text-red-500': +item.pnlPercentage < 0}">
+                    <span class="inline-block md:hidden font-medium mr-2">Profit/Loss %:</span>
+                    {{ item.pnlPercentage | number:'1.2-2' }}%
+                  </td>
+                  <td class="py-2 px-1 md:table-cell hidden md:text-right">
+                    <span class="inline-block md:hidden font-medium mr-2">Provider:</span>
+                    {{ item.provider }}
+                  </td>
+                  <td class="py-2 px-1 block md:table-cell">
+                    <div class="flex md:justify-end">
+                      <span class="hidden md:hidden font-medium mr-2">Actions:</span>
+                      <button
+                        *ngIf="item.strategy"
+                        (click)="closeStrategy(item)"
+                        class="bg-yellow-500 text-gray-900 px-1 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24 ml-auto"
+                        [disabled]="closingItems[item.poolName]"
+                        >
+                        @if (closingItems[item.closeManifest]) {
+                        <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        } @else {
+                        <span>Close</span>
+                        }
+                      </button>
+                      <button
+                        *ngIf="!item.strategy"
+                        (click)="closeStrategy(item)"
+                        class="w-48 bg-yellow-500 text-gray-900 px-1 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center"
+                        [disabled]="closingItems[item.poolName]"
+                        >
+                        @if (closingItems[item.closeManifest]) {
+                        <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        } @else {
+                        <span>Remove Liquidity</span>
+                        }
+                      </button>
+                    </div>
+                  </td>
+              </ng-container>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <app-yield-list
+      [strategies]="lendingStrategies$ | async"
+      [isCollapsed]="collapsedSections.lending"
+      [category]="'lending'"
+      [tvl]="lendingTotalTvl$ | async"
+      (collapseToggle)="toggleStrategySection('lending')"
+      (executeStrategy)="openExecuteModal($event)"
+      ></app-yield-list>
+    <app-yield-list
+      [strategies]="stakingStrategies$ | async"
+      [isCollapsed]="collapsedSections.staking"
+      [category]="'staking'"
+      [tvl]="stakingTotalTvl$ | async"
+      (collapseToggle)="toggleStrategySection('staking')"
+      (executeStrategy)="openExecuteModal($event)"
+      ></app-yield-list>
+    <app-yield-list
+      [strategies]="topLiquidationStrategies$ | async"
+      [isCollapsed]="collapsedSections.liquidation"
+      [category]="'liquidation'"
+      [tvl]="liquidationTotalTvl$ | async"
+      (collapseToggle)="toggleStrategySection('liquidation')"
+      (executeStrategy)="openExecuteModal($event)"
+      ></app-yield-list>
   </div>
-</div>
+
+
+  <!-- Search bar -->
+  <!-- <div class="mb-4 p-0 rounded-lg"> -->
+  <!-- <input -->
+  <!--   type="text" -->
+  <!--   [(ngModel)]="searchTerm" -->
+  <!--   (ngModelChange)="onSearch($event)" -->
+  <!--   placeholder="Search strategies..." -->
+  <!--   class="w-full p-2 bg-gray-700 border border-gray-600 rounded text-white" -->
+  <!--   > -->
+  <!--   </div> -->
+
+  <!-- <!-1- Advanced Filters -1-> -->
+  <!-- <div class="mb-8 bg-gray-800 p-6 rounded-lg"> -->
+  <!--   <div class="flex justify-between items-center mb-4"> -->
+  <!--     <h3 class="text-lg font-semibold text-white">Advanced Filters</h3> -->
+  <!--     <button -->
+  <!--       (click)="resetFilters()" -->
+  <!--       class="bg-gray-700 text-white px-3 py-1 rounded hover:bg-gray-600 transition duration-300" -->
+  <!--     > -->
+  <!--       Clear Filters -->
+  <!--     </button> -->
+  <!--   </div> -->
+  <!--   <div class="grid grid-cols-1 md:grid-cols-3 gap-4"> -->
+  <!--     <!-1- Required Assets Filter -1-> -->
+  <!--     <div> -->
+  <!--       <label class="block text-sm font-medium text-gray-300 mb-2">Required Assets</label> -->
+  <!--       <select -->
+  <!--         [(ngModel)]="requiredAssetsFilter" -->
+  <!--         (ngModelChange)="updateFilters()" -->
+  <!--         class="w-full bg-gray-700 border border-gray-600 rounded text-white p-2" -->
+  <!--         multiple -->
+  <!--       > -->
+  <!--         <option *ngFor="let asset of allRequiredAssets$ | async" [value]="asset">{{ asset }}</option> -->
+  <!--       </select> -->
+  <!--     </div> -->
+
+  <!--     <!-1- Reward Tokens Filter -1-> -->
+  <!--     <div> -->
+  <!--       <label class="block text-sm font-medium text-gray-300 mb-2">Reward Tokens</label> -->
+  <!--       <select -->
+  <!--         [(ngModel)]="rewardTokensFilter" -->
+  <!--         (ngModelChange)="updateFilters()" -->
+  <!--         class="w-full bg-gray-700 border border-gray-600 rounded text-white p-2" -->
+  <!--         multiple -->
+  <!--       > -->
+  <!--         <option *ngFor="let token of allRewardTokens$ | async" [value]="token">{{ token }}</option> -->
+  <!--       </select> -->
+  <!--     </div> -->
+
+  <!--     <!-1- New APY Filter -1-> -->
+  <!--     <div> -->
+  <!--       <label class="block text-sm font-medium text-gray-300 mb-2">APY</label> -->
+  <!--       <div class="flex items-center"> -->
+  <!--         <select -->
+  <!--           [(ngModel)]="apyFilter.condition" -->
+  <!--           (ngModelChange)="updateFilters()" -->
+  <!--           class="mr-2 bg-gray-700 border border-gray-600 rounded text-white p-2" -->
+  <!--         > -->
+  <!--           <option value="above">Above</option> -->
+  <!--           <option value="below">Below</option> -->
+  <!--         </select> -->
+  <!--         <input -->
+  <!--           type="number" -->
+  <!--           [(ngModel)]="apyFilter.value" -->
+  <!--           (ngModelChange)="updateFilters()" -->
+  <!--           placeholder="Enter APY %" -->
+  <!--           class="w-full bg-gray-700 border border-gray-600 rounded text-white p-2" -->
+  <!--         > -->
+  <!--       </div> -->
+  <!--     </div> -->
+  <!--   </div> -->
+  <!-- </div> -->
+  <!-- <!-1- Existing strategies grid with coming soon overlay -1-> -->
+  <!-- <div class="relative"> -->
+  <!--   <ng-container *ngIf="combinedData$ | async as data"> -->
+  <!--     <ng-container *ngIf="addLiquidityPreview | async"></ng-container> -->
+  <!--     <ng-container *ngIf="swapPreview | async"></ng-container> -->
+  <!--     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" [ngClass]="{'filter blur-sm': isComingSoon}"> -->
+  <!--       <div *ngFor="let strategy of data.strategies" class="bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col h-full"> -->
+  <!--         <div class="p-6 flex-grow"> -->
+  <!--           <div class="flex justify-between items-start mb-4"> -->
+  <!--             <h2 class="text-xl font-semibold text-yellow-500">{{ strategy.name }}</h2> -->
+  <!--             <div class="text-right"> -->
+  <!--               <span class="text-sm text-gray-400">Total Rewards</span> -->
+  <!--               <p class="text-lg font-bold text-green-400"> -->
+  <!--                 {{ strategy.totalRewards.value | number:'1.2-2' }}% {{ strategy.totalRewards.type }} -->
+  <!--               </p> -->
+  <!--             </div> -->
+  <!--           </div> -->
+
+  <!--           <!-1- Dapps Utilized Section -1-> -->
+  <!--           <div class="mb-4"> -->
+  <!--             <h3 class="text-sm font-semibold text-white mb-2">Dapps Utilized:</h3> -->
+  <!--             <div class="flex flex-wrap gap-2"> -->
+  <!--               <div *ngFor="let dapp of strategy.dappsUtilized" class="flex items-center bg-gray-700 px-2 py-1 rounded-full"> -->
+  <!--                 <img [src]="dapp.icon" [alt]="dapp.label" class="w-4 h-4 mr-1"> -->
+  <!--                 <span class="text-blue-400 text-xs">{{ dapp.label }}</span> -->
+  <!--               </div> -->
+  <!--             </div> -->
+  <!--           </div> -->
+  <!--           <div class="flex flex-wrap items-center justify-start gap-2 mb-4"> -->
+  <!--             <ng-container *ngFor="let step of strategy.steps; let last = last"> -->
+  <!--               <div class="flex flex-col items-center w-20"> -->
+  <!--                 <div class="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center mb-2 overflow-hidden"> -->
+  <!--                   <img [src]="step.icon" [alt]="step.label" class="w-full h-full object-cover"> -->
+  <!--                 </div> -->
+  <!--                 <span class="text-xs text-gray-400 text-center">{{ step.label }}</span> -->
+  <!--               </div> -->
+  <!--               <svg *ngIf="!last" class="w-8 h-8 text-gray-600 self-center mb-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"> -->
+  <!--                 <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/> -->
+  <!--               </svg> -->
+  <!--             </ng-container> -->
+  <!--           </div> -->
+  <!--           <p class="text-gray-400 mb-4">{{ strategy.description }}</p> -->
+  <!--           <div class="mb-4"> -->
+  <!--             <h3 class="text-sm font-semibold text-white mb-2">Required Assets:</h3> -->
+  <!--             <div class="flex flex-wrap gap-2"> -->
+  <!--               <span *ngFor="let asset of strategy.requiredAssets" class="bg-gray-700 text-yellow-500 px-2 py-1 rounded-full text-xs"> -->
+  <!--                 {{ asset.symbol }} -->
+  <!--               </span> -->
+  <!--             </div> -->
+  <!--           </div> -->
+
+  <!--           <!-1- Conditionally render the reward tokens section -1-> -->
+  <!--           <ng-container *ngIf="strategy.rewardTokens && strategy.rewardTokens.length > 0"> -->
+  <!--             <div class="mb-4"> -->
+  <!--               <h3 class="text-sm font-semibold text-white mb-2">Reward Tokens:</h3> -->
+  <!--               <div class="flex flex-wrap gap-2"> -->
+  <!--                 <span *ngFor="let token of strategy.rewardTokens" class="bg-gray-700 text-green-500 px-2 py-1 rounded-full text-xs"> -->
+  <!--                   {{ token }} -->
+  <!--                 </span> -->
+  <!--               </div> -->
+  <!--             </div> -->
+  <!--           </ng-container> -->
+
+  <!--           <!-1- Conditionally render the rewards APY breakdown section -1-> -->
+  <!--           <ng-container *ngIf="strategy.rewardsBreakdown && strategy.rewardsBreakdown.length > 0"> -->
+  <!--             <div class="mb-4"> -->
+  <!--               <h3 class="text-sm font-semibold text-white mb-2">Rewards APY Breakdown:</h3> -->
+  <!--               <div class="grid grid-cols-2 gap-2"> -->
+  <!--                 <div *ngFor="let reward of strategy.rewardsBreakdown" class="bg-gray-700 rounded p-2 flex justify-between items-center flex-wrap"> -->
+  <!--                   <span class="text-yellow-500">{{ reward.token }}</span> -->
+  <!--                   <span class="text-green-400">{{ reward.apy | number:'1.2-2' }}%</span> -->
+  <!--                 </div> -->
+  <!--               </div> -->
+  <!--             </div> -->
+  <!--           </ng-container> -->
+
+  <!--         </div> -->
+
+  <!--         <!-1- Execute Strategy Button -1-> -->
+  <!--         <div class="p-6 pt-0"> -->
+  <!--           <button (click)="openExecuteModal(strategy)" class="w-full bg-yellow-500 text-gray-900 py-2 px-4 rounded hover:bg-yellow-600 transition duration-300"> -->
+  <!--             Execute Strategy -->
+  <!--           </button> -->
+  <!--         </div> -->
+  <!--       </div> -->
+  <!--     </div> -->
+  <!--     <div *ngIf="isComingSoon" class="absolute inset-0 flex items-center justify-center"> -->
+  <!--       <h2 class="text-4xl font-bold text-yellow-500 bg-gray-900 bg-opacity-70 px-6 py-3 rounded-lg">Coming Soon!</h2> -->
+  <!--     </div> -->
+
+  <!--   </ng-container> -->
+  <!-- </div> -->
+      <!-- Execute Strategy Modal -->
+    <ng-container *ngIf="combinedData$ | async as data">
+      <div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 rounded-lg w-full max-w-4xl overflow-y-auto max-h-[90vh]">
+          <div class="p-6">
+            <h2 class="text-2xl font-bold text-yellow-500 mb-4 flex items-center">
+              <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+              Execute Strategy: {{ selectedStrategy?.name }}
+            </h2>
+
+            <!-- Strategy Description -->
+            <p class="text-gray-300 mb-6 flex items-start" *ngIf="isStrategyV1(selectedStrategy)">
+              <svg class="w-5 h-5 mr-2 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              {{ selectedStrategy.description }}
+            </p>
+
+            <!-- Show volume chart and pool details only for non-staking strategies -->
+            <ng-container *ngIf="isStrategyV1(selectedStrategy)">
+              <app-volume-chart [sevenDayVolume]="sevenDayVolume$ | async"></app-volume-chart>
+              <app-pool-details [poolInfo]="selectedStrategy.poolInfo"></app-pool-details>
+            </ng-container>
+
+            <!-- Staking-specific information -->
+            <ng-container *ngIf="isStakingStrategy(selectedStrategy)">
+              <div class="mb-6 bg-gray-750 p-4 rounded-lg">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a10 10 0 100 20 10 10 0 000-20zM12 6v6l4 2"></path>
+                  </svg>
+                  Staking Details
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+                  <div class="flex justify-between">
+                    <span>Total Staked:</span>
+                    <span class="font-semibold text-white">{{ selectedStrategy.total_stake | currency }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Bonus Type:</span>
+                    <span class="font-semibold text-white">{{ selectedStrategy.bonus_type }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Bonus Value:</span>
+                    <span class="font-semibold text-green-400">{{ selectedStrategy.bonus_value | number:'1.2-2' }}%</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Provider:</span>
+                    <span class="font-semibold text-purple-400">{{ selectedStrategy.provider || 'Unknown' }}</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <ng-container *ngIf="isLiquidationStrategy(selectedStrategy)">
+              <div class="mb-6 bg-gray-750 p-4 rounded-lg">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Liquidation Details
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+                  <div class="flex justify-between">
+                    <span>Total Deposited:</span>
+                    <span class="font-semibold text-white">{{ selectedStrategy.deposited | currency }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Expected APY:</span>
+                    <span class="font-semibold text-green-400">{{ selectedStrategy.bonus_value | number:'1.2-2' }}%</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Provider:</span>
+                    <span class="font-semibold text-purple-400">{{ selectedStrategy.provider || 'Unknown' }}</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Lending-specific information -->
+            <ng-container *ngIf="isLendingStrategy(selectedStrategy)">
+              <div class="mb-6 bg-gray-750 p-4 rounded-lg">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Lending Details
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-300">
+                  <div class="flex justify-between">
+                    <span>Total Deposited:</span>
+                    <span class="font-semibold text-white">{{ selectedStrategy.deposited | currency }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Total Loaned:</span>
+                    <span class="font-semibold text-white">{{ selectedStrategy.loaned | currency }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Bonus Type:</span>
+                    <span class="font-semibold text-white">{{ selectedStrategy.bonus_type }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>APY:</span>
+                    <span class="font-semibold text-green-400">{{ selectedStrategy.bonus_value | number:'1.2-2' }}%</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Provider:</span>
+                    <span class="font-semibold text-purple-400">{{ selectedStrategy.provider || 'Unknown' }}</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Lending-specific fields -->
+            <ng-container *ngIf="isLendingStrategy(selectedStrategy)">
+              <div class="mb-6">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Lending Options
+                </h3>
+
+                <div class="bg-gray-750 p-4 rounded-lg text-gray-300">
+                  <p class="mb-4">
+                    By depositing your assets into this lending pool, you'll earn interest at a rate of
+                    <span class="text-green-400 font-bold">{{ selectedStrategy.bonus_value | number:'1.2-2' }}%</span>
+                    per year. Interest accrues continuously and can be withdrawn along with your principal at any time.
+                  </p>
+
+                  <div class="flex items-center mb-4">
+                    <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Note: Interest rates may fluctuate based on market demand and supply conditions.</span>
+                  </div>
+
+                  <div class="mt-4 bg-gray-700 p-3 rounded-lg">
+                    <h4 class="text-sm font-semibold text-white mb-2">How Lending Rewards Work</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-sm">
+                      <li>Your deposited assets are added to the lending pool</li>
+                      <li>Borrowers pay interest to access funds from the pool</li>
+                      <li>Interest payments are distributed to lenders proportionally</li>
+                      <li>Your share of interest is based on your percentage of the total pool</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Required Assets -->
+            <div class="mb-6">
+              <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                Required Assets
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div *ngFor="let asset of selectedStrategy?.requiredAssets" class="mb-4">
+                  <label [for]="asset.symbol" class="block text-sm font-medium text-gray-300 mb-1">{{ asset.symbol }}</label>
+                  <div class="flex items-center">
+                    <input
+                      [id]="asset.resource_address"
+                      type="number"
+                      class="flex-grow bg-gray-700 text-white px-3 py-2 rounded-l"
+                      [class.border-red-500]="inputErrors[asset.resource_address]"
+                      [placeholder]="'Max: ' + (data?.balances?.[asset.resource_address] || 0)"
+                      [value]="inputAmounts[asset.resource_address] || ''"
+                      (input)="updateBalance(asset.resource_address, $event)"
+                    >
+                    <button
+                      (click)="setMaxBalance(asset.resource_address, data?.balances?.[asset.resource_address] || 0)"
+                      class="bg-gray-600 text-white px-3 py-2 rounded-r hover:bg-gray-500 transition duration-300"
+                    >
+                      Max
+                    </button>
+                  </div>
+                  <p *ngIf="inputErrors[asset.resource_address]" class="text-red-500 text-xs mt-1">
+                    {{ inputErrors[asset.resource_address] }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Staking-specific fields -->
+            <ng-container *ngIf="isStakingStrategy(selectedStrategy)">
+              <div class="mb-6">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Staking Options
+                </h3>
+
+                <!-- Add any staking-specific options here -->
+                <div class="bg-gray-750 p-4 rounded-lg text-gray-300">
+                  <p class="mb-4">
+                    By staking your assets, you'll earn rewards at a rate of
+                    <span class="text-green-400 font-bold">{{ selectedStrategy.bonus_value | number:'1.2-2' }}%</span>
+                    per year. Rewards are distributed continuously and can be claimed at any time.
+                  </p>
+
+                  <div class="flex items-center mb-4">
+                    <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Note: There may be a lock-up period for staked assets. Please review the terms before proceeding.</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Liquidation-specific fields -->
+            <ng-container *ngIf="isLiquidationStrategy(selectedStrategy)">
+              <div class="mb-6">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center">
+                  <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  Liquidation Options
+                </h3>
+
+                <div class="bg-gray-750 p-4 rounded-lg text-gray-300">
+                  <p class="mb-4">
+                    By depositing fUSD into the liquidation pool, you'll earn a portion of liquidation fees when undercollateralized positions are liquidated. Expected returns are approximately
+                    <span class="text-green-400 font-bold">{{ selectedStrategy.bonus_value | number:'1.2-2' }}%</span>
+                    per year, but may vary based on market conditions and liquidation frequency.
+                  </p>
+
+                  <div class="flex items-center mb-4">
+                    <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>Note: Returns from liquidation strategies can be variable and depend on market volatility.</span>
+                  </div>
+
+                  <div class="mt-4 bg-gray-700 p-3 rounded-lg">
+                    <h4 class="text-sm font-semibold text-white mb-2">How Liquidation Rewards Work</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-sm">
+                      <li>Your deposited fUSD joins the liquidation pool</li>
+                      <li>When borrowers' positions fall below required collateral ratios, they get liquidated</li>
+                      <li>Each liquidation generates fees that are distributed to pool participants</li>
+                      <li>Your share of rewards is proportional to your deposit in the pool</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- LTV Slider (only for non-staking strategies) -->
+            <ng-container *ngIf="isStrategyV1(selectedStrategy)">
+              <div *ngFor="let field of selectedStrategy.fieldsRequired" class="mb-6">
+                <ng-container *ngIf="field.fieldName === 'ltv' && field.type === 'slider'">
+                  <!-- Existing LTV slider code -->
+                  <label [for]="field.fieldName + '-slider'" class="text-sm font-medium text-gray-300 mb-1 flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
+                    </svg>
+                    {{ field.fieldName.toUpperCase() }} (Max {{ selectedStrategy.ltvLimit }}%)
+                  </label>
+                  <input
+                    [id]="field.fieldName + '-slider'"
+                    type="range"
+                    min="0"
+                    [max]="selectedStrategy.ltvLimit || 0"
+                    step="1"
+                    [value]="ltvValue"
+                    (input)="updateLtv($event)"
+                    class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                  >
+                  <div class="text-right text-gray-300 mt-1">{{ ltvValue }}%</div>
+                </ng-container>
+                <div *ngIf="selectedStrategy.poolInfo?.sub_type === 'precision'" class="text-gray-300 mt-2">
+                  Amount Borrowable: {{ amountBorrowableWithLtv }}
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Precision Pool Section (only for non-staking strategies) -->
+            <ng-container *ngIf="isStrategyV1(selectedStrategy) && selectedStrategy.poolInfo?.sub_type === 'precision'">
+              <!-- Existing precision pool code -->
+            </ng-container>
+
+            <!-- Transaction Result -->
+            <ng-container *ngIf="transactionResult | async as result">
+              <div *ngIf="result === 'Unknown'" class="text-red-400 mb-4">Liquidity constraint. Lend a lower amount.</div>
+            </ng-container>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end mt-6">
+              <button
+                (click)="closeModal()"
+                class="bg-gray-600 text-white px-4 py-2 rounded mr-2 hover:bg-gray-500 transition duration-300"
+              >
+                Cancel
+              </button>
+              <button
+                (click)="executeStrategy(data?.selectedAccount)"
+                class="bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24"
+                [disabled]="(txButtonStatus | async) === 'pending' || hasInputErrors()"
+                [class.opacity-50]="(txButtonStatus | async) === 'pending' || hasInputErrors()"
+              >
+                <ng-container *ngIf="txButtonStatus | async as tx; else executeText">
+                  <svg *ngIf="tx === 'pending'" class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span *ngIf="tx !== 'pending'">Execute</span>
+                </ng-container>
+                <ng-template #executeText>Execute</ng-template>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      </ng-container>
 </div>

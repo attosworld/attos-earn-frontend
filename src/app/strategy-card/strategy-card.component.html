@@ -1,0 +1,39 @@
+<div class="space-x-3 md:space-x-0 mb-2 flex md:block overflow-y-auto">
+  @if (strategies) {
+    @for (strategy of strategies; track strategy) {
+      <div
+        class="border-gray-700 border-1 hover:bg-gray-600 transition-colors duration-300 rounded-lg p-3 cursor-pointer flex-grow min-w-80 md:min-w-auto min-h-33 md:min-h-auto md:mb-2 content-center"
+        (click)="handleSelectStrategy(strategy)"
+        >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <div>
+              <div class="font-medium flex align-middle items-center">
+                <img [src]="strategy.icon_url" [alt]="strategy.name" class="mr-2 w-8 h-8 rounded-full"/>
+                <div>
+                  <div>
+                    {{ strategy.name }}
+                    <span *ngIf="strategy.incentivised" class="mr-1 mb-1" style="font-family:Upheaval TT" [class.text-yellow-500]="strategy.incentivised">
+                      AP+
+                    </span>
+                  </div>
+                  <div class="text-xs text-gray-400">{{ strategy.provider }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-green-400">{{ strategy.bonus_value | number:'1.2-2' }}% {{ strategy.bonus_type }}</div>
+            <div class="text-xs text-gray-400">Total value locked</div>
+            @if (strategy.strategy_type === 'Lending' || strategy.strategy_type === 'Liquidation') {
+              <div class="font-bold">{{ strategy.deposited | currency }}</div>
+            }
+            @if (strategy.strategy_type === 'Staking') {
+              <div class="font-bold">{{ strategy.total_stake | currency }}</div>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

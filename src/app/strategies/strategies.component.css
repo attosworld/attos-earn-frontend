@@ -1,0 +1,77 @@
+.price-range-slider {
+  position: relative;
+}
+
+.price-range-input {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+
+.price-range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  background: #fbbf24;
+  cursor: pointer;
+  border: 2px solid #1f2937;
+  border-radius: 50% 50% 0 50%;
+  transform: rotate(45deg);
+  margin-top: -11px;
+}
+
+.price-range-input::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  background: #fbbf24;
+  cursor: pointer;
+  border: 2px solid #1f2937;
+  border-radius: 50% 50% 0 50%;
+  transform: rotate(45deg);
+}
+
+.price-range-input::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 2px;
+  cursor: pointer;
+  background: transparent;
+  border-radius: 1px;
+}
+
+.price-range-input::-moz-range-track {
+  width: 100%;
+  height: 2px;
+  cursor: pointer;
+  background: transparent;
+  border-radius: 1px;
+}
+
+.price-range-input-min::-webkit-slider-thumb {
+  transform: rotate(45deg);
+}
+
+.price-range-input-max::-webkit-slider-thumb {
+  transform: rotate(225deg);
+}
+
+.price-range-input-min::-moz-range-thumb {
+  transform: rotate(45deg);
+}
+
+.price-range-input-max::-moz-range-thumb {
+  transform: rotate(225deg);
+}
+
+/* Ensure the track is clickable */
+.price-range-input {
+  pointer-events: none;
+}
+
+.price-range-input::-webkit-slider-thumb {
+  pointer-events: auto;
+}
+
+.price-range-input::-moz-range-thumb {
+  pointer-events: auto;
+}

@@ -63,5 +63,5 @@ router-outlet + * {
 
 
 radix-connect-button {
-  z-index: 99999999999999;
+  z-index: 49;
 }
