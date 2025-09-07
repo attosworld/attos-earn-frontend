@@ -757,8 +757,8 @@ export class StrategiesComponent {
                 .mul(this.selectedStrategy?.poolInfo?.current_price || 0)
                 .toString();
       }
-      this.validateInput(this.selectedStrategy?.poolInfo?.left_token || '');
-      this.validateInput(this.selectedStrategy?.poolInfo?.right_token || '');
+      this.validateInput();
+      this.validateInput();
     }
   }
 
@@ -781,8 +781,8 @@ export class StrategiesComponent {
                 )
                 .toString();
       }
-      this.validateInput(this.selectedStrategy?.poolInfo?.left_token || '');
-      this.validateInput(this.selectedStrategy?.poolInfo?.right_token || '');
+      this.validateInput();
+      this.validateInput();
     }
   }
 
