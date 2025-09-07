@@ -54,6 +54,11 @@ export class AppComponent implements OnInit {
   showSwapModal = false;
   swapAmount = '';
   swapError = '';
+  isLoadingQuote: boolean | null = null;
+
+  astrolescentService = inject(AstrolescentService);
+  topupStatus: Observable<TransactionStatus> = of();
+  isConnected!: boolean;
 
   // Subjects for reactive programming
   private swapAmountSubject = new BehaviorSubject<string>('1000');
@@ -101,7 +106,11 @@ export class AppComponent implements OnInit {
 
   selectedAccount$ = this.radixConnect.getSelectedAccount();
 
-  accounts$ = this.radixConnect.getAccounts();
+  accounts$ = this.radixConnect.getAccounts().pipe(
+    tap(accounts => {
+      this.isConnected = !!accounts && accounts.length > 0;
+    })
+  );
 
   updatBaseBalances$ = new BehaviorSubject<undefined>(undefined);
 
@@ -120,10 +129,6 @@ export class AppComponent implements OnInit {
         token => token.resourceInfo.resourceAddress === RadixConnectService.DFP2
       );
 
-      if (+(xrdBalance?.balance ?? 0) > 0) {
-        this.isConnected = true;
-      }
-
       return {
         XRD: {
           balance: xrdBalance?.balance ?? '0',
@@ -136,12 +141,6 @@ export class AppComponent implements OnInit {
       };
     })
   );
-
-  isLoadingQuote: boolean | null = null;
-
-  astrolescentService = inject(AstrolescentService);
-  topupStatus: Observable<TransactionStatus> = of();
-  isConnected!: boolean;
 
   ngOnInit() {
     this.checkScreenSize();
