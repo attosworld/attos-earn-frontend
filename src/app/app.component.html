@@ -270,34 +270,38 @@
     }
   </nav>
 }
-<div class="h-32 md:h-0"></div>
-
-<!-- Astrolescent Banner -->
+<div class="h-34 md:h-0"></div>
+<div class="bg-[url('/radixbg.png')] bg-right bg-no-repeat bg-cover relative min-h-10 flex justify-between items-center text-white py-2 px-4">
+  <img src="/radixbanner.png" class="h-4"><p class="text-sm sm:block hidden font-medium absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pt-0.5">Earn $XRD by participating in the Radix network</p><a href="https://incentives.radixdlt.com" target="_blank" class="focus:ring-2 focus:ring-astro focus:ring-offset-2 cursor-pointer bg-white text-black border hover:bg-black hover:text-white tracking-astro font-optical-24-550 flex items-center justify-center rounded-full px-3 py-1 text-sm mt">Join now<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" data-slot="icon" class="size-3"><path fill-rule="evenodd" d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"></path></svg></a>
+</div>
 @if (showBanner && !isDiscordVerifyRoute()) {
-  <div class="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white py-3 px-4 relative overflow-hidden">
+<!-- Astrolescent Banner -->
+  <div class="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white md:py-3 md:px-4 relative overflow-hidden">
     <div class="absolute inset-0 bg-pattern opacity-10"></div>
     <div class="container mx-auto flex flex-col sm:flex-row items-center justify-between relative z-10">
-      <div class="flex-grow flex items-center mb-3 sm:mb-0">
+      <div class="flex p-1.5 md:p-0 md:block">
+      <div class="flex-grow flex items-center md:mb-3 sm:mb-0">
         <div class="mr-3 animate-bounce">
           <svg class="w-8 h-8 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
           </svg>
         </div>
-        <div>
+        <div class="mr-4">
           <p class="text-sm sm:text-base font-medium">
-            <span class="font-bold text-yellow-300">Supercharge</span> your Radix liquidity with
-            <span class="font-bold text-yellow-300">Astrolescent's</span> cross-chain bridge!
+            <span class="hidden md:block font-bold text-yellow-300">Supercharge</span><span class="hidden md:block">your Radix liquidity with</span>
+            <span class="hidden md:block font-bold text-yellow-300">Astrolescent's</span><span class="hidden md:block">cross-chain bridge!</span>
+            <span class="block md:hidden font-bold text-yellow-300">Bridge to Radix</span>
           </p>
           <a href="https://www.youtube.com/shorts/S7G80W-OT5U" target="_blank" rel="noopener noreferrer"
-            class="text-xs text-yellow-200 hover:text-yellow-300 underline mt-1 inline-block">
+            class="text-xs text-yellow-200 hover:text-yellow-300 underline mt-1 hidden md:inline-block">
             Need help? Watch a quick guide
           </a>
         </div>
       </div>
       <div class="flex items-center">
         <a href="https://astrl.trade/bridge" target="_blank" rel="noopener noreferrer"
-          class="group bg-white text-indigo-600 hover:bg-yellow-300 hover:text-indigo-700 transition-all duration-300 text-sm font-bold py-2 px-6 rounded-full shadow-md hover:shadow-lg transform hover:scale-105 mr-4">
-          Bridge Now
+          class="group bg-white text-indigo-600 hover:bg-yellow-300 hover:text-indigo-700 transition-all duration-300 text-sm font-bold px-2 py-1 md:py-2 md:px-6 rounded-full shadow-md hover:shadow-lg transform hover:scale-105 mr-4">
+          Bridge<span class="hidden md:block"> Now</span>
           <svg class="w-4 h-4 ml-2 inline-block transition-transform duration-300 transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
           </svg>
@@ -307,6 +311,7 @@
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
           </svg>
         </button>
+      </div>
       </div>
     </div>
   </div>

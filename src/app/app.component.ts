@@ -120,6 +120,10 @@ export class AppComponent implements OnInit {
         token => token.resourceInfo.resourceAddress === RadixConnectService.DFP2
       );
 
+      if (+(xrdBalance?.balance ?? 0) > 0) {
+        this.isConnected = true;
+      }
+
       return {
         XRD: {
           balance: xrdBalance?.balance ?? '0',
@@ -137,6 +141,7 @@ export class AppComponent implements OnInit {
 
   astrolescentService = inject(AstrolescentService);
   topupStatus: Observable<TransactionStatus> = of();
+  isConnected!: boolean;
 
   ngOnInit() {
     this.checkScreenSize();
