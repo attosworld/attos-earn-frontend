@@ -833,10 +833,8 @@ export class StrategiesComponent {
     }
   }
 
-  validateInput(resourceAddress: string) {
+  validateInput() {
     if (!this.selectedStrategy) return;
-
-    console.log(resourceAddress);
   }
 
   onSearch(term: string) {
