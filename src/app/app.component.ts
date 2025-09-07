@@ -59,6 +59,7 @@ export class AppComponent implements OnInit {
   astrolescentService = inject(AstrolescentService);
   topupStatus: Observable<TransactionStatus> = of();
   isConnected!: boolean;
+  showBetaModal = true;
 
   // Subjects for reactive programming
   private swapAmountSubject = new BehaviorSubject<string>('1000');
@@ -145,6 +146,19 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.checkScreenSize();
     this.checkBannerVisibility();
+
+    this.showBetaModal =
+      !this.router.url.includes('terms-and-conditions') &&
+      !this.router.url.includes('privacy-policy');
+  }
+
+  acceptBetaRisks() {
+    this.showBetaModal = false;
+  }
+
+  declineBetaRisks() {
+    // Redirect to a safe external site or show a goodbye message
+    window.location.href = 'https://radixdlt.com';
   }
 
   @HostListener('window:resize', ['$event'])
@@ -249,5 +263,17 @@ export class AppComponent implements OnInit {
 
   isDiscordVerifyRoute() {
     return this.router.url.includes('/discord-verify');
+  }
+
+  isTermsAndConditionsRoute() {
+    return this.router.url.includes('/terms-and-conditions');
+  }
+
+  isPrivacyPolicyRoute() {
+    return this.router.url.includes('/privacy-policy');
+  }
+
+  isWithoutBetaModal() {
+    return !(this.isTermsAndConditionsRoute() || this.isPrivacyPolicyRoute());
   }
 }

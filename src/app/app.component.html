@@ -512,3 +512,75 @@
     </div>
   </div>
 }
+
+@if (showBetaModal && isWithoutBetaModal()) {
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style="background-opacity: 50;">
+    <div class="bg-gray-800 rounded-lg w-full max-w-lg overflow-y-auto max-h-[90vh]">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-yellow-500 flex items-center">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            Early Access Beta
+          </h2>
+        </div>
+
+        <div class="space-y-4 text-gray-300">
+          <div class="bg-yellow-900 bg-opacity-30 border border-yellow-500 rounded-lg p-4">
+            <h3 class="text-lg font-semibold text-yellow-400 mb-2">⚠️ Important Notice</h3>
+            <p class="text-sm">
+              Attos Earn is currently in <strong>early access beta</strong>. This platform is experimental and under active development.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-lg font-semibold text-white">Potential Risks & Issues:</h4>
+            <ul class="list-disc list-inside space-y-2 text-sm">
+              <li>You may encounter bugs, errors, or unexpected behavior</li>
+              <li>Features may be incomplete or subject to change</li>
+              <li>DeFi strategies carry inherent financial risks</li>
+              <li>Smart contract vulnerabilities may exist</li>
+              <li>Platform downtime or service interruptions may occur</li>
+              <li>Data loss or transaction failures are possible</li>
+            </ul>
+          </div>
+
+          <div class="bg-red-900 bg-opacity-30 border border-red-500 rounded-lg p-4">
+            <h4 class="text-lg font-semibold text-red-400 mb-2">Use at Your Own Risk</h4>
+            <p class="text-sm">
+              By continuing to use this platform, you acknowledge that you understand these risks and agree to use Attos Earn at your own discretion and risk.
+            </p>
+          </div>
+
+          <div class="space-y-2">
+            <p class="text-sm">
+              By using this platform, you agree to our:
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <a routerLink="/terms-and-conditions"
+                 target="_blank"
+                 class="text-yellow-400 hover:text-yellow-300 underline text-sm">
+                Terms and Conditions
+              </a>
+              <span class="text-gray-500">•</span>
+              <a routerLink="/privacy-policy"
+                 target="_blank"
+                 class="text-yellow-400 hover:text-yellow-300 underline text-sm">
+                Privacy Policy
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 mt-6">
+          <button
+            (click)="acceptBetaRisks()"
+            class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-semibold py-3 px-4 rounded-lg transition-colors duration-200">
+            I Understand & Accept the Risks
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
