@@ -55,6 +55,11 @@ export class HomeComponent {
       href: 'https://radix.defiplaza.net/',
     },
     {
+      name: 'Weft Finance',
+      logo: 'https://token.weft.finance/assets/icons/weft_icon_medium.svg',
+      href: 'https://app.weft.finance/',
+    },
+    {
       name: 'RootFinance',
       logo: 'https://app.rootfinance.xyz/favicon.ico',
       href: 'https://app.rootfinance.xyz/',
