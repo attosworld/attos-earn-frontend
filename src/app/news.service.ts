@@ -17,7 +17,6 @@ export class NewsService {
   http = inject(HttpClient);
 
   getNews(token: string): Observable<TokenNews[]> {
-    console.log(token);
     const params = new HttpParams().set('token', token);
 
     return this.http.get<TokenNews[]>(`${environment.apiUrl}/news`, { params });

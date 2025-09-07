@@ -25,7 +25,6 @@ export class YieldListComponent {
   }
 
   executeStrategyV2(strategy: StrategyV2): void {
-    console.log(`Executing strategy: ${strategy.name}`);
     this.executeStrategy.emit(strategy);
   }
 }

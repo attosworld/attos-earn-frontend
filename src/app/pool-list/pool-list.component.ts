@@ -424,7 +424,6 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
   }
 
   openDepositModal(pool: Pool, balances: Balances | undefined) {
-    console.log('openDepositModal');
     this.precisionPriceSubject.next(pool.component);
     this.selectedPoolSubject.next(pool);
     this.showModal = true;
