@@ -157,6 +157,10 @@ export class RadixConnectService {
     return this.selectedAccount$.asObservable();
   }
 
+  getRawWalletData() {
+    return this.rdt?.walletApi.walletData$;
+  }
+
   getSelectedAccount() {
     return this.getWalletData()?.pipe(
       switchMap(() => this.selectedAccount$.asObservable())
