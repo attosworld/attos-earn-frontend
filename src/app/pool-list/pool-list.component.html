@@ -1026,6 +1026,7 @@
             <!-- Token input sections (right side on larger screens, bottom on smaller screens) -->
             <div class="lg:w-1/2">
               <div class="bg-gray-900 p-4 rounded-lg mb-4" *ngIf="selectedPool$ | async as selectedPool">
+                  <ng-container *ngIf="addLiquidityPreview$ | async"></ng-container>
                 <app-token-input
                   *ngIf="(selectedPool?.sub_type === 'single' && selectedPool?.left_alt) || selectedPool?.sub_type !== 'single'"
                   [tokenSymbol]="selectedPool?.left_alt || ''"
@@ -1049,7 +1050,6 @@
                   ></app-token-input>
 
                 <ng-container *ngIf="selectedPool?.sub_type === 'precision'">
-                  <ng-container *ngIf="addLiquidityPreview$ | async"></ng-container>
                   <ng-container *ngIf="poolPrice$ | async as poolPrice">
                   <app-precision-pool
                     [currentPrice]="poolPrice.currentPrice"
