@@ -245,8 +245,7 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     this.poolPrice$,
   ]).pipe(
     switchMap(([pool, , poolPrice]) => {
-      if (!pool || !this.xAmount || !this.yAmount || !poolPrice)
-        return of(null);
+      if (!pool || !poolPrice) return of(null);
 
       const { lowerTick, upperTick } = this.ociswapService.calculateTickBounds(
         poolPrice.precisionPrice,
@@ -738,28 +737,40 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     if (selectedPool) {
       if (resourceAddress === selectedPool.left_token) {
         this.xAmount = maxAmount;
-        this.yAmount =
-          selectedPool?.type === 'defiplaza'
-            ? new Decimal(this.xAmount)
-                .mul(selectedPool.xRatio || 0)
-                .toFixed(18)
-            : new Decimal(this.xAmount)
-                .mul(selectedPool?.current_price || 0)
-                .toFixed(18);
+
+        if (
+          selectedPool?.type === 'defiplaza' ||
+          selectedPool.sub_type !== 'precision'
+        ) {
+          this.yAmount =
+            selectedPool?.type === 'defiplaza'
+              ? new Decimal(this.xAmount)
+                  .mul(selectedPool.xRatio || 0)
+                  .toFixed(18)
+              : new Decimal(this.xAmount)
+                  .mul(selectedPool?.current_price || 0)
+                  .toFixed(18);
+        }
       } else if (resourceAddress === selectedPool.right_token) {
         this.yAmount = maxAmount;
-        this.xAmount =
-          selectedPool?.type === 'defiplaza'
-            ? new Decimal(this.yAmount)
-                .div(selectedPool.yRatio || 0)
-                .toFixed(18)
-            : new Decimal(this.yAmount)
-                .div(
-                  new Decimal(selectedPool?.current_price || 0).plus(
-                    new Decimal(selectedPool?.current_price || 0).times(0.5)
+
+        if (
+          selectedPool.type === 'defiplaza' ||
+          selectedPool.sub_type !== 'precision'
+        ) {
+          this.xAmount =
+            selectedPool?.type === 'defiplaza'
+              ? new Decimal(this.yAmount)
+                  .div(selectedPool.yRatio || 0)
+                  .toFixed(18)
+              : new Decimal(this.yAmount)
+                  .div(
+                    new Decimal(selectedPool?.current_price || 0).plus(
+                      new Decimal(selectedPool?.current_price || 0).times(0.5)
+                    )
                   )
-                )
-                .toFixed(18);
+                  .toFixed(18);
+        }
       }
       if (selectedPool?.type === 'ociswap') {
         this.updateAmount();
@@ -907,7 +918,11 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     this.xAmount = xAmount || '0';
 
     const selectedPool = this.selectedPoolSubject.getValue();
-    if (selectedPool?.sub_type !== 'single') {
+    if (
+      (selectedPool?.sub_type !== 'single' &&
+        selectedPool?.type === 'defiplaza') ||
+      selectedPool?.sub_type !== 'precision'
+    ) {
       this.yAmount =
         selectedPool?.type === 'defiplaza'
           ? selectedPool.side === 'base'
@@ -939,7 +954,11 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     this.yAmount = yAmount || '0';
 
     const selectedPool = this.selectedPoolSubject.getValue();
-    if (selectedPool?.sub_type !== 'single') {
+    if (
+      (selectedPool?.sub_type !== 'single' &&
+        selectedPool?.type == 'defiplaza') ||
+      selectedPool?.sub_type !== 'precision'
+    ) {
       this.xAmount =
         selectedPool?.type === 'defiplaza'
           ? selectedPool.side === 'base'
