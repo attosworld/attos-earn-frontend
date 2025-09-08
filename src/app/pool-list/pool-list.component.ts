@@ -841,7 +841,7 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
 
     if (selectedPool) {
       this.transactionResult = this.radixConnectService
-        .getSelectedAccount()
+        .getRawSelectedAccount()
         ?.pipe(
           map(data => {
             if (!data) {
