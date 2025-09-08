@@ -247,8 +247,6 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     switchMap(([pool, , poolPrice]) => {
       if (!pool) return of(null);
 
-      console.log('Calculating add liquidity preview');
-
       if (pool.sub_type === 'precision' && poolPrice) {
         const { lowerTick, upperTick } =
           this.ociswapService.calculateTickBounds(
@@ -794,7 +792,6 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
           selectedPool.type === 'defiplaza' ||
           selectedPool.sub_type !== 'precision'
         ) {
-          console.log(selectedPool.yRatio);
           this.xAmount =
             selectedPool?.type === 'defiplaza'
               ? new Decimal(this.yAmount)
@@ -988,7 +985,6 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
         selectedPool?.type === 'defiplaza') ||
       selectedPool?.sub_type !== 'precision'
     ) {
-      console.log(selectedPool?.yDivisibility);
       this.yAmount =
         selectedPool?.type === 'defiplaza'
           ? selectedPool.side === 'base'
