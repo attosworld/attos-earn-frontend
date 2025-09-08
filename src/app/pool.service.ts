@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../environments/environment';
@@ -35,6 +35,8 @@ export interface Pool {
   incentivised_lp_docs: string;
   tags: string[];
   radix_incentivised?: boolean;
+  xDivisibility: number;
+  yDivisibility: number;
 }
 
 export interface PoolLiquidity {
@@ -51,8 +53,7 @@ export interface PoolLiquidity {
 })
 export class PoolService {
   private apiUrl = `${environment.apiUrl}/pools`;
-
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
 
   getPools(): Observable<Pool[]> {
     return this.http.get<Pool[]>(this.apiUrl);

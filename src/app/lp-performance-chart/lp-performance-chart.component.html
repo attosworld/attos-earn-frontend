@@ -40,7 +40,7 @@
                   stroke-width="1"
                   />
               }
-              @for (value of chartValues; track value; let i = $index) {
+              @for (value of chartValues;  let i = $index; track i) {
                 <ng-container>
                   <circle
                     [attr.cx]="getPointX(i)"
@@ -55,7 +55,7 @@
           <!-- X-axis dates -->
           <div class="flex justify-between mt-2 text-xs text-gray-400">
             <!-- Show only a subset of dates to avoid overcrowding -->
-            @for (date of getDisplayDates(); track date; let i = $index) {
+            @for (date of getDisplayDates(); track date.getTime(); let i = $index) {
               <span>{{ date | date:'MMM d' }}</span>
             }
           </div>

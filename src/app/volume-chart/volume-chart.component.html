@@ -15,7 +15,7 @@
         <!-- Chart bars -->
         <div class="flex-grow">
           <div class="flex items-end h-40 space-x-2">
-            @for (volume of getVolumes(sevenDayVolume); track volume; let i = $index) {
+            @for (volume of getVolumes(sevenDayVolume); let i = $index; track i) {
               <div class="flex-1 bg-yellow-500 rounded-t relative" [style.height.%]="(volume / maxVolume) * 100">
                 <span class="absolute top-[-20px] left-1/2 transform -translate-x-1/2 text-xs text-gray-400">
                   {{ volume | currency:'USD':'symbol':'1.0-0' }}
@@ -24,7 +24,7 @@
             }
           </div>
           <div class="flex justify-between mt-2 text-xs text-gray-400">
-            @for (date of generateLastSevenDays(sevenDayVolume); track date) {
+            @for (date of generateLastSevenDays(sevenDayVolume); track date.getTime()) {
               <span>{{ date | date:'MMM d' }}</span>
             }
           </div>

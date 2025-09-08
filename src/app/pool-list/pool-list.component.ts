@@ -910,7 +910,13 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     if (selectedPool?.sub_type !== 'single') {
       this.yAmount =
         selectedPool?.type === 'defiplaza'
-          ? new Decimal(this.xAmount).mul(ratio || 0).toFixed(18)
+          ? selectedPool.side === 'base'
+            ? new Decimal(this.xAmount)
+                .div(ratio || 0)
+                .toFixed(selectedPool.yDivisibility)
+            : new Decimal(this.xAmount)
+                .mul(ratio || 0)
+                .toFixed(selectedPool.yDivisibility)
           : new Decimal(this.xAmount)
               .mul(selectedPool?.current_price || 0)
               .toString();
@@ -936,7 +942,13 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     if (selectedPool?.sub_type !== 'single') {
       this.xAmount =
         selectedPool?.type === 'defiplaza'
-          ? new Decimal(this.yAmount).mul(ratio || 0).toFixed(18)
+          ? selectedPool.side === 'base'
+            ? new Decimal(this.yAmount)
+                .div(ratio || 0)
+                .toFixed(selectedPool.xDivisibility)
+            : new Decimal(this.yAmount)
+                .mul(ratio || 0)
+                .toFixed(selectedPool.xDivisibility)
           : new Decimal(this.yAmount)
               .div(
                 new Decimal(selectedPool?.current_price || 0).plus(
