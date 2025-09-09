@@ -593,6 +593,17 @@
                 </svg>
                 Required Assets
               </h3>
+
+
+              <!-- Fee Notice -->
+              <div class="mb-2 rounded-lg">
+                <div class="flex items-center">
+                  <span class="text-blue-200 text-sm">
+                    <strong>Strategy Fee:</strong> 50 XRD
+                  </span>
+                </div>
+              </div>
+            </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div *ngFor="let asset of selectedStrategy?.requiredAssets" class="mb-4">
                   <label [for]="asset.symbol" class="block text-sm font-medium text-gray-300 mb-1">{{ asset.symbol }}</label>
@@ -618,7 +629,6 @@
                   </p>
                 </div>
               </div>
-            </div>
 
             <!-- Staking-specific fields -->
             <ng-container *ngIf="isStakingStrategy(selectedStrategy)">
