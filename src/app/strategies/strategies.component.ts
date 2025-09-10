@@ -42,6 +42,7 @@ import { StrategyCardComponent } from '../strategy-card/strategy-card.component'
 import { PortfolioItem, PortfolioService } from '../portfolio.service';
 import { PoolIconPairComponent } from '../pool-icon-pair/pool-icon-pair.component';
 import { ShortenAddressPipe } from '../shorten-address.pipe';
+import { AttosService } from '../attos.service';
 
 interface StrategyFilters {
   requiredAssets: string[];
@@ -92,6 +93,10 @@ export class StrategiesComponent {
   searchTerm = '';
   private searchSubject = new BehaviorSubject<string>('');
   search$ = this.searchSubject.asObservable().pipe(debounceTime(300));
+
+  attosService = inject(AttosService);
+
+  stats$ = this.attosService.getStats();
 
   sliderMin = -90;
   sliderMax = 900;

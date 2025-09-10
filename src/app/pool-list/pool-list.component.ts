@@ -59,6 +59,7 @@ import { NewsService, TokenNews } from '../news.service';
 import { LiquidityChartComponent } from '../liquidity-chart/liquidity-chart.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DefiplazaService } from '../defiplaza.service';
+import { AttosService } from '../attos.service';
 
 type SortColumn = 'tvl' | 'bonus_7d' | 'volume_7d' | 'bonus_name' | null;
 type SortDirection = 'asc' | 'desc' | 'none';
@@ -120,6 +121,10 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
   private route = inject(ActivatedRoute);
 
   poolModalSelectedView: 'details' | 'news' = 'details';
+
+  attosService = inject(AttosService);
+
+  stats$ = this.attosService.getStats();
 
   lpPerformanceEnabled = true;
 
