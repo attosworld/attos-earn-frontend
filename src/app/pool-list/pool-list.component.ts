@@ -271,8 +271,12 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
           .pipe(
             tap(data => {
               if (data && data.x_amount && data.y_amount) {
-                this.xAmount = data.x_amount.token;
-                this.yAmount = data.y_amount.token;
+                this.xAmount = new Decimal(data.x_amount.token)
+                  .toDecimalPlaces(pool.xDivisibility)
+                  .toString();
+                this.yAmount = new Decimal(data.y_amount.token)
+                  .toDecimalPlaces(pool.yDivisibility)
+                  .toString();
               }
             }),
             catchError(() => {
@@ -785,10 +789,12 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
             selectedPool?.type === 'defiplaza'
               ? new Decimal(this.xAmount)
                   .mul(selectedPool.xRatio || 0)
-                  .toFixed(selectedPool.yDivisibility)
+                  .toDecimalPlaces(selectedPool.yDivisibility)
+                  .toString()
               : new Decimal(this.xAmount)
                   .mul(selectedPool?.current_price || 0)
-                  .toFixed(selectedPool.yDivisibility);
+                  .toDecimalPlaces(selectedPool.yDivisibility)
+                  .toString();
         }
       } else if (resourceAddress === selectedPool.right_token) {
         this.yAmount = maxAmount;
@@ -801,14 +807,16 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
             selectedPool?.type === 'defiplaza'
               ? new Decimal(this.yAmount)
                   .mul(selectedPool.yRatio || 0)
-                  .toFixed(selectedPool.xDivisibility)
+                  .toDecimalPlaces(selectedPool.xDivisibility)
+                  .toString()
               : new Decimal(this.yAmount)
                   .div(
                     new Decimal(selectedPool?.current_price || 0).plus(
                       new Decimal(selectedPool?.current_price || 0).times(0.5)
                     )
                   )
-                  .toFixed(selectedPool.xDivisibility);
+                  .toDecimalPlaces(selectedPool.xDivisibility)
+                  .toString();
         }
       }
       if (selectedPool?.type === 'ociswap') {
@@ -896,12 +904,12 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
                     poolAddress: selectedPool.component,
                     xAddress: selectedPool.left_token,
                     yAddress: selectedPool.right_token,
-                    xAmount: new Decimal(this.xAmount).toFixed(
-                      selectedPool.xDivisibility
-                    ),
-                    yAmount: new Decimal(this.yAmount).toFixed(
-                      selectedPool.yDivisibility
-                    ),
+                    xAmount: new Decimal(this.xAmount)
+                      .toDecimalPlaces(selectedPool.xDivisibility)
+                      .toString(),
+                    yAmount: new Decimal(this.yAmount)
+                      .toDecimalPlaces(selectedPool.yDivisibility)
+                      .toString(),
                     leftBound: bounds?.lowerTick.toString(),
                     rightBound: bounds?.upperTick.toString(),
                   })
@@ -914,12 +922,12 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
                           ? selectedPool.left_token
                           : selectedPool.right_token,
                         amount: selectedPool.left_alt
-                          ? new Decimal(this.xAmount).toFixed(
-                              selectedPool.xDivisibility
-                            )
-                          : new Decimal(this.yAmount).toFixed(
-                              selectedPool.yDivisibility
-                            ),
+                          ? new Decimal(this.xAmount)
+                              .toDecimalPlaces(selectedPool.xDivisibility)
+                              .toString()
+                          : new Decimal(this.yAmount)
+                              .toDecimalPlaces(selectedPool.yDivisibility)
+                              .toString(),
                       }
                     )
                   : this.radixManifestService.createDefiplazaAddLiquidityManifest(
@@ -936,20 +944,20 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
                             : selectedPool.left_token,
                         xAmount:
                           selectedPool.side === 'quote'
-                            ? new Decimal(this.xAmount).toFixed(
-                                selectedPool.xDivisibility
-                              )
-                            : new Decimal(this.yAmount).toFixed(
-                                selectedPool.yDivisibility
-                              ),
+                            ? new Decimal(this.xAmount)
+                                .toDecimalPlaces(selectedPool.xDivisibility)
+                                .toString()
+                            : new Decimal(this.yAmount)
+                                .toDecimalPlaces(selectedPool.yDivisibility)
+                                .toString(),
                         yAmount:
                           selectedPool.side === 'quote'
-                            ? new Decimal(this.yAmount).toFixed(
-                                selectedPool.yDivisibility
-                              )
-                            : new Decimal(this.xAmount).toFixed(
-                                selectedPool.xDivisibility
-                              ),
+                            ? new Decimal(this.yAmount)
+                                .toDecimalPlaces(selectedPool.yDivisibility)
+                                .toString()
+                            : new Decimal(this.xAmount)
+                                .toDecimalPlaces(selectedPool.xDivisibility)
+                                .toString(),
                       }
                     );
 
@@ -995,10 +1003,12 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
           ? selectedPool.side === 'base'
             ? new Decimal(this.xAmount)
                 .mul(ratio || 0)
-                .toFixed(selectedPool.yDivisibility)
+                .toDecimalPlaces(selectedPool.yDivisibility)
+                .toString()
             : new Decimal(this.xAmount)
                 .mul(ratio || 0)
-                .toFixed(selectedPool.yDivisibility)
+                .toDecimalPlaces(selectedPool.yDivisibility)
+                .toString()
           : new Decimal(this.xAmount)
               .mul(selectedPool?.current_price || 0)
               .toString();
@@ -1031,10 +1041,12 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
           ? selectedPool.side === 'base'
             ? new Decimal(this.yAmount)
                 .mul(ratio || 0)
-                .toFixed(selectedPool.xDivisibility)
+                .toDecimalPlaces(selectedPool.xDivisibility)
+                .toString()
             : new Decimal(this.yAmount)
                 .mul(ratio || 0)
-                .toFixed(selectedPool.xDivisibility)
+                .toDecimalPlaces(selectedPool.xDivisibility)
+                .toString()
           : new Decimal(this.yAmount)
               .div(
                 new Decimal(selectedPool?.current_price || 0).plus(
