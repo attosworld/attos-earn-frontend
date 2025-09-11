@@ -236,7 +236,7 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
 
   showModal = false;
 
-  private inputChangeSubject = new Subject<void>();
+  private inputChangeSubject = new Subject<'x' | 'y'>();
 
   addLiquidityPreview$ = combineLatest([
     this.selectedPool$.pipe(
@@ -249,8 +249,10 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     ),
     this.poolPrice$,
   ]).pipe(
-    switchMap(([pool, , poolPrice]) => {
+    switchMap(([pool, xOrY, poolPrice]) => {
       if (!pool) return of(null);
+
+      console.log(xOrY);
 
       if (pool.sub_type === 'precision' && poolPrice) {
         const { lowerTick, upperTick } =
@@ -263,8 +265,8 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
         return this.ociswapService
           .getOciswapAddLiquidityPreview(
             pool.component,
-            this.xAmount,
-            '',
+            xOrY === 'x' ? this.xAmount : '',
+            xOrY === 'y' ? this.yAmount : '',
             lowerTick.toString(),
             upperTick.toString()
           )
@@ -273,10 +275,12 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
               if (data && data.x_amount && data.y_amount) {
                 this.xAmount = new Decimal(data.x_amount.token)
                   .toDecimalPlaces(pool.xDivisibility)
-                  .toString();
+                  .toFixed();
                 this.yAmount = new Decimal(data.y_amount.token)
                   .toDecimalPlaces(pool.yDivisibility)
-                  .toString();
+                  .toFixed();
+                this.validateInput(pool.left_token);
+                this.validateInput(pool.right_token);
               }
             }),
             catchError(() => {
@@ -287,12 +291,18 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
           );
       } else if (pool.type === 'ociswap') {
         return this.ociswapService
-          .getOciswapAddLiquidityPreview(pool.component, this.xAmount, '')
+          .getOciswapAddLiquidityPreview(
+            pool.component,
+            xOrY === 'x' ? this.xAmount : '',
+            xOrY === 'y' ? this.yAmount : ''
+          )
           .pipe(
             tap(data => {
               if (data && data.x_amount && data.y_amount) {
                 this.xAmount = data.x_amount.token;
                 this.yAmount = data.y_amount.token;
+                this.validateInput(pool.left_token);
+                this.validateInput(pool.right_token);
               }
             }),
             catchError(() => {
@@ -730,7 +740,7 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
   updateMinValue(minValue: number, poolSubType?: string) {
     this.minValue = minValue;
 
-    this.updateAmount();
+    this.inputChangeSubject.next('x');
 
     if (poolSubType) {
       this.updateDepositModalTab();
@@ -740,7 +750,7 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
   updateMaxValue(maxValue: number, poolSubType?: string) {
     this.maxValue = maxValue;
 
-    this.updateAmount();
+    this.inputChangeSubject.next('x');
 
     if (poolSubType) {
       this.updateDepositModalTab();
@@ -751,10 +761,6 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     if (this.selectedChartType !== 'liquidity') {
       this.selectedChartType = 'liquidity';
     }
-  }
-
-  private updateAmount() {
-    this.inputChangeSubject.next();
   }
 
   updateMaxAmounts(walletData: Balances | undefined) {
@@ -790,11 +796,11 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
               ? new Decimal(this.xAmount)
                   .mul(selectedPool.xRatio || 0)
                   .toDecimalPlaces(selectedPool.yDivisibility)
-                  .toString()
+                  .toFixed()
               : new Decimal(this.xAmount)
                   .mul(selectedPool?.current_price || 0)
                   .toDecimalPlaces(selectedPool.yDivisibility)
-                  .toString();
+                  .toFixed();
         }
       } else if (resourceAddress === selectedPool.right_token) {
         this.yAmount = maxAmount;
@@ -808,7 +814,7 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
               ? new Decimal(this.yAmount)
                   .mul(selectedPool.yRatio || 0)
                   .toDecimalPlaces(selectedPool.xDivisibility)
-                  .toString()
+                  .toFixed()
               : new Decimal(this.yAmount)
                   .div(
                     new Decimal(selectedPool?.current_price || 0).plus(
@@ -816,11 +822,13 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
                     )
                   )
                   .toDecimalPlaces(selectedPool.xDivisibility)
-                  .toString();
+                  .toFixed();
         }
       }
       if (selectedPool?.type === 'ociswap') {
-        this.updateAmount();
+        this.inputChangeSubject.next(
+          resourceAddress === selectedPool.left_token ? 'x' : 'y'
+        );
       }
     }
 
@@ -906,10 +914,10 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
                     yAddress: selectedPool.right_token,
                     xAmount: new Decimal(this.xAmount)
                       .toDecimalPlaces(selectedPool.xDivisibility)
-                      .toString(),
+                      .toFixed(),
                     yAmount: new Decimal(this.yAmount)
                       .toDecimalPlaces(selectedPool.yDivisibility)
-                      .toString(),
+                      .toFixed(),
                     leftBound: bounds?.lowerTick.toString(),
                     rightBound: bounds?.upperTick.toString(),
                   })
@@ -924,10 +932,10 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
                         amount: selectedPool.left_alt
                           ? new Decimal(this.xAmount)
                               .toDecimalPlaces(selectedPool.xDivisibility)
-                              .toString()
+                              .toFixed()
                           : new Decimal(this.yAmount)
                               .toDecimalPlaces(selectedPool.yDivisibility)
-                              .toString(),
+                              .toFixed(),
                       }
                     )
                   : this.radixManifestService.createDefiplazaAddLiquidityManifest(
@@ -946,18 +954,18 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
                           selectedPool.side === 'quote'
                             ? new Decimal(this.xAmount)
                                 .toDecimalPlaces(selectedPool.xDivisibility)
-                                .toString()
+                                .toFixed()
                             : new Decimal(this.yAmount)
                                 .toDecimalPlaces(selectedPool.yDivisibility)
-                                .toString(),
+                                .toFixed(),
                         yAmount:
                           selectedPool.side === 'quote'
                             ? new Decimal(this.yAmount)
                                 .toDecimalPlaces(selectedPool.yDivisibility)
-                                .toString()
+                                .toFixed()
                             : new Decimal(this.xAmount)
                                 .toDecimalPlaces(selectedPool.xDivisibility)
-                                .toString(),
+                                .toFixed(),
                       }
                     );
 
@@ -1004,14 +1012,14 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
             ? new Decimal(this.xAmount)
                 .mul(ratio || 0)
                 .toDecimalPlaces(selectedPool.yDivisibility)
-                .toString()
+                .toFixed()
             : new Decimal(this.xAmount)
                 .mul(ratio || 0)
                 .toDecimalPlaces(selectedPool.yDivisibility)
-                .toString()
+                .toFixed()
           : new Decimal(this.xAmount)
               .mul(selectedPool?.current_price || 0)
-              .toString();
+              .toFixed();
     }
 
     if (selectedPool?.left_alt) {
@@ -1023,7 +1031,7 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     }
 
     if (selectedPool?.type === 'ociswap') {
-      this.updateAmount();
+      this.inputChangeSubject.next('x');
     }
   }
 
@@ -1042,18 +1050,18 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
             ? new Decimal(this.yAmount)
                 .mul(ratio || 0)
                 .toDecimalPlaces(selectedPool.xDivisibility)
-                .toString()
+                .toFixed()
             : new Decimal(this.yAmount)
                 .mul(ratio || 0)
                 .toDecimalPlaces(selectedPool.xDivisibility)
-                .toString()
+                .toFixed()
           : new Decimal(this.yAmount)
               .div(
                 new Decimal(selectedPool?.current_price || 0).plus(
                   new Decimal(selectedPool?.current_price || 0).times(0.5)
                 )
               )
-              .toString();
+              .toFixed();
     }
 
     if (selectedPool?.left_alt) {
@@ -1065,7 +1073,7 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     }
 
     if (selectedPool?.type === 'ociswap') {
-      this.updateAmount();
+      this.inputChangeSubject.next('y');
     }
   }
 
