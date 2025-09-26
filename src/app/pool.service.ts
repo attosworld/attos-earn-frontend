@@ -37,6 +37,7 @@ export interface Pool {
   radix_incentivised?: boolean;
   xDivisibility: number;
   yDivisibility: number;
+  fee: number;
 }
 
 export interface PoolLiquidity {
