@@ -1,4 +1,3 @@
-
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
@@ -13,6 +12,7 @@ export class TokenInputComponent {
   @Input() amount = '';
   @Input() maxAmount?: string;
   @Input() error = '';
+  @Input() isDisabled = false;
 
   @Output() amountChange = new EventEmitter<string>();
   @Output() setMax = new EventEmitter<string>();

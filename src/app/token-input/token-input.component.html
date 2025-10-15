@@ -2,15 +2,20 @@
   <label [for]="tokenSymbol + 'Amount'" class="block text-sm font-medium text-gray-300 mb-1">{{ tokenSymbol }} Amount</label>
   <div class="flex items-center">
     <input
+      [disabled]="isDisabled"
       [id]="tokenSymbol + 'Amount'"
       type="number"
       [value]="amount"
       (input)="updateAmount($event)"
       class="flex-grow bg-gray-700 text-white px-3 py-2 rounded-l"
       [class.border-red-500]="error"
+      [class.text-gray-300]="isDisabled"
+      [class.opacity-50]="isDisabled"
       [placeholder]="maxAmount ? 'Max: ' + maxAmount : ''"
       >
     <button
+      [disabled]="isDisabled"
+      [class.opacity-50]="isDisabled"
       (click)="setMaxBalance()"
       class="bg-gray-600 text-white px-3 py-2 rounded-r hover:bg-gray-500 transition duration-300"
       >

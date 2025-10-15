@@ -1046,6 +1046,7 @@
               <div class="bg-gray-900 p-4 rounded-lg mb-4" *ngIf="selectedPool$ | async as selectedPool">
                   <ng-container *ngIf="addLiquidityPreview$ | async"></ng-container>
                 <app-token-input
+                  [isDisabled]="selectedPool.type === 'defiplaza' && selectedPool.sub_type !== 'single' && selectedPool.side === 'quote'"
                   *ngIf="(selectedPool?.sub_type === 'single' && selectedPool?.left_alt) || selectedPool?.sub_type !== 'single'"
                   [tokenSymbol]="selectedPool?.left_alt || ''"
                   [tokenAddress]="selectedPool?.left_token || ''"
@@ -1057,6 +1058,7 @@
                   ></app-token-input>
 
                 <app-token-input
+                  [isDisabled]="selectedPool.type === 'defiplaza' && selectedPool.sub_type !== 'single' && selectedPool.side === 'base'"
                   *ngIf="(selectedPool?.sub_type === 'single' && selectedPool?.right_alt) || selectedPool?.sub_type !== 'single'"
                   [tokenSymbol]="selectedPool?.right_alt || ''"
                   [tokenAddress]="selectedPool?.right_token || ''"
