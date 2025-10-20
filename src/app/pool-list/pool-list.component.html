@@ -958,6 +958,98 @@
           <h2 class="text-2xl font-bold text-yellow-500 mb-4">Deposit: {{ selectedPool?.name }}</h2>
 
           <div class="flex flex-col lg:flex-row lg:space-x-6">
+            <div class="block md:hidden lg:w-1/2 pb-4">
+              <div class="bg-gray-900 p-4 rounded-lg mb-4" *ngIf="selectedPool$ | async as selectedPool">
+                  <ng-container *ngIf="addLiquidityPreview$ | async"></ng-container>
+                <app-token-input
+                  [isDisabled]="selectedPool.type === 'defiplaza' && selectedPool.sub_type !== 'single' && selectedPool.side === 'quote'"
+                  *ngIf="(selectedPool?.sub_type === 'single' && selectedPool?.left_alt) || selectedPool?.sub_type !== 'single'"
+                  [tokenSymbol]="selectedPool?.left_alt || ''"
+                  [tokenAddress]="selectedPool?.left_token || ''"
+                  [amount]="xAmount"
+                  [maxAmount]="maxAmounts[selectedPool?.left_token || '']"
+                  [error]="inputErrors[selectedPool?.left_token || '']"
+                  (amountChange)="updateXAmount($event, selectedPool?.xRatio)"
+                  (setMax)="setMaxBalance($event)"
+                  ></app-token-input>
+
+                <app-token-input
+                  [isDisabled]="selectedPool.type === 'defiplaza' && selectedPool.sub_type !== 'single' && selectedPool.side === 'base'"
+                  *ngIf="(selectedPool?.sub_type === 'single' && selectedPool?.right_alt) || selectedPool?.sub_type !== 'single'"
+                  [tokenSymbol]="selectedPool?.right_alt || ''"
+                  [tokenAddress]="selectedPool?.right_token || ''"
+                  [amount]="yAmount"
+                  [maxAmount]="maxAmounts[selectedPool?.right_token || '']"
+                  [error]="inputErrors[selectedPool?.right_token || '']"
+                  (amountChange)="updateYAmount($event, selectedPool?.yRatio)"
+                  (setMax)="setMaxBalance($event)"
+                  ></app-token-input>
+
+                <ng-container *ngIf="selectedPool?.sub_type === 'precision'">
+                  <ng-container *ngIf="poolPrice$ | async as poolPrice">
+                  <app-precision-pool
+                    [currentPrice]="poolPrice.currentPrice"
+                    [precisionPrice]="poolPrice.precisionPrice"
+                    [symbol]="selectedPool?.left_alt === 'XRD' ? selectedPool?.right_alt : selectedPool?.left_alt"
+                    (minValueChange)="updateMinValue($event, selectedPool.sub_type)"
+                    (maxValueChange)="updateMaxValue($event, selectedPool.sub_type)"
+                    (pricePreviewData)="updatePreviewData($event, selectedPool)"
+                    ></app-precision-pool>
+                  </ng-container>
+                </ng-container>
+              </div>
+
+              <div class="flex justify-end mt-6">
+                <button
+                  (click)="closeModal()"
+                  class="bg-gray-600 text-white px-4 py-2 rounded mr-2 hover:bg-gray-500 transition duration-300"
+                  >
+                  Cancel
+                </button>
+                @if (poolPrice$ | async; as poolPrice) {
+                    <button
+                      (click)="deposit(poolPrice.precisionPrice)"
+                      class="bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24"
+                      [disabled]="hasInputErrors()"
+                      [class.opacity-50]="hasInputErrors()"
+                      >
+                      @if (txButtonStatus | async; as tx) {
+                      @if (tx === 'pending') {
+                      <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      } @else {
+                      <span>Deposit</span>
+                      }
+                      } @else {
+                      <span>Deposit</span>
+                      }
+                    </button>
+                } @else {
+                    <button
+                      (click)="deposit()"
+                      class="bg-yellow-500 text-gray-900 px-4 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24"
+                      [disabled]="hasInputErrors()"
+                      [class.opacity-50]="hasInputErrors()"
+                      >
+                      @if (txButtonStatus | async; as tx) {
+                      @if (tx === 'pending') {
+                      <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      } @else {
+                      <span>Deposit</span>
+                      }
+                      } @else {
+                      <span>Deposit</span>
+                      }
+                    </button>
+                }
+                <ng-container *ngIf="transactionResult | async"></ng-container>
+              </div>
+            </div>
             <!-- Pool Details (left side on larger screens, top on smaller screens) -->
             <div class="lg:w-1/2 mb-6 lg:mb-0">
 
@@ -1051,7 +1143,7 @@
             </div>
 
             <!-- Token input sections (right side on larger screens, bottom on smaller screens) -->
-            <div class="lg:w-1/2">
+            <div class="hidden md:block lg:w-1/2">
               <div class="bg-gray-900 p-4 rounded-lg mb-4" *ngIf="selectedPool$ | async as selectedPool">
                   <ng-container *ngIf="addLiquidityPreview$ | async"></ng-container>
                 <app-token-input
