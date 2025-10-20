@@ -977,7 +977,16 @@
                 <app-lp-performance-chart [tokenValueData]="tokenValueData$ | async"></app-lp-performance-chart>
               </ng-container>
               <ng-container *ngIf="selectedChartType === 'liquidity' && liquidityEnabled">
-                <app-liquidity-chart *ngIf="liquidityValueData$ | async as liquidityValueData" [liquidityData]="liquidityValueData" [previewData]="previewData"></app-liquidity-chart>
+                @let liquidityValueData = liquidityValueData$ | async;
+                @let historicalPoolPriceData = historicalPoolPriceData$ | async;
+
+                @if (liquidityValueData && historicalPoolPriceData) {
+                <app-liquidity-chart
+                  [liquidityData]="liquidityValueData"
+                  [priceHistory]="historicalPoolPriceData"
+                  [previewData]="previewData">
+                </app-liquidity-chart>
+                }
               </ng-container>
               <div class="flex justify-end mb-2">
                 <div class="bg-gray-700 rounded-lg overflow-hidden flex">

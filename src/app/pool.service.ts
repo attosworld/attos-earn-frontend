@@ -49,6 +49,11 @@ export interface PoolLiquidity {
   price: number;
 }
 
+export interface PoolPriceHistory {
+  x: string;
+  y: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -93,5 +98,18 @@ export class PoolService {
     return this.http.get<PoolLiquidity>(`${this.apiUrl}/liquidity`, {
       params,
     });
+  }
+
+  getHistoricalPoolPrice(
+    component: string
+  ): Observable<Record<string, number>> {
+    const params = new HttpParams().set('component', component);
+
+    return this.http.get<Record<string, number>>(
+      `${this.apiUrl}/precision-historical`,
+      {
+        params,
+      }
+    );
   }
 }

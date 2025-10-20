@@ -1,7 +1,6 @@
 import {
   Component,
   Input,
-  OnInit,
   AfterViewInit,
   ViewChild,
   ElementRef,
@@ -22,6 +21,7 @@ import {
   LineController,
   LineElement,
   PointElement,
+  TimeScale,
 } from 'chart.js';
 
 @Component({
@@ -31,18 +31,18 @@ import {
   styleUrl: './liquidity-chart.component.css',
 })
 export class LiquidityChartComponent
-  implements OnInit, AfterViewInit, OnDestroy, OnChanges
+  implements AfterViewInit, OnDestroy, OnChanges
 {
   @Input() liquidityData!: PoolLiquidity | null;
+  @Input() priceHistory!: Record<string, number> | null;
   @Input() previewData!: { lowPrice: number; highPrice: number } | null;
 
   @ViewChild('liquidityChart') chartRef!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('historicalChart')
+  historicalChartRef!: ElementRef<HTMLCanvasElement>;
   chart!: Chart;
+  historicalChart!: Chart;
   maxPoint!: number;
-
-  ngOnInit(): void {
-    this.generateChartConfiguration();
-  }
 
   ngAfterViewInit(): void {
     this.renderChart();
@@ -50,6 +50,7 @@ export class LiquidityChartComponent
 
   ngOnDestroy(): void {
     this.chart?.destroy();
+    this.historicalChart?.destroy();
   }
 
   ngOnChanges(): void {
@@ -61,6 +62,22 @@ export class LiquidityChartComponent
             ? this.maxPoint
             : 0
         ) ?? [];
+
+      if (
+        Object.keys(this.priceHistory ?? {})?.length &&
+        this.historicalChart
+      ) {
+        this.historicalChart.data.datasets[1].data =
+          this.liquidityData?.liquidityPoints.map(
+            () => this.previewData?.lowPrice ?? 0
+          ) ?? [];
+
+        this.historicalChart.data.datasets[2].data =
+          this.liquidityData?.liquidityPoints.map(
+            () => this.previewData?.highPrice ?? 0
+          ) ?? [];
+        this.historicalChart.update();
+      }
 
       this.chart.update();
     }
@@ -75,8 +92,16 @@ export class LiquidityChartComponent
     Chart.register(LineController);
     Chart.register(LineElement);
     Chart.register(PointElement);
+    Chart.register(TimeScale);
     Chart.register(Filler);
     this.chart = new Chart(this.chartRef?.nativeElement, config);
+
+    if (Object.keys(this.priceHistory ?? {})?.length) {
+      this.historicalChart = new Chart(
+        this.historicalChartRef?.nativeElement,
+        this.generateHistoricalPriceChartConfiguration()
+      );
+    }
   }
 
   generateChartConfiguration(): ChartConfiguration {
@@ -100,7 +125,7 @@ export class LiquidityChartComponent
           ) ?? [],
         backgroundColor: 'rgba(75, 192, 192, 0.5)',
         borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
+        borderWidth: 2,
       },
       {
         label: 'Y Amount',
@@ -110,7 +135,7 @@ export class LiquidityChartComponent
           ) ?? [],
         backgroundColor: 'rgba(153, 102, 255, 0.5)',
         borderColor: 'rgba(153, 102, 255, 1)',
-        borderWidth: 1,
+        borderWidth: 2,
       },
       {
         label: 'Current Price',
@@ -135,7 +160,7 @@ export class LiquidityChartComponent
               : 0
           ) ?? [],
         borderColor: 'rgba(255, 206, 86, 1)',
-        backgroundColor: 'rgba(255, 206, 86, 0.2)',
+        // backgroundColor: 'rgba(255, 206, 86, 0.2)',
         borderWidth: 3,
         type: 'line',
         pointBorderWidth: 0,
@@ -151,8 +176,11 @@ export class LiquidityChartComponent
         datasets: datasets,
       },
       options: {
+        indexAxis: 'y',
         scales: {
           x: {
+            type: 'linear',
+            display: false,
             title: {
               display: false,
               text: 'Price',
@@ -162,9 +190,78 @@ export class LiquidityChartComponent
             },
           },
           y: {
+            display: false,
             title: {
               display: false,
               text: 'Liquidity',
+            },
+            grid: {
+              display: false,
+            },
+          },
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          filler: {
+            propagate: false,
+          },
+        },
+      },
+    };
+  }
+
+  generateHistoricalPriceChartConfiguration(): ChartConfiguration {
+    console.log('FUCK ', this.priceHistory);
+    const datasets: ChartDataset[] = [
+      {
+        data: Object.values(this.priceHistory ?? {}) ?? [],
+        borderColor: 'rgba(255, 99, 132, 1)',
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        borderWidth: 3,
+        pointRadius: 0,
+        tension: 0,
+      },
+      {
+        data: [],
+        borderColor: 'rgba(255, 206, 86, 1)',
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        borderWidth: 3,
+        pointRadius: 0,
+        tension: 0,
+      },
+      {
+        data: [],
+        borderColor: 'rgba(255, 206, 86, 1)',
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        borderWidth: 3,
+        pointRadius: 0,
+        tension: 0,
+      },
+    ];
+
+    return {
+      type: 'line',
+      data: {
+        labels: Object.keys(this.priceHistory ?? {}) ?? [],
+        datasets: datasets,
+      },
+      options: {
+        scales: {
+          x: {
+            display: false,
+            title: {
+              display: false,
+            },
+            grid: {
+              display: false,
+            },
+          },
+          y: {
+            display: false,
+            title: {
+              display: false,
             },
             grid: {
               display: false,

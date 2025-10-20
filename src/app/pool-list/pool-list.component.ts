@@ -15,7 +15,12 @@ import {
   CdkVirtualScrollViewport,
 } from '@angular/cdk/scrolling';
 import { PoolItemComponent } from '../pool-item/pool-item.component';
-import { PoolService, Pool, PoolLiquidity } from '../pool.service';
+import {
+  PoolService,
+  Pool,
+  PoolLiquidity,
+  PoolPriceHistory,
+} from '../pool.service';
 import {
   BehaviorSubject,
   Observable,
@@ -460,6 +465,7 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
   DFP2 = 'resource_rdx1t5ywq4c6nd2lxkemkv4uzt8v7x7smjcguzq5sgafwtasa6luq7fclq';
 
   liquidityValueData$: Observable<PoolLiquidity> | undefined;
+  historicalPoolPriceData$: Observable<Record<string, number>> = of({});
   liquidityEnabled = false;
   previewData!: { highPrice: number; lowPrice: number };
   urlSync!: Subscription;
@@ -509,6 +515,11 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     this.liquidityValueData$ = this.poolService.getPoolLiquidity(
       pool.component
     );
+    if (pool.sub_type === 'precision') {
+      this.historicalPoolPriceData$ = this.poolService.getHistoricalPoolPrice(
+        pool.component
+      );
+    }
   }
 
   closeModal() {
