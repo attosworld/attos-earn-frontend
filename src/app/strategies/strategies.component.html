@@ -12,10 +12,15 @@
           <p class="text-gray-400">Total strategies executed across all users</p>
         </div>
       </div>
-      <div class="text-right" *ngIf="stats$ | async as stats">
+
+      @let stats = stats$ | async;
+
+      @if (stats) {
+      <div class="text-right">
         <div class="text-3xl font-bold text-yellow-400">{{ stats.strategies | number }}</div>
         <div class="text-sm text-gray-400">Strategies Executed</div>
       </div>
+      }
     </div>
   </div>
   <!-- New sections for benefits and risks -->
@@ -62,11 +67,13 @@
       </svg>
     </button>
 
-    <div *ngIf="isFaqSectionOpen" class="mt-4 bg-gray-800 rounded-lg p-6 shadow-lg">
+    @if (isFaqSectionOpen) {
+    <div class="mt-4 bg-gray-800 rounded-lg p-6 shadow-lg">
       <div class="space-y-4">
-        <div *ngFor="let faq of faqs; let i = index" class="bg-gray-700 rounded-lg overflow-hidden">
+        @for (faq of faqs; track $index) {
+        <div class="bg-gray-700 rounded-lg overflow-hidden">
           <button
-            (click)="toggleFaq(i)"
+            (click)="toggleFaq($index)"
             class="w-full text-left p-4 flex justify-between items-center text-white hover:bg-gray-600 transition-colors duration-200"
             >
             <span class="text-lg font-medium">{{ faq.question }}</span>
@@ -80,15 +87,18 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>
           </button>
+          @if (faq.isOpen) {
           <div
-            *ngIf="faq.isOpen"
             class="p-4 bg-gray-800 text-gray-300"
             >
             <p>{{ faq.answer }}</p>
           </div>
+          }
         </div>
+        }
       </div>
     </div>
+    }
   </div>
 
   <div>
@@ -133,133 +143,145 @@
       </div>
     </div>
       <!-- Spinner for portfolio items -->
-      <div *ngIf="isPortfolioLoading" class="flex justify-center items-center h-32">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
-      </div>
-      <div *ngIf="portfolioItems$ | async as items" class="mt-4">
-        <h3 class="text-lg font-semibold text-white mb-2">Strategy Portfolio</h3>
-        <div class="border-gray-700 border-1 rounded-lg hidden md:p-4 md:block mb-8">
-
-          <div class="block text-lg font-bold border-b-1 border-b-gray-700 md:hidden">LP Positions</div>
-
-          <!-- Portfolio table (only show when not loading) -->
-          <table class="w-full">
-            <thead class="hidden md:table-header-group">
-              <tr class="text-sm font-medium text-gray-100 border-b border-gray-700">
-                <th class="py-2 px-4 text-left">Pool</th>
-                <th class="py-2 px-4 text-right cursor-pointer">
-                  Invested
-                </th>
-                <th class="py-2 px-4 text-right cursor-pointer">
-                  Current Value
-                </th>
-                <th class="py-2 px-4 text-right cursor-pointer" >
-                  Profit/Loss
-                </th>
-                <th class="py-2 px-4 text-right cursor-pointer" >
-                  Profit/Loss %
-                </th>
-                <th class="py-2 px-4 text-right cursor-pointer" >
-                  Provider
-                </th>
-                <th class="py-2 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <ng-container >
-                <tr *ngFor="let item of items" class="border-b border-gray-700 block md:table-row mb-4 md:mb-0 text-sm">
-                  <td class="py-2 px-1 block md:table-cell">
-                    <div class="flex items-center">
-                      <app-pool-icon-pair
-                        [leftIcon]="item.leftIcon"
-                        [rightIcon]="item.rightIcon"
-                        [leftAlt]="item.leftAlt"
-                        [rightAlt]="item.rightAlt"
-                        class="mr-2"
-                        ></app-pool-icon-pair>
-                      <span>{{ item.poolName  }}<ng-container *ngIf="item.tx"> (<a
-                        [href]="'https://radxplorer.com/transactions/' + item.tx"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="text-yellow-500 hover:underline"
-                        >{{ item.tx | shortenAddress }}
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                        </svg>
-                          </a>)
-                        </ng-container>
-                      </span>
-                    </div>
-                  </td>
-                  <td class="py-2 px-1 md:table-cell md:text-right hidden">
-                    <span class="inline-block md:hidden font-medium mr-2">Invested:</span>
-                    <div>{{ item.invested | currency }}</div>
-                    <div>~{{ item.investedXrd | currency:'':'':'1.2-2' }} XRD</div>
-                    <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
-                      Collateral: {{ item.loanAmount | currency:'':'':'1.2-2' }} {{ item.loanCurrency }}
-                    </div>
-                  </td>
-                  <td class="py-1 px-1 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
-                    <span class="hidden md:hidden font-medium mr-2">Current Value:</span>
-                    <div [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">{{ item.currentValue | currency }} (
-                      ~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD)</div>
-                    <div *ngIf="item.loanAmount && item.loanCurrency" class="text-sm text-gray-400 mt-1">
-                      Borrowed: {{ item.borrowAmount | currency:'':'':'1.2-2' }} {{ item.borrowCurrency }}
-                    </div>
-                  </td>
-                  <td class="py-1 px-1 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
-                    <span class="inline-block md:hidden font-medium mr-2">Profit/Loss:</span>
-                    {{ item.pnl | currency }} <span class="inline-block md:hidden">({{ item.pnlPercentage | number:'1.2-2' }}%)</span>
-                  </td>
-                  <td class="py-2 px-1 hidden md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnlPercentage > 0, 'text-red-500': +item.pnlPercentage < 0}">
-                    <span class="inline-block md:hidden font-medium mr-2">Profit/Loss %:</span>
-                    {{ item.pnlPercentage | number:'1.2-2' }}%
-                  </td>
-                  <td class="py-2 px-1 md:table-cell hidden md:text-right">
-                    <span class="inline-block md:hidden font-medium mr-2">Provider:</span>
-                    {{ item.provider }}
-                  </td>
-                  <td class="py-2 px-1 block md:table-cell">
-                    <div class="flex md:justify-end">
-                      <span class="hidden md:hidden font-medium mr-2">Actions:</span>
-                      <button
-                        *ngIf="item.strategy"
-                        (click)="closeStrategy(item)"
-                        class="bg-yellow-500 text-gray-900 px-1 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24 ml-auto"
-                        [disabled]="closingItems[item.poolName]"
-                        >
-                        @if (closingItems[item.closeManifest]) {
-                        <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        } @else {
-                        <span>Close</span>
-                        }
-                      </button>
-                      <button
-                        *ngIf="!item.strategy"
-                        (click)="closeStrategy(item)"
-                        class="w-48 bg-yellow-500 text-gray-900 px-1 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center"
-                        [disabled]="closingItems[item.poolName]"
-                        >
-                        @if (closingItems[item.closeManifest]) {
-                        <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        } @else {
-                        <span>Remove Liquidity</span>
-                        }
-                      </button>
-                    </div>
-                  </td>
-              </ng-container>
-            </tbody>
-          </table>
+      @if (isPortfolioLoading) {
+        <div class="flex justify-center items-center h-32">
+          <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
         </div>
-      </div>
-    <app-yield-list
+      }
+      @if (portfolioItems$ | async; as items) {
+        <div class="mt-4">
+          <h3 class="text-lg font-semibold text-white mb-2">Strategy Portfolio</h3>
+          <div class="border-gray-700 border-1 rounded-lg hidden md:p-4 md:block mb-8">
+
+            <div class="block text-lg font-bold border-b-1 border-b-gray-700 md:hidden">LP Positions</div>
+
+            <!-- Portfolio table (only show when not loading) -->
+            <table class="w-full">
+              <thead class="hidden md:table-header-group">
+                <tr class="text-sm font-medium text-gray-100 border-b border-gray-700">
+                  <th class="py-2 px-4 text-left">Pool</th>
+                  <th class="py-2 px-4 text-right cursor-pointer">
+                    Invested
+                  </th>
+                  <th class="py-2 px-4 text-right cursor-pointer">
+                    Current Value
+                  </th>
+                  <th class="py-2 px-4 text-right cursor-pointer" >
+                    Profit/Loss
+                  </th>
+                  <th class="py-2 px-4 text-right cursor-pointer" >
+                    Profit/Loss %
+                  </th>
+                  <th class="py-2 px-4 text-right cursor-pointer" >
+                    Provider
+                  </th>
+                  <th class="py-2 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of items; track item.poolName) {
+                  <tr class="border-b border-gray-700 block md:table-row mb-4 md:mb-0 text-sm">
+                    <td class="py-2 px-1 block md:table-cell">
+                      <div class="flex items-center">
+                        <app-pool-icon-pair
+                          [leftIcon]="item.leftIcon"
+                          [rightIcon]="item.rightIcon"
+                          [leftAlt]="item.leftAlt"
+                          [rightAlt]="item.rightAlt"
+                          class="mr-2"
+                          ></app-pool-icon-pair>
+                        <span>{{ item.poolName  }}@if (item.tx) {
+                          (<a
+                          [href]="'https://radxplorer.com/transactions/' + item.tx"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="text-yellow-500 hover:underline"
+                          >{{ item.tx | shortenAddress }}
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                            </a>)
+                          }
+                        </span>
+                      </div>
+                    </td>
+                    <td class="py-2 px-1 md:table-cell md:text-right hidden">
+                      <span class="inline-block md:hidden font-medium mr-2">Invested:</span>
+                      <div>{{ item.invested | currency }}</div>
+                      <div>~{{ item.investedXrd | currency:'':'':'1.2-2' }} XRD</div>
+                      @if (item.loanAmount && item.loanCurrency) {
+                        <div class="text-sm text-gray-400 mt-1">
+                          Collateral: {{ item.loanAmount | currency:'':'':'1.2-2' }} {{ item.loanCurrency }}
+                        </div>
+                      }
+                    </td>
+                    <td class="py-1 px-1 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
+                      <span class="hidden md:hidden font-medium mr-2">Current Value:</span>
+                      <div [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">{{ item.currentValue | currency }} (
+                        ~{{ item.currentValueXrd | currency:'':'':'1.2-2' }} XRD)</div>
+                      @if (item.loanAmount && item.loanCurrency) {
+                        <div class="text-sm text-gray-400 mt-1">
+                          Borrowed: {{ item.borrowAmount | currency:'':'':'1.2-2' }} {{ item.borrowCurrency }}
+                        </div>
+                      }
+                    </td>
+                    <td class="py-1 px-1 block md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnl > 0, 'text-red-500': +item.pnl < 0}">
+                      <span class="inline-block md:hidden font-medium mr-2">Profit/Loss:</span>
+                      {{ item.pnl | currency }} <span class="inline-block md:hidden">({{ item.pnlPercentage | number:'1.2-2' }}%)</span>
+                    </td>
+                    <td class="py-2 px-1 hidden md:table-cell md:text-right" [ngClass]="{'text-green-500': +item.pnlPercentage > 0, 'text-red-500': +item.pnlPercentage < 0}">
+                      <span class="inline-block md:hidden font-medium mr-2">Profit/Loss %:</span>
+                      {{ item.pnlPercentage | number:'1.2-2' }}%
+                    </td>
+                    <td class="py-2 px-1 md:table-cell hidden md:text-right">
+                      <span class="inline-block md:hidden font-medium mr-2">Provider:</span>
+                      {{ item.provider }}
+                    </td>
+                    <td class="py-2 px-1 block md:table-cell">
+                      <div class="flex md:justify-end">
+                        <span class="hidden md:hidden font-medium mr-2">Actions:</span>
+                        @if (item.strategy) {
+                          <button
+                            (click)="closeStrategy(item)"
+                            class="bg-yellow-500 text-gray-900 px-1 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center w-24 ml-auto"
+                            [disabled]="closingItems[item.poolName]"
+                            >
+                            @if (closingItems[item.closeManifest]) {
+                              <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            } @else {
+                              <span>Close</span>
+                            }
+                          </button>
+                        }
+                        @if (!item.strategy) {
+                          <button
+                            (click)="closeStrategy(item)"
+                            class="w-48 bg-yellow-500 text-gray-900 px-1 py-2 rounded hover:bg-yellow-600 transition duration-300 flex items-center justify-center"
+                            [disabled]="closingItems[item.poolName]"
+                            >
+                            @if (closingItems[item.closeManifest]) {
+                              <svg class="animate-spin h-5 w-5 text-gray-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                            } @else {
+                              <span>Remove Liquidity</span>
+                            }
+                          </button>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+      <app-yield-list
       [strategies]="lendingStrategies$ | async"
       [isCollapsed]="collapsedSections.lending"
       [category]="'lending'"

@@ -145,8 +145,22 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
 
   newsService = inject(NewsService);
 
+  tags = [
+    { tag: 'incentives' },
+    { tag: 'layer 1', icon: 'fa-cubes' },
+    { tag: 'dex', icon: 'fa-exchange-alt' },
+    { tag: 'defi', icon: 'fa-network-wired' },
+    { tag: 'lending', icon: 'fa-hand-holding-dollar' },
+    { tag: 'wrapped', icon: 'fa-box' },
+    { tag: 'stablecoin', icon: 'fa-coins' },
+    { tag: 'dao', icon: 'fa-users-gear' },
+    { tag: 'meme', icon: 'fa-face-grin-tongue-wink' },
+    { tag: 'gamefi', icon: 'fa-gamepad' },
+  ];
+
   tagFilters: TagFilters = {
     wrapped: false,
+    'layer 1': false,
     stablecoin: false,
     dex: false,
     defi: false,

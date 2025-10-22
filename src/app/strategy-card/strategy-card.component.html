@@ -13,9 +13,11 @@
                 <div>
                   <div>
                     {{ strategy.name }}
-                    <span *ngIf="strategy.incentivised" class="mr-1 mb-1" style="font-family:Upheaval TT" [class.text-yellow-500]="strategy.incentivised">
-                      AP+
-                    </span>
+                    @if (strategy.incentivised) {
+                      <span class="mr-1 mb-1" style="font-family:Upheaval TT" [class.text-yellow-500]="strategy.incentivised">
+                        AP+
+                      </span>
+                    }
                   </div>
                   <div class="text-xs text-gray-400">{{ strategy.provider }}</div>
                 </div>

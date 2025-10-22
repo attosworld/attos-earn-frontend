@@ -624,20 +624,23 @@
       <h3 class="text-lg font-semibold mb-3 text-yellow-500">Tags</h3>
       <div class="flex flex-wrap gap-2">
         <button
-          *ngFor="let tag of ['incentives', 'dex','defi', 'lending', 'wrapped', 'stablecoin' ,'dao', 'meme', 'gamefi']"
-          (click)="toggleTag(tag)"
+          *ngFor="let tag of tags"
+          (click)="toggleTag(tag.tag)"
           class="py-2 px-4 rounded-md text-sm transition-colors duration-200 ease-in-out flex items-center"
-          [class.bg-yellow-500]="tagFilters[tag]"
-          [class.text-gray-900]="tagFilters[tag]"
-          [class.bg-gray-700]="!tagFilters[tag]"
-          [class.text-white]="!tagFilters[tag]"
-          [class.hover:bg-yellow-600]="!tagFilters[tag]"
+          [class.bg-yellow-500]="tagFilters[tag.tag]"
+          [class.text-gray-900]="tagFilters[tag.tag]"
+          [class.bg-gray-700]="!tagFilters[tag.tag]"
+          [class.text-white]="!tagFilters[tag.tag]"
+          [class.hover:bg-yellow-600]="!tagFilters[tag.tag]"
         >
-          <span *ngIf="tag === 'incentives'" class="mr-1" style="font-family:Upheaval TT" [class.text-yellow-500]="!tagFilters[tag]" [class.text-slate-800]="tagFilters[tag]">
+          <span *ngIf="tag.tag === 'incentives'" class="mr-1" style="font-family:Upheaval TT" [class.text-yellow-500]="!tagFilters[tag.tag]" [class.text-slate-800]="tagFilters[tag.tag]">
             AP+
           </span>
-          {{ tag | uppercase }}
-          <a *ngIf="tag === 'incentives'"
+                @if (tag.icon) {
+                <i [class]="'text-lg fa mr-2 ' + tag.icon"></i>
+                }
+          {{ tag.tag | uppercase }}
+          <a *ngIf="tag.tag === 'incentives'"
             href="https://incentives.radixdlt.com/"
             target="_blank"
             rel="noopener noreferrer"
@@ -710,24 +713,27 @@
           <h3 class="text-lg font-semibold mb-4 text-yellow-500">Filter by Tags</h3>
           <div class="space-y-2">
             <button
-              *ngFor="let tag of ['incentives', 'dex','defi', 'lending', 'wrapped', 'stablecoin' ,'dao', 'meme', 'gamefi']"
-              (click)="toggleTag(tag)"
+              *ngFor="let tag of tags"
+              (click)="toggleTag(tag.tag)"
               class="w-full py-2 px-4 rounded-md text-left transition-colors duration-200 ease-in-out"
-              [class.bg-yellow-500]="tagFilters[tag]"
-              [class.bg-yellow-500]="tagFilters[tag]"
-              [class.text-gray-900]="tagFilters[tag]"
-              [class.bg-gray-700]="!tagFilters[tag]"
-              [class.text-white]="!tagFilters[tag]"
-              [class.hover:bg-yellow-600]="!tagFilters[tag]"
-              [class.flex]="tag === 'incentives'"
+              [class.bg-yellow-500]="tagFilters[tag.tag]"
+              [class.bg-yellow-500]="tagFilters[tag.tag]"
+              [class.text-gray-900]="tagFilters[tag.tag]"
+              [class.bg-gray-700]="!tagFilters[tag.tag]"
+              [class.text-white]="!tagFilters[tag.tag]"
+              [class.hover:bg-yellow-600]="!tagFilters[tag.tag]"
+              [class.flex]="tag.tag === 'incentives'"
               >
               <div class="flex items-center">
-                <span *ngIf="tag === 'incentives'" class="mr-1 mb-1" style="font-family:Upheaval TT" [class.text-yellow-500]="!tagFilters[tag]" [class.text-slate-800]="tagFilters[tag]">
+                <span *ngIf="tag.tag === 'incentives'" class="mr-1 mb-1" style="font-family:Upheaval TT" [class.text-yellow-500]="!tagFilters[tag.tag]" [class.text-slate-800]="tagFilters[tag.tag]">
                   AP+
                 </span>
-                {{ tag | uppercase }}
+                @if (tag.icon) {
+                <i [class]="'text-lg fa mr-2 ' + tag.icon"></i>
+                }
+                {{ tag.tag | uppercase }}
               </div>
-              <a *ngIf="tag === 'incentives'"
+              <a *ngIf="tag.tag === 'incentives'"
                 href="https://incentives.radixdlt.com/"
                 target="_blank"
                 rel="noopener noreferrer"
