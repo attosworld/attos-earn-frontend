@@ -659,16 +659,19 @@
       <h3 class="text-lg font-semibold mb-3 text-yellow-500">Pool Type</h3>
       <div class="flex flex-wrap gap-2">
         <button
-          *ngFor="let type of ['double', 'single', 'precision', 'flex', 'basic']"
-          (click)="togglePoolType(type)"
+          *ngFor="let type of poolTypes"
+          (click)="togglePoolType(type.tag)"
           class="py-2 px-4 rounded-md text-sm transition-colors duration-200 ease-in-out"
-          [class.bg-yellow-500]="poolTypeFilters[type]"
-          [class.text-gray-900]="poolTypeFilters[type]"
-          [class.bg-gray-700]="!poolTypeFilters[type]"
-          [class.text-white]="!poolTypeFilters[type]"
-          [class.hover:bg-yellow-600]="!poolTypeFilters[type]"
+          [class.bg-yellow-500]="poolTypeFilters[type.tag]"
+          [class.text-gray-900]="poolTypeFilters[type.tag]"
+          [class.bg-gray-700]="!poolTypeFilters[type.tag]"
+          [class.text-white]="!poolTypeFilters[type.tag]"
+          [class.hover:bg-yellow-600]="!poolTypeFilters[type.tag]"
         >
-          {{ type | titlecase }}
+        @if (type.icon) {
+        <i [class]="'text-lg fa mr-2 ' + type.icon"></i>
+        }
+          {{ type.tag | titlecase }}
         </button>
       </div>
     </div>
@@ -751,16 +754,19 @@
           <h3 class="text-lg font-semibold mb-4 text-yellow-500">Filter by Pool Type</h3>
           <div class="space-y-2">
             <button
-              *ngFor="let type of ['double', 'single', 'precision', 'flex', 'basic']"
-              (click)="togglePoolType(type)"
+              *ngFor="let type of poolTypes"
+              (click)="togglePoolType(type.tag)"
               class="w-full py-2 px-4 rounded-md text-left transition-colors duration-200 ease-in-out"
-              [class.bg-yellow-500]="poolTypeFilters[type]"
-              [class.text-gray-900]="poolTypeFilters[type]"
-              [class.bg-gray-700]="!poolTypeFilters[type]"
-              [class.text-white]="!poolTypeFilters[type]"
-              [class.hover:bg-yellow-600]="!poolTypeFilters[type]"
+              [class.bg-yellow-500]="poolTypeFilters[type.tag]"
+              [class.text-gray-900]="poolTypeFilters[type.tag]"
+              [class.bg-gray-700]="!poolTypeFilters[type.tag]"
+              [class.text-white]="!poolTypeFilters[type.tag]"
+              [class.hover:bg-yellow-600]="!poolTypeFilters[type.tag]"
               >
-              {{ type | titlecase }}
+              @if (type.icon) {
+              <i [class]="'text-lg fa mr-2 ' + type.icon"></i>
+              }
+              {{ type.tag | titlecase }}
             </button>
           </div>
         </div>

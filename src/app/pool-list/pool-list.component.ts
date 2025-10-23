@@ -171,12 +171,16 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     incentives: false,
   };
 
+  poolTypes = [
+    { tag: 'double', icon: 'fa-arrows-left-right' },
+    { tag: 'single', icon: 'fa-circle-dot' },
+    { tag: 'concentrated', icon: 'fa-bullseye' },
+  ];
+
   poolTypeFilters: Record<string, boolean> = {
     double: false,
     single: false,
-    precision: false,
-    flex: false,
-    basic: false,
+    concentrated: false,
   };
 
   poolTypeProvider: Record<string, boolean> = {
@@ -270,8 +274,6 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
   ]).pipe(
     switchMap(([pool, xOrY, poolPrice]) => {
       if (!pool) return of(null);
-
-      console.log(xOrY);
 
       if (pool.sub_type === 'precision' && poolPrice) {
         const { lowerTick, upperTick } =
@@ -729,7 +731,20 @@ export class PoolListComponent implements OnDestroy, AfterContentChecked {
     const selectedTypes = Object.keys(this.poolTypeFilters).filter(
       type => this.poolTypeFilters[type]
     );
-    return selectedTypes.length === 0 || selectedTypes.includes(pool.sub_type);
+
+    const poolTypesFilters = {
+      double: ['double', 'flex', 'basic'],
+      single: ['single'],
+      concentrated: ['precision'],
+    };
+
+    return (
+      selectedTypes.length === 0 ||
+      selectedTypes
+        .map(type => poolTypesFilters[type as keyof typeof poolTypesFilters])
+        .flat()
+        .includes(pool.sub_type)
+    );
   }
 
   private applyPoolProviderFilters(pool: Pool): boolean {
