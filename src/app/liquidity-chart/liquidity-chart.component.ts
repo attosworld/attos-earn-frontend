@@ -68,12 +68,12 @@ export class LiquidityChartComponent
         this.historicalChart
       ) {
         this.historicalChart.data.datasets[1].data =
-          this.liquidityData?.liquidityPoints.map(
+          Object.keys(this.priceHistory ?? {}).map(
             () => this.previewData?.lowPrice ?? 0
           ) ?? [];
 
         this.historicalChart.data.datasets[2].data =
-          this.liquidityData?.liquidityPoints.map(
+          Object.keys(this.priceHistory ?? {}).map(
             () => this.previewData?.highPrice ?? 0
           ) ?? [];
         this.historicalChart.update();
@@ -213,7 +213,6 @@ export class LiquidityChartComponent
   }
 
   generateHistoricalPriceChartConfiguration(): ChartConfiguration {
-    console.log('FUCK ', this.priceHistory);
     const datasets: ChartDataset[] = [
       {
         data: Object.values(this.priceHistory ?? {}) ?? [],
